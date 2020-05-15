@@ -185,6 +185,7 @@ namespace CZ.CEEG.BosPM.PersonalReport
                 this.View.Model.SetValue("FGManager", objs[0]["FGManager"].ToString());
                 this.View.Model.SetValue("FDirectorPost", objs[0]["FSuperiorPost"].ToString());
                 this.View.Model.SetValue("FCreateOrgID", objs[0]["FORGID"].ToString());
+                this.View.Model.SetValue("FCreateDeptId", objs[0]["FDeptID"].ToString());
             }
         }
 

@@ -37,7 +37,7 @@ namespace CZ.CEEG.MblCrmLst.CustFliter
 
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
-            string _filter = " FSELLER in (";
+            string _filter = " FUSEORGID=1 and FSELLER in (";
 
             for(int i = 0; i < objs.Count; i++)
             {

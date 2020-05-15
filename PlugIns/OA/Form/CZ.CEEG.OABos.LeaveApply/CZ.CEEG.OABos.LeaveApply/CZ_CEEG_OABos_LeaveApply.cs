@@ -329,8 +329,8 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void AfterBindData(EventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
-            {
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
                 base.AfterBindData(e);
                 addEntryLeaver();
                 if (isFirstOpen)
@@ -341,6 +341,29 @@ namespace CZ.CEEG.OABos.LeaveApply
                     msg = QueryLeftDays(type, 0, true);
                     this.View.Model.SetValue("FDispLeaveDay", msg);
                 }
+            //}
+        }
+
+
+        public override void BeforeF7Select(BeforeF7SelectEventArgs e)
+        {
+            base.BeforeF7Select(e);
+            string key = e.FieldKey.ToString();
+            switch(key)
+            {
+                case "FLeaveType": //请假类别
+                    //判断是否为销售员，销售员不显示请假天数
+                    string sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
+                    var Smans = CZDB_GetData(sql);
+                    if (Smans.Count > 0)
+                    {
+                        e.ListFilterParameter.Filter = " FVALUE <> 3";
+                    }
+                    else
+                    {
+                        e.ListFilterParameter.Filter = " FVALUE <> 20";
+                    } 
+                    break;
             }
         }
 
@@ -352,8 +375,8 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void DataChanged(DataChangedEventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
-            {
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
                 base.DataChanged(e);
                 Act_SetLeaveDays(e);
                 if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
@@ -364,10 +387,11 @@ namespace CZ.CEEG.OABos.LeaveApply
                     }
                     string type = this.View.Model.GetValue("FLeaveType", e.Row).ToString();
                     string msg = "";
+                    //this.View.ShowMessage(type);
                     msg = QueryLeftDays(type, e.Row, false);
                     this.View.Model.SetValue("FDispLeaveDay", msg); //代理字段使用BillModel，单据字段使用Model
                 }
-            }
+            //}
         }
 
         /// <summary>
@@ -376,8 +400,8 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
-            {
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
                 base.BeforeDoOperation(e);
                 string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
                 if (_opKey == "SUBMIT")
@@ -392,7 +416,7 @@ namespace CZ.CEEG.OABos.LeaveApply
                 {
                     SetMaxLeaveDay();
                 }
-            }
+            //}
         }
         #endregion
 
@@ -451,13 +475,26 @@ namespace CZ.CEEG.OABos.LeaveApply
                     _FLeaveType = _FEntity[i]["FLeaveType"].ToString();
                     if (leaver == _FName && _FLeaveType != "9") //不为调休
                     {
-                        if(_FLeaveType == "3")
+                        //if(_FLeaveType == "3") //销售员探亲
+                        //{
+                        //    string sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
+                        //    var Smans = CZDB_GetData(sql);
+                        //    if(Smans.Count > 0)
+                        //    {
+                        //        continue;
+                        //    }
+                        //}
+                        if(_FLeaveType == "20") //销售员探亲假，不能超过6次
                         {
-                            string sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
-                            var Smans = CZDB_GetData(sql);
-                            if(Smans.Count > 0)
+                            DateTime currTime = DateTime.Now;
+                            string sql = string.Format(@"select * from ora_t_Leave 
+                            where YEAR(FStartDate)={0} and FLEAVETYPE=20", currTime.Year);
+                            var objs = CZDB_GetData(sql);
+                            if(objs.Count > 6)
                             {
-                                continue;
+                                sql = String.Format("select * from T_HR_EMPINFO_L where FID='{0}'", _FName);
+                                string name = CZDB_GetData(sql)[0]["FNAME"].ToString();
+                                this.View.ShowErrMessage(name + "的探亲假提交失败，\n原因：\n超出了本年可请次数！");
                             }
                         }
                         _FStartDate = _FEntity[i]["FStartDate"].ToString().Split(' ')[0];
@@ -510,7 +547,7 @@ namespace CZ.CEEG.OABos.LeaveApply
                         //obj第0行是判定信息
                         for (int i = 1; i < obj.Count; i++)
                         {
-                            if (CheckByType(obj[i], leaver))
+                            if(CheckByType(obj[i], leaver))
                                 return true;
                         }
                     }
@@ -525,7 +562,6 @@ namespace CZ.CEEG.OABos.LeaveApply
                     return true;
                 }
             }
-
 
             return false;
         }
@@ -673,6 +709,8 @@ namespace CZ.CEEG.OABos.LeaveApply
                         return true;
                     }
                     break;
+                case "20": //销售员探亲假
+                    break;
                 default:
                     break;
             }
@@ -740,18 +778,18 @@ namespace CZ.CEEG.OABos.LeaveApply
                     if (data.Count > 0) lastYearLeftDays = -float.Parse(data[0]["FDayNum"].ToString());
                     tempHisDays = float.Parse(GetQuery("6", _FNAME, 0)[1]["FHisDays"].ToString());
                     // 判断是否为销售员，销售员不显示请假天数
-                    sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
-                    var Smans = CZDB_GetData(sql);
-                    if (Smans.Count > 0)
-                    {
-                        msg = String.Format("探亲假，本年已请{0}天，年休假已请{1}天。",
-                          _FHisDays, tempHisDays + lastYearLeftDays);
-                    }
-                    else
-                    {
+                    //sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
+                    //var Smans = CZDB_GetData(sql);
+                    //if (Smans.Count > 0)
+                    //{
+                    //    msg = String.Format("探亲假，本年已请{0}天，年休假已请{1}天。",
+                    //      _FHisDays, tempHisDays + lastYearLeftDays);
+                    //}
+                    //else
+                    //{
                         msg = String.Format("探亲假，本年目前可请{0}天，已请{1}天，年休假已请{2}天，剩余(可请){3}天。",
                           _FAllowDays, _FHisDays, tempHisDays + lastYearLeftDays, (_FAllowDays - _FHisDays - tempHisDays).ToString("f2"));
-                    }
+                    //}
                     
                     break;
                 case "4":
@@ -824,6 +862,13 @@ namespace CZ.CEEG.OABos.LeaveApply
                     msg = String.Format("献血，本次可请{0}天，已请{1}天。",
                                        _FAllowDays, _FHisDays);
                     break;
+                case "20": //销售员探亲假
+
+                    sql = string.Format(@"select * from ora_t_Leave 
+                            where YEAR(FStartDate)={0} and FLEAVETYPE=20", DateTime.Now.Year);
+                    var objs = CZDB_GetData(sql);
+                    msg = String.Format("探亲假，本年可请6次, 已请{0}次。", objs.Count);
+                    break;
                 default:
                     break;
             }
@@ -831,7 +876,7 @@ namespace CZ.CEEG.OABos.LeaveApply
         }
 
         /// <summary>
-        /// 获取年休假或探亲假已请假天数
+        /// 获取已请假天数
         /// </summary>
         /// <returns></returns>
         private DynamicObjectCollection GetQuery(string _FLeaveType, string _FNAME, int Row)

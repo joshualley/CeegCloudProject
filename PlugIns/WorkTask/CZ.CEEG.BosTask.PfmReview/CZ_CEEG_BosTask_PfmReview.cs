@@ -88,10 +88,45 @@ namespace CZ.CEEG.BosTask.PfmReview
             OpenPsnReportForm();
         }
 
+        public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
+        {
+            base.BeforeDoOperation(e);
+            string key = e.Operation.FormOperation.Operation.ToUpperInvariant();
+            switch(key)
+            {
+                case "SAVE":
+                    if (!Validate())
+                    {
+                        e.Cancel = true;
+                    }
+                    break;
+                case "SUBMIT":
+                    if(!Validate())
+                    {
+                        e.Cancel = true;
+                    }
+                    break;
+            }
+        }
+
         #endregion
 
         #region 业务方法
 
+        private bool Validate()
+        {
+            var entity = this.View.Model.DataObject["FEntity"] as DynamicObjectCollection;
+            foreach(var row in entity)
+            {
+                double score = double.Parse(row["FESCORE"].ToString());
+                if (score == 0)
+                {
+                    this.View.ShowWarnningMessage("还有员工的工作计划未提交！");
+                    return false;
+                }
+            }
+            return true;
+        }
 
         private void OpenPsnReportForm()
         {
