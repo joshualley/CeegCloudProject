@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.OABos.CalExchangeRate", "CZ.CEEG.OABos.CalExchangeRate\CZ.CEEG.OABos.CalExchangeRate.csproj", "{8E716A36-88EC-445A-8EAD-C79EF7C60988}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E716A36-88EC-445A-8EAD-C79EF7C60988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E716A36-88EC-445A-8EAD-C79EF7C60988}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E716A36-88EC-445A-8EAD-C79EF7C60988}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E716A36-88EC-445A-8EAD-C79EF7C60988}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {94B3B39A-87C5-40F6-9753-CC1D05DBF740}
+	EndGlobalSection
+EndGlobal

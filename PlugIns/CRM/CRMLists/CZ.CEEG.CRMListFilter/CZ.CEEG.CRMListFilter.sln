@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.CRMListFilter", "CZ.CEEG.CRMListFilter\CZ.CEEG.CRMListFilter\CZ.CEEG.CRMListFilter.csproj", "{BDADD4EB-7311-415A-B6B8-8A905C5C99CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDADD4EB-7311-415A-B6B8-8A905C5C99CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDADD4EB-7311-415A-B6B8-8A905C5C99CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDADD4EB-7311-415A-B6B8-8A905C5C99CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDADD4EB-7311-415A-B6B8-8A905C5C99CA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {632195CB-9765-4D26-89A1-1608F2EF5CE8}
+	EndGlobalSection
+EndGlobal

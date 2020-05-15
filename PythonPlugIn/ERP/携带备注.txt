@@ -1,0 +1,27 @@
+# 付款单携带源单备注
+
+import clr
+clr.AddReference('Kingdee.BOS.App')
+from Kingdee.BOS.App.Data import *
+
+def AfterBindData(e):
+	FDocumentStatus = str(this.View.Model.GetValue("FDOCUMENTSTATUS"))
+	if FDocumentStatus == "Z":
+		setEntryBySrcEntry()
+
+def DataChanged(e):
+	if str(e.Key) == "FSRCBILLNO": #源单编号
+		setEntryBySrcEntry()
+
+
+def setEntryBySrcEntry():
+	''' 由源单明细表体写入明细表体
+	'''
+	srcEntry = this.View.Model.DataObject["PAYBILLSRCENTRY"] #源单明细
+
+	for i, row in enumerate(srcEntry):
+		comment = row["SRCREMARK"]
+		this.View.Model.SetValue("FCOMMENT", comment, i)
+	this.View.UpdateView("FPAYBILLENTRY")
+
+

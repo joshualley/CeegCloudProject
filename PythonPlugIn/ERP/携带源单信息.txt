@@ -1,0 +1,52 @@
+# 付款单接收下推数据
+
+import clr
+clr.AddReference('Kingdee.BOS.App')
+from Kingdee.BOS.App.Data import *
+
+def AfterBindData(e):
+	FDocumentStatus = str(this.View.Model.GetValue("FDOCUMENTSTATUS"))
+	if FDocumentStatus == "Z":
+		setEntryBySrcEntry()
+
+def DataChanged(e):
+	if str(e.Key) == "FSRCBILLNO": #源单编号
+		setEntryBySrcEntry()
+
+
+def setEntryBySrcEntry():
+	''' 由源单明细表体写入明细表体
+	'''
+	srcEntry = this.View.Model.DataObject["PAYBILLSRCENTRY"] #源单明细
+	rowNum = this.View.Model.GetEntryRowCount("FPAYBILLENTRY") #明细表体
+	if rowNum > 0:
+		if (str(this.View.Model.GetValue("FPAYTOTALAMOUNTFOR", rowNum-1)) == "0" and 
+			str(this.View.Model.GetValue("FPAYAMOUNTFOR_E", rowNum-1)) == "0" and 
+			str(this.View.Model.GetValue("FSETTLEPAYAMOUNTFOR", rowNum-1)) == "0"):
+			this.View.Model.DeleteEntryRow("FPAYBILLENTRY", rowNum-1)
+
+	for row in srcEntry:
+		costId = 0 if row["SRCCOSTID"] == None else row["SRCCOSTID"]["Id"]
+		settleTypeId = 0 if row["SRCSETTLETYPEID"] == None else row["SRCSETTLETYPEID"]["Id"]
+		amount = row["AFTTAXTOTALAMOUNT"]
+		comment = row["SRCREMARK"] # 备注
+		taxAmt = row["F_PAEZ_shuieamt"] # 拆分税额
+		unTaxAmt = row["F_PAEZ_weishuiamt"] # 未税金额
+		expenseDeptId = 0 if row["FEXPENSEDEPTID_E"] == None else row["FEXPENSEDEPTID_E"]["Id"] # 费用承担部门
+
+
+		this.View.Model.CreateNewEntryRow("FPAYBILLENTRY")
+		i = this.View.Model.GetEntryRowCount("FPAYBILLENTRY") - 1
+
+		this.View.Model.SetValue("FSETTLETYPEID", settleTypeId, i)
+		this.View.Model.SetValue("FCOSTID", costId, i)
+		this.View.Model.SetValue("FCOMMENT", comment, i)
+		this.View.Model.SetValue("FPAYTOTALAMOUNTFOR", amount, i)
+		this.View.Model.SetValue("FPAYAMOUNTFOR_E", amount, i)
+		this.View.Model.SetValue("FSETTLEPAYAMOUNTFOR", amount, i)
+		this.View.Model.SetValue("FEXPENSEDEPTID", expenseDeptId, i)
+		this.View.Model.SetValue("F_PAEZ_shuieamt1", taxAmt, i)
+		this.View.Model.SetValue("F_PAEZ_weishuiamt1", unTaxAmt, i)
+	this.View.UpdateView("FPAYBILLENTRY")
+
+

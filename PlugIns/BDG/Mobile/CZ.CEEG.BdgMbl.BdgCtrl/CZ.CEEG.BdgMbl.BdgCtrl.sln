@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.BdgMbl.BdgCtrl", "CZ.CEEG.BdgMbl.BdgCtrl\CZ.CEEG.BdgMbl.BdgCtrl.csproj", "{89FD1932-7BF6-4AA1-9E94-39FD5EF1A171}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{89FD1932-7BF6-4AA1-9E94-39FD5EF1A171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89FD1932-7BF6-4AA1-9E94-39FD5EF1A171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89FD1932-7BF6-4AA1-9E94-39FD5EF1A171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89FD1932-7BF6-4AA1-9E94-39FD5EF1A171}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BBF727B8-C931-4A08-BF36-9FF740AE5EDC}
+	EndGlobalSection
+EndGlobal
