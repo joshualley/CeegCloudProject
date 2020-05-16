@@ -12,10 +12,32 @@ def AfterBindData(e):
 
 def AlterCustAndSalerByOrg():
 	FSaleOrgId = 0 if this.View.Model.GetValue("FSaleOrgId") == None else str(this.View.Model.GetValue("FSaleOrgId")["Id"])
-	FSalerId = 0 if this.View.Model.GetValue("FSalerId") == None else str(this.View.Model.GetValue("FSalerId")["Id"])
-	FCustId = 0 if this.View.Model.GetValue("FCustId") == None else str(this.View.Model.GetValue("FCustId")["Id"])
-	if FSalerId == 0:
+	if FSaleOrgId == 0:
 		return
+	FSrcBillNo = "" if this.View.Model.GetValue("F_ora_poorderno") == None else str(this.View.Model.GetValue("F_ora_poorderno"))
+	FSalerId, FCustId = 0, 0
+	#查询是否为销售合同
+	sql = "SELECT FSaler,FCustName FROM ora_CRM_Contract WHERE FBILLNO='{}'".format(FSrcBillNo)
+	srcBill = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	if srcBill.Count > 0:
+		FSalerId = srcBill[0]["FSaler"]
+		FCustId = srcBill[0]["FCustName"]
+	#内部合同
+	sql = "SELECT FSaler,FCustName FROM ora_CRM_InnerContract WHERE FBILLNO='{}'".format(FSrcBillNo)
+	srcBill = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	if srcBill.Count > 0:
+		FSalerId = srcBill[0]["FSaler"]
+		FCustId = srcBill[0]["FCustName"]
+	#维修合同
+	sql = "SELECT FSalerID,FCustID FROM ora_CRM_MtnCont WHERE FBILLNO='{}'".format(FSrcBillNo)
+	srcBill = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	if srcBill.Count > 0:
+		FSalerId = srcBill[0]["FSalerID"]
+		FCustId = srcBill[0]["FCustID"]
+
+	if FSalerId == 0 and FCustId == 0:
+		return
+		
 	# 获取客户内码
 	sql = """select FCUSTID from T_BD_CUSTOMER where FUSEORGID='{}' 
 		and FNUMBER=(select FNUMBER from T_BD_CUSTOMER where FCUSTID='{}')""".format(FSaleOrgId, FCustId)

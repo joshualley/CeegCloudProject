@@ -18,6 +18,7 @@ using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.ServiceHelper;
 using Kingdee.BOS.Util;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
 
 namespace CZ.CEEG.OABos.LeaveApply
 {
@@ -32,7 +33,7 @@ namespace CZ.CEEG.OABos.LeaveApply
         //4.员工假期提示：总、已用、剩余
         //5.保存、提交时进行可请天数校验
 
-        #region 带出表体的请假人,及请假人部门、岗位
+        #region Actions
         /// <summary>
         /// 新增时设置由表头带出表体的请假人（暂定）
         /// </summary>
@@ -40,17 +41,15 @@ namespace CZ.CEEG.OABos.LeaveApply
         {
             if(CZ_GetCommonField("DocumentStatus") == "Z")
             {
-                string _FApplyID = this.View.Model.DataObject["FApplyID"] == null ? "" : (this.View.Model.DataObject["FApplyID"] as DynamicObject)["Id"].ToString();
-                string _F_ora_Post = this.View.Model.DataObject["F_ora_Post"] == null ? "" : (this.View.Model.DataObject["F_ora_Post"] as DynamicObject)["Id"].ToString();
-                string _FDeptID = this.View.Model.DataObject["FDeptID"] == null ? "" : (this.View.Model.DataObject["FDeptID"] as DynamicObject)["Id"].ToString();
-
+                string sql = String.Format(@"exec proc_czty_GetLoginUser2Emp @FUserID='{0}'", this.Context.UserId.ToString());
+                var obj = CZDB_GetData(sql);
                 int Row = this.View.Model.GetEntryRowCount("FEntity") - 1;
                 //this.View.ShowMessage(Row.ToString());
-                if (_FApplyID != "" && _F_ora_Post != "" && _FDeptID != "")
+                if (obj.Count > 0)
                 {
-                    this.View.Model.SetItemValueByID("FName", _FApplyID, Row);
-                    this.View.Model.SetItemValueByID("FPost", _F_ora_Post, Row);
-                    this.View.Model.SetItemValueByID("FDept", _FDeptID, Row);
+                    this.View.Model.SetItemValueByID("FName", obj[0]["FEmpID"].ToString(), Row);
+                    this.View.Model.SetItemValueByID("FPost", obj[0]["FPostID"].ToString(), Row);
+                    this.View.Model.SetItemValueByID("FDept", obj[0]["FDeptID"].ToString(), Row);
                 }
             }
         }
@@ -69,6 +68,56 @@ namespace CZ.CEEG.OABos.LeaveApply
             string _FPostID = obj[0]["FPostID"].ToString();
             this.View.Model.SetItemValueByID("FPost", _FPostID, Row);
             this.View.Model.SetItemValueByID("FDept", _FDeptID, Row);
+        }
+
+        private void dyLoadLeaveType()
+        {
+            string FDocumentStatus = CZ_GetCommonField("DocumentStatus");
+            if(FDocumentStatus == "Z" || FDocumentStatus == "A" || FDocumentStatus == "D")
+            {
+                //获取请假类别
+                List<EnumItem> list = new List<EnumItem>();
+                string sql = @"select FCAPTION,fi.FENUMID,FVALUE from T_META_FORMENUMITEM fi
+                inner join T_META_FORMENUMITEM_L fil on fil.FENUMID=fi.FENUMID
+                inner join T_META_FORMENUM_L fl on fl.FID=fi.FID
+                where fl.FNAME='OA请假类别'";
+                var obj = CZDB_GetData(sql);
+
+                sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
+                var Smans = CZDB_GetData(sql);
+                if (Smans.Count > 0)
+                {
+                    foreach(var row in obj)
+                    {
+                        if(row["FVALUE"].ToString() == "3")
+                        {
+                            continue;
+                        }
+                        EnumItem item = new EnumItem();
+                        item.Caption = new Kingdee.BOS.LocaleValue(row["FCAPTION"].ToString());
+                        item.EnumId = row["FENUMID"].ToString();
+                        item.Value = row["FVALUE"].ToString();
+                        list.Add(item);
+                    }
+                }
+                else
+                {
+                    foreach (var row in obj)
+                    {
+                        if (row["FVALUE"].ToString() == "20")
+                        {
+                            continue;
+                        }
+                        EnumItem item = new EnumItem();
+                        item.Caption = new Kingdee.BOS.LocaleValue(row["FCAPTION"].ToString());
+                        item.EnumId = row["FENUMID"].ToString();
+                        item.Value = row["FVALUE"].ToString();
+                        list.Add(item);
+                    }
+                }
+                //this.View.ShowMessage(list.Count.ToString());
+                this.View.GetControl<ComboFieldEditor>("FLeaveType").SetComboItems(list);
+            }
         }
 
         #endregion
@@ -329,45 +378,18 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void AfterBindData(EventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                base.AfterBindData(e);
-                addEntryLeaver();
-                if (isFirstOpen)
-                {
-                    isFirstOpen = false;
-                    string type = this.View.Model.GetValue("FLeaveType", 0).ToString();
-                    string msg = "";
-                    msg = QueryLeftDays(type, 0, true);
-                    this.View.Model.SetValue("FDispLeaveDay", msg);
-                }
-            //}
-        }
-
-
-        public override void BeforeF7Select(BeforeF7SelectEventArgs e)
-        {
-            base.BeforeF7Select(e);
-            string key = e.FieldKey.ToString();
-            switch(key)
+            base.AfterBindData(e);
+            addEntryLeaver();
+            if (isFirstOpen)
             {
-                case "FLeaveType": //请假类别
-                    //判断是否为销售员，销售员不显示请假天数
-                    string sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
-                    var Smans = CZDB_GetData(sql);
-                    if (Smans.Count > 0)
-                    {
-                        e.ListFilterParameter.Filter = " FVALUE <> 3";
-                    }
-                    else
-                    {
-                        e.ListFilterParameter.Filter = " FVALUE <> 20";
-                    } 
-                    break;
+                isFirstOpen = false;
+                string type = this.View.Model.GetValue("FLeaveType", 0).ToString();
+                string msg = "";
+                msg = QueryLeftDays(type, 0, true);
+                this.View.Model.SetValue("FDispLeaveDay", msg);
             }
+            dyLoadLeaveType();
         }
-
-
 
         /// <summary>
         /// 请假类型变动时，返回可请假天数。
@@ -375,23 +397,20 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void DataChanged(DataChangedEventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                base.DataChanged(e);
-                Act_SetLeaveDays(e);
-                if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
+            base.DataChanged(e);
+            Act_SetLeaveDays(e);
+            if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
+            {
+                if (e.Field.Key == "FName")
                 {
-                    if (e.Field.Key == "FName")
-                    {
-                        setEmpInfo(e.Row);
-                    }
-                    string type = this.View.Model.GetValue("FLeaveType", e.Row).ToString();
-                    string msg = "";
-                    //this.View.ShowMessage(type);
-                    msg = QueryLeftDays(type, e.Row, false);
-                    this.View.Model.SetValue("FDispLeaveDay", msg); //代理字段使用BillModel，单据字段使用Model
+                    setEmpInfo(e.Row);
                 }
-            //}
+                string type = this.View.Model.GetValue("FLeaveType", e.Row).ToString();
+                string msg = "";
+                //this.View.ShowMessage(type);
+                msg = QueryLeftDays(type, e.Row, false);
+                this.View.Model.SetValue("FDispLeaveDay", msg); //代理字段使用BillModel，单据字段使用Model
+            }
         }
 
         /// <summary>
@@ -400,23 +419,20 @@ namespace CZ.CEEG.OABos.LeaveApply
         /// <param name="e"></param>
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                base.BeforeDoOperation(e);
-                string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
-                if (_opKey == "SUBMIT")
+            base.BeforeDoOperation(e);
+            string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
+            if (_opKey == "SUBMIT")
+            {
+                if (Check())
                 {
-                    if (Check())
-                    {
-                        e.Cancel = true;
-                    }
-                    SetMaxLeaveDay();
+                    e.Cancel = true;
                 }
-                else if(_opKey == "SAVE")
-                {
-                    SetMaxLeaveDay();
-                }
-            //}
+                SetMaxLeaveDay();
+            }
+            else if(_opKey == "SAVE")
+            {
+                SetMaxLeaveDay();
+            }
         }
         #endregion
 
@@ -475,26 +491,26 @@ namespace CZ.CEEG.OABos.LeaveApply
                     _FLeaveType = _FEntity[i]["FLeaveType"].ToString();
                     if (leaver == _FName && _FLeaveType != "9") //不为调休
                     {
-                        //if(_FLeaveType == "3") //销售员探亲
-                        //{
-                        //    string sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
-                        //    var Smans = CZDB_GetData(sql);
-                        //    if(Smans.Count > 0)
-                        //    {
-                        //        continue;
-                        //    }
-                        //}
-                        if(_FLeaveType == "20") //销售员探亲假，不能超过6次
+                        
+                        if (_FLeaveType == "20") //销售员探亲假，不能超过6次
                         {
+                            string sql = "select s.FID from V_BD_SALESMAN s inner join T_HR_EMPINFO e on e.FNUMBER=s.FNUMBER where e.FID='" + _FName + "'";
+                            var Smans = CZDB_GetData(sql);
+                            if(Smans.Count <= 0)
+                            {
+                                this.View.ShowMessage("请选择探亲假！");
+                                return true;
+                            }
                             DateTime currTime = DateTime.Now;
-                            string sql = string.Format(@"select * from ora_t_Leave 
-                            where YEAR(FStartDate)={0} and FLEAVETYPE=20", currTime.Year);
+                            sql = string.Format(@"select FNAME from ora_t_Leave 
+                            where YEAR(FStartDate)={0} and FLEAVETYPE=20 and FNAME={1}", currTime.Year, _FName);
                             var objs = CZDB_GetData(sql);
                             if(objs.Count > 6)
                             {
                                 sql = String.Format("select * from T_HR_EMPINFO_L where FID='{0}'", _FName);
                                 string name = CZDB_GetData(sql)[0]["FNAME"].ToString();
                                 this.View.ShowErrMessage(name + "的探亲假提交失败，\n原因：\n超出了本年可请次数！");
+                                return true;
                             }
                         }
                         _FStartDate = _FEntity[i]["FStartDate"].ToString().Split(' ')[0];
@@ -777,19 +793,16 @@ namespace CZ.CEEG.OABos.LeaveApply
                     
                     if (data.Count > 0) lastYearLeftDays = -float.Parse(data[0]["FDayNum"].ToString());
                     tempHisDays = float.Parse(GetQuery("6", _FNAME, 0)[1]["FHisDays"].ToString());
-                    // 判断是否为销售员，销售员不显示请假天数
-                    //sql = "EXEC proc_czly_GetSalesmanIdByUserId @FUserId='" + this.Context.UserId.ToString() + "'";
-                    //var Smans = CZDB_GetData(sql);
-                    //if (Smans.Count > 0)
-                    //{
-                    //    msg = String.Format("探亲假，本年已请{0}天，年休假已请{1}天。",
-                    //      _FHisDays, tempHisDays + lastYearLeftDays);
-                    //}
-                    //else
-                    //{
-                        msg = String.Format("探亲假，本年目前可请{0}天，已请{1}天，年休假已请{2}天，剩余(可请){3}天。",
+                    sql = "select s.FID from V_BD_SALESMAN s inner join T_HR_EMPINFO e on e.FNUMBER=s.FNUMBER where e.FID='" + _FNAME + "'";
+                    var Smans = CZDB_GetData(sql);
+                    if (Smans.Count > 0)
+                    {
+                        msg = "请选择销售员探亲假！";
+                        this.View.ShowMessage(msg);
+                        return msg;
+                    }
+                    msg = String.Format("探亲假，本年目前可请{0}天，已请{1}天，年休假已请{2}天，剩余(可请){3}天。",
                           _FAllowDays, _FHisDays, tempHisDays + lastYearLeftDays, (_FAllowDays - _FHisDays - tempHisDays).ToString("f2"));
-                    //}
                     
                     break;
                 case "4":
@@ -863,9 +876,16 @@ namespace CZ.CEEG.OABos.LeaveApply
                                        _FAllowDays, _FHisDays);
                     break;
                 case "20": //销售员探亲假
-
+                    sql = "select s.FID from V_BD_SALESMAN s inner join T_HR_EMPINFO e on e.FNUMBER=s.FNUMBER where e.FID='" + _FNAME + "'";
+                    var Sman = CZDB_GetData(sql);
+                    if (Sman.Count <= 0)
+                    {
+                        msg = "请选择探亲假！";
+                        this.View.ShowMessage(msg);
+                        return msg;
+                    }
                     sql = string.Format(@"select * from ora_t_Leave 
-                            where YEAR(FStartDate)={0} and FLEAVETYPE=20", DateTime.Now.Year);
+                            where YEAR(FStartDate)={0} and FLEAVETYPE=20  and FNAME={1}", DateTime.Now.Year, _FNAME);
                     var objs = CZDB_GetData(sql);
                     msg = String.Format("探亲假，本年可请6次, 已请{0}次。", objs.Count);
                     break;
