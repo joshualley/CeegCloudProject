@@ -81,6 +81,6 @@ def NoonCrt(start, end):
 		if end.CompareTo(noonEnd) in (-1,0):
 			crtHour =  float(end.ToUniversalTime().Ticks - start.ToUniversalTime().Ticks)/10000000/3600
 		else:
-			crtHour = max(float(noonEnd.ToUniversalTime().Ticks - end.ToUniversalTime().Ticks)/10000000/3600,0)
+			crtHour = max(float(noonEnd.ToUniversalTime().Ticks - start.ToUniversalTime().Ticks)/10000000/3600,0)
 
 	return crtHour
