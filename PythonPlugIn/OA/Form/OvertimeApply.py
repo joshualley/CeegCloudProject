@@ -41,6 +41,9 @@ def DataChanged(e):
 				#if _FStart.CompareTo(DateTime.Parse('17:30:00')) in (-1, 0) and _FEnd.CompareTo(DateTime.Parse('18:00:00')) in (0, 1):
 				#	_FStart = DateTime.Parse('18:00:00')
 
+				#从表单默认加载的时间有误差,此处校准
+				_FStart = DateTime(_FStart.Year,_FStart.Month,_FStart.Day,_FStart.Hour,_FStart.Minute,_FStart.Second)
+
 				hours = float(_FEnd.ToUniversalTime().Ticks - _FStart.ToUniversalTime().Ticks)/10000000/3600
 				if hours > 0:
 					floor = lambda x: int(str(x).split('.')[0]) + 0.5 if float('0.' + str(x).split('.')[1]) >= 0.5 else int(str(x).split('.')[0])
@@ -58,13 +61,26 @@ def DataChanged(e):
 def NoonCrt(start, end):
 	'''中午时间校正
 	'''
+	
 	crtHour = 0
-	if start.CompareTo(DateTime.Parse('12:00:00')) == -1:
-		if end.CompareTo(DateTime.Parse('13:00:00')) in (-1, 0):
-			crtHour = float(end.ToUniversalTime().Ticks - DateTime.Parse('13:00:00').ToUniversalTime().Ticks)/10000000/3600
+
+	#if start.CompareTo(DateTime.Parse('12:00:00')) == -1:
+	#	if end.CompareTo(DateTime.Parse('13:00:00')) in (-1, 0):
+	#		crtHour = float(end.ToUniversalTime().Ticks - DateTime.Parse('13:00:00').ToUniversalTime().Ticks)/10000000/3600
+	#	else:
+	#		crtHour = 1
+	#elif start.CompareTo(DateTime.Parse('12:00:00')) in (0, 1) and start.CompareTo(DateTime.Parse('13:00:00')) == -1:
+	#	crtHour = float(DateTime.Parse('13:00:00').ToUniversalTime().Ticks - start.ToUniversalTime().Ticks)/10000000/3600
+
+	noonStart = DateTime(start.Year,start.Month,start.Day,12,0,0)
+	noonEnd = DateTime(end.Year,end.Month,end.Day,13,0,0)
+	
+	if start.CompareTo(noonStart) == -1:
+		crtHour = min(max(float(end.ToUniversalTime().Ticks - noonStart.ToUniversalTime().Ticks)/10000000/3600,0),1)
+	else:
+		if end.CompareTo(noonEnd) in (-1,0):
+			crtHour =  float(end.ToUniversalTime().Ticks - start.ToUniversalTime().Ticks)/10000000/3600
 		else:
-			crtHour = 1
-	elif start.CompareTo(DateTime.Parse('12:00:00')) in (0, 1) and start.CompareTo(DateTime.Parse('13:00:00')) == -1:
-		crtHour = float(DateTime.Parse('13:00:00').ToUniversalTime().Ticks - start.ToUniversalTime().Ticks)/10000000/3600
+			crtHour = max(float(noonEnd.ToUniversalTime().Ticks - end.ToUniversalTime().Ticks)/10000000/3600,0)
 
 	return crtHour
