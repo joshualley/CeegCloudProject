@@ -116,14 +116,23 @@ namespace CZ.CEEG.BosTask.PfmReview
         private bool Validate()
         {
             var entity = this.View.Model.DataObject["FEntity"] as DynamicObjectCollection;
+            bool isAllow = true;
+            List<string> names = new List<string>();
             foreach(var row in entity)
             {
                 double score = double.Parse(row["FESCORE"].ToString());
                 if (score == 0)
                 {
-                    this.View.ShowWarnningMessage("还有员工的工作计划未提交！");
-                    return false;
+                    string name = (row["FEEmpId"] as DynamicObject)["Name"].ToString();
+                    names.Add(name);
+                    isAllow = false;
                 }
+            }
+            if (!isAllow)
+            {
+                string msg = "员工:\n" + string.Join(",", names) + "\n的工作计划还未提交！";
+                this.View.ShowWarnningMessage(msg);
+                return false;
             }
             return true;
         }
@@ -180,7 +189,7 @@ namespace CZ.CEEG.BosTask.PfmReview
             for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.CreateNewEntryRow("FEntity");
-                this.View.Model.SetValue("FEOrgId", objs[i]["FOrgId"].ToString(), i);
+                this.View.Model.SetValue("FEOrgId", FOrgId, i);
                 this.View.Model.SetValue("FEEmpId", objs[i]["FEmpId"].ToString(), i);
                 this.View.Model.SetValue("FEDeptId", objs[i]["FDeptId"].ToString(), i);
                 this.View.Model.SetValue("FEPostId", objs[i]["FPostId"].ToString(), i);
