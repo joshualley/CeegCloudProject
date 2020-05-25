@@ -10,11 +10,22 @@ def AfterBindData(e):
 		AlterCustAndSalerByOrg()
 		
 
+def DataChanged(e):
+	if e.Key == "FSalerId":
+		FSalerId = str(e.NewValue)
+		sql = "EXEC proc_czly_GetOrgDeptBySalemanId @SmId='{}'".format(FSalerId)
+		results = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+		if results.Count > 0:
+			this.View.Model.SetValue("FSaleDeptId", str(results[0]["FBizDeptID"]))
+			this.View.UpdateView("FSaleDeptId")
+
+
+
 def AlterCustAndSalerByOrg():
 	FSaleOrgId = 0 if this.View.Model.GetValue("FSaleOrgId") == None else str(this.View.Model.GetValue("FSaleOrgId")["Id"])
 	if FSaleOrgId == 0:
 		return
-	FSrcBillNo = "" if this.View.Model.GetValue("F_ora_poorderno") == None else str(this.View.Model.GetValue("F_ora_poorderno"))
+	FSrcBillNo = "" if this.View.Model.GetValue("FSrcBillNo", 0) == None else str(this.View.Model.GetValue("FSrcBillNo", 0))
 	FSalerId, FCustId = 0, 0
 	#查询是否为销售合同
 	sql = "SELECT FSaler,FCustName FROM ora_CRM_Contract WHERE FBILLNO='{}'".format(FSrcBillNo)
