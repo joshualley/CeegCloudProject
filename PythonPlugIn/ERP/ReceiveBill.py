@@ -1,5 +1,6 @@
 # 收款单，源单明细写入明细表体
 
+import clr
 from System import Guid
 
 def AfterBindData(e):
@@ -28,8 +29,8 @@ def setEntryBySrcEntry():
 	for idx, row in enumerate(srcEntry):
 		srcBillType = str(row["SRCBILLTYPEID"])
 		if srcBillType == "ora_CZ_ReceiptSplit":
-			guid = Guid.NewGuid()
-			amount = row["REALRECAMOUNT"] #本次收款金额
+			guid = str(Guid.NewGuid())
+			amount = str(row["REALRECAMOUNT"]) #本次收款金额
 			this.View.Model.CreateNewEntryRow("FRECEIVEBILLENTRY")
 			i = this.View.Model.GetEntryRowCount("FRECEIVEBILLENTRY") - 1
 			this.View.Model.SetValue("FRECTOTALAMOUNTFOR", amount, i) #应收金额

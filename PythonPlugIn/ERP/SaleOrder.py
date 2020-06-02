@@ -5,6 +5,8 @@ clr.AddReference('Kingdee.BOS.App')
 from Kingdee.BOS.App.Data import *
 
 def AfterBindData(e):
+	if str(this.Context.ClientType) == 'Mobile':
+		return
 	FDocumentStatus = str(this.View.Model.GetValue("FDocumentStatus"))
 	if FDocumentStatus == "Z":
 		AlterCustAndSalerByOrg()

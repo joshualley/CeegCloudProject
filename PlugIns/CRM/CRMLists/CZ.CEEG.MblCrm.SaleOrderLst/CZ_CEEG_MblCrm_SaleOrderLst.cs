@@ -28,21 +28,31 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
             string sql = string.Format("EXEC proc_czly_GetSalesmanIdByUserId @FUserId='{0}'", userId);
 
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
-            string _filter = " FSalerId in (";
-
-            for (int i = 0; i < objs.Count; i++)
+            var ids = new List<string>();
+            foreach(var obj in objs)
             {
-                if (i < objs.Count - 1)
-                    _filter += "'" + objs[i]["FSalesmanId"].ToString() + "',";
-                else
-                    _filter += "'" + objs[i]["FSalesmanId"].ToString() + "'";
+                ids.Add(obj["FSalesmanId"].ToString());
+            }
+            string ids_str = "-1";
+            if(ids.Count > 0)
+            {
+                ids_str = string.Join(",", ids);
             }
 
-            if (objs.Count <= 0)
-                _filter += "'-1'";
+            string _filter = " FSalerId in (" + ids_str + ")";
 
-            _filter += ")";
+            //for (int i = 0; i < objs.Count; i++)
+            //{
+            //    if (i < objs.Count - 1)
+            //        _filter += "'" + objs[i]["FSalesmanId"].ToString() + "',";
+            //    else
+            //        _filter += "'" + objs[i]["FSalesmanId"].ToString() + "'";
+            //}
+
+            //if (objs.Count <= 0)
+            //    _filter += "'-1'";
+
+            //_filter += ")";
             return _filter;
         }
     }
