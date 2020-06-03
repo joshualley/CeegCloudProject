@@ -125,12 +125,12 @@ namespace CZ.CEEG.BosPM.PersonalReport
                     Act_DC_WarnScoreOverWeight(e);
                     break;
                 case "FCreateDate": //创建日期
+                    this.View.ShowMessage("检查到单据创建日期发生变动，已为您重新加载上月数据。");
                     GetLastDailyTask();
                     //上月领导交办
                     GetAssignTask("1");
                     //本月领导交办
                     GetAssignTask("0");
-                    this.View.ShowMessage("检查到单据创建日期发生变动，已为您重新加载上月数据。");
                     break;
             }
         }
@@ -359,9 +359,9 @@ namespace CZ.CEEG.BosPM.PersonalReport
             string FCreateDate = this.View.Model.GetValue("FCreateDate").ToString();
             string sql = String.Format(@"EXEC GetLastMonthDailyTask @FUserId='{0}', @FormDate='{1}'", FUserId, FCreateDate);
             var objs = CZDB_GetData(sql);
+            this.View.Model.DeleteEntryData("FEntityL");
             if (objs.Count > 0)
             {
-                this.View.Model.DeleteEntryData("FEntityL");
                 this.View.Model.BatchCreateNewEntryRow("FEntityL", objs.Count);
                 for (int i = 0; i < objs.Count; i++)
                 {
@@ -381,8 +381,8 @@ namespace CZ.CEEG.BosPM.PersonalReport
                     this.View.Model.SetValue("FLGManagerGrade", GetObjValue(objs[i], "FGManagerGrade"), i);
                     this.View.Model.SetValue("FLGManagerIdea", GetObjValue(objs[i], "FGManagerIdea"), i);
                 }
-                this.View.UpdateView("FEntityL");
             }
+            this.View.UpdateView("FEntityL");
         }
 
         
@@ -432,14 +432,15 @@ namespace CZ.CEEG.BosPM.PersonalReport
         {
             string FUserId = this.Context.UserId.ToString();
             string FCreateDate = this.View.Model.GetValue("FCreateDate").ToString();
-            string sql = String.Format(@"EXEC GetAssignTask @FUserId='{0}',@IsLastMonth='{1}'，@FormDate='{2}'",
+            string sql = String.Format(@"EXEC GetAssignTask @FUserId='{0}',@IsLastMonth='{1}',@FormDate='{2}'",
                                         FUserId, IsLastMonth, FCreateDate);
             var objs = CZDB_GetData(sql);
+            this.View.Model.DeleteEntryData("FEntityA");
+            this.View.Model.DeleteEntryData("FEntityAL");
             if (objs.Count > 0)
             {
                 if (IsLastMonth == "0")
                 {
-                    this.View.Model.DeleteEntryData("FEntityA");
                     this.View.Model.BatchCreateNewEntryRow("FEntityA", objs.Count);
                     for (int i = 0; i < objs.Count; i++)
                     {
@@ -460,11 +461,10 @@ namespace CZ.CEEG.BosPM.PersonalReport
                         this.View.Model.SetValue("FAGManagerGrade", GetObjValue(objs[i], "FGManagerGrade"), i);
                         this.View.Model.SetValue("FAGManagerIdea", GetObjValue(objs[i], "FGManagerIdea"), i);
                     }
-                    this.View.UpdateView("FEntityA");
+                    
                 }
                 else
                 {
-                    this.View.Model.DeleteEntryData("FEntityAL");
                     this.View.Model.BatchCreateNewEntryRow("FEntityAL", objs.Count);
                     for (int i = 0; i < objs.Count; i++)
                     {
@@ -485,10 +485,12 @@ namespace CZ.CEEG.BosPM.PersonalReport
                         this.View.Model.SetValue("FALGManagerGrade", GetObjValue(objs[i], "FGManagerGrade"), i);
                         this.View.Model.SetValue("FALGManagerIdea", GetObjValue(objs[i], "FGManagerIdea"), i);
                     }
-                    this.View.UpdateView("FEntityAL");
+                    
                 }
             }
-            
+            this.View.UpdateView("FEntityA");
+            this.View.UpdateView("FEntityAL");
+
         }
 
         /// <summary>
