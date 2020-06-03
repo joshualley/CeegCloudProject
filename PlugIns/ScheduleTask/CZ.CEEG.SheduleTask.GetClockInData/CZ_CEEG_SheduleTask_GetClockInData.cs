@@ -64,7 +64,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             return accToken["data"]["accessToken"].ToString();
         }
 
-        public static JObject GetClockInData(string accToken, int page)
+        public static JObject GetClockInPage(string accToken, int page)
         {
             string clockInUrl = "https://www.yunzhijia.com/gateway/attendance-data/v1/clockIn/list?accessToken=" + accToken;
             var currDate = DateTime.Now;
@@ -76,15 +76,15 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             return clockInResult;
         }
 
-        public static void ParallelGetClockInData(string accToken)
+        public static List<JObject> ParallelGetClockInData(string accToken)
         {
-            var clockInResult = GetClockInData(accToken, 1);
+            var clockInResult = GetClockInPage(accToken, 1);
             int total = int.Parse(clockInResult["total"].ToString());
             int maxPage = total / 200 + 1;
             List<JObject> clockInData = new List<JObject>();
             Parallel.For(0, maxPage, (int i, ParallelLoopState pls) =>
             {
-                var results = GetClockInData(accToken, i + 1);
+                var results = GetClockInPage(accToken, i + 1);
                 if (!(Boolean)results["success"])
                 {
                     Console.WriteLine((string)results["errorMsg"]);
@@ -102,8 +102,9 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             if (clockInData.Count != total)
             {
                 Console.WriteLine("出现错误，重新获取数据！");
-                ParallelGetClockInData(accToken);
+                return ParallelGetClockInData(accToken);
             }
+            return clockInData;
         }
     }
     

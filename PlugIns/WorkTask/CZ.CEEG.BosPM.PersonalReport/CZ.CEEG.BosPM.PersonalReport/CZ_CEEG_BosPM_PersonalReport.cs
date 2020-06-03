@@ -28,6 +28,7 @@ namespace CZ.CEEG.BosPM.PersonalReport
     [HotUpdate]
     public class CZ_CEEG_BosPM_PersonalReport : AbstractBillPlugIn
     {
+
         #region override
         public override void OnInitialize(InitializeEventArgs e)
         {
@@ -123,14 +124,23 @@ namespace CZ.CEEG.BosPM.PersonalReport
                 case "FLDirectorGrade": //直接领导评分
                     Act_DC_WarnScoreOverWeight(e);
                     break;
+                case "FCreateDate": //创建日期
+                    GetLastDailyTask();
+                    //上月领导交办
+                    GetAssignTask("1");
+                    //本月领导交办
+                    GetAssignTask("0");
+                    this.View.ShowMessage("检查到单据创建日期发生变动，已为您重新加载上月数据。");
+                    break;
             }
         }
 
         #endregion
 
         #region Actions
+
         /// <summary>
-        /// 不允许重复保存、提交
+        /// 已经提交过后，不允许重复保存、提交
         /// </summary>
         /// <returns></returns>
         private bool Act_BDO_AlreadySubmit()
@@ -346,7 +356,8 @@ namespace CZ.CEEG.BosPM.PersonalReport
         private void GetLastDailyTask()
         {
             string FUserId = this.Context.UserId.ToString();
-            string sql = String.Format(@"EXEC GetLastMonthDailyTask @FUserId='{0}'", FUserId);
+            string FCreateDate = this.View.Model.GetValue("FCreateDate").ToString();
+            string sql = String.Format(@"EXEC GetLastMonthDailyTask @FUserId='{0}', @FormDate='{1}'", FUserId, FCreateDate);
             var objs = CZDB_GetData(sql);
             if (objs.Count > 0)
             {
@@ -420,8 +431,9 @@ namespace CZ.CEEG.BosPM.PersonalReport
         private void GetAssignTask(string IsLastMonth)
         {
             string FUserId = this.Context.UserId.ToString();
-            string sql = String.Format(@"EXEC GetAssignTask @FUserId='{0}',@IsLastMonth='{1}'",
-                                        FUserId, IsLastMonth);
+            string FCreateDate = this.View.Model.GetValue("FCreateDate").ToString();
+            string sql = String.Format(@"EXEC GetAssignTask @FUserId='{0}',@IsLastMonth='{1}'，@FormDate='{2}'",
+                                        FUserId, IsLastMonth, FCreateDate);
             var objs = CZDB_GetData(sql);
             if (objs.Count > 0)
             {
