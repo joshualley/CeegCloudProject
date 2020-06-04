@@ -671,9 +671,9 @@ namespace CZ.CEEG.MblCrm.Niche
                 this.View.BillModel.SetValue("FRate", billHead[0]["FRate"].ToString());
                 this.View.BillModel.SetValue("FCrmSN", billHead[0]["FCrmSN"].ToString());
                 this.View.BillModel.SetValue("FNicheSrc", billHead[0]["FNicheSrc"].ToString());
-                this.View.BillModel.SetValue("FNicheSrc", billHead[0]["FCrmHdOrgID"].ToString());
-                this.View.BillModel.SetValue("FNicheSrc", billHead[0]["FCrmHdDept"].ToString());
-                this.View.BillModel.SetValue("FNicheSrc", billHead[0]["FCrmHolder"].ToString());
+                this.View.BillModel.SetValue("FCrmHdOrgID", billHead[0]["FCrmHdOrgID"].ToString());
+                this.View.BillModel.SetValue("FCrmHdDept", billHead[0]["FCrmHdDept"].ToString());
+                this.View.BillModel.SetValue("FCrmHolder", billHead[0]["FCrmHolder"].ToString());
                 //表体
                 sql = "select * from ora_CRM_NicheEntry where FID='" + FSrcID + "'";
                 var entry = CZDB_GetData(sql);

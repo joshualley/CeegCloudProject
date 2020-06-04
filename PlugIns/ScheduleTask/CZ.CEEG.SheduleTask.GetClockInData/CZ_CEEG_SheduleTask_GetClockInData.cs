@@ -12,47 +12,119 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 
+//计划任务注册内容
+//CZ.CEEG.SheduleTask.GetClockInData.CZ_CEEG_SheduleTask_GetClockInData,CZ.CEEG.SheduleTask.GetClockInData
+
 namespace CZ.CEEG.SheduleTask.GetClockInData
 {
     public class CZ_CEEG_SheduleTask_GetClockInData : IScheduleService
     {
-        /// <summary>
-        /// 请求数据失败后的重试计数，最大1次
-        /// </summary>
-        private int ReTryCount = 0;
-
+        private Context context;
+        
         public void Run(Context ctx, Schedule schedule)
         {
-            InsertClockIn(ctx);
+            context = ctx;
+            InsertClockInLastMonth(true); //初始化数据
+            if (DateTime.Now.Day == 1)    //每月1号时更新上月数据
+            {
+                InsertClockInLastMonth();
+            }
+            //更新本月数据
+            InsertClockInCurrentMonth();
         }
 
         #region 业务逻辑
-        private void InsertClockIn(Context ctx)
+        /// <summary>
+        /// 更新本月数据
+        /// </summary>
+        private void InsertClockInCurrentMonth()
         {
             string accToken = GetAccToken();
-            var datas = ParallelGetClockInData(accToken, true);
+            if (accToken == "")
+                return;
+            
+            var currDate = DateTime.Now;
+            string sql = string.Format("SELECT FID FROM ora_HR_SignInData WHERE YEAR(FDate)='{0}' AND MONTH(FDate)='{1}'", currDate.Year, currDate.Month);
+            var objs = DBUtils.ExecuteDynamicObject(context, sql);
+            sql = string.Format("DELETE FROM ora_HR_SignInData WHERE YEAR(FDate)='{0}' AND MONTH(FDate)='{1}'", currDate.Year, currDate.Month);
+            DBUtils.Execute(context, sql);
+            Log(context, "info", "删除本月数据：" + objs.Count.ToString() + "条。");
+            InsertData(accToken, true);
+        }
+
+        /// <summary>
+        /// 更新上月数据
+        /// </summary>
+        private void InsertClockInLastMonth(bool isInit=false)
+        {
+            string accToken = GetAccToken();
+            if (accToken == "")
+                return;
+            
+            var currDate = DateTime.Now;
+            int year = currDate.Month == 1 ? currDate.Year - 1 : currDate.Year;
+            int month = currDate.Month == 1 ? 12 : currDate.Month;
+            string sql = string.Format("SELECT FID FROM ora_HR_SignInData WHERE YEAR(FDate)='{0}' AND MONTH(FDate)='{1}'", year, month);
+            var objs = DBUtils.ExecuteDynamicObject(context, sql);
+            if (isInit)
+            {
+                if(objs.Count == 0)
+                {
+                    InsertData(accToken, false);
+                }
+            }
+            else
+            {
+                sql = string.Format("DELETE FROM ora_HR_SignInData WHERE YEAR(FDate)='{0}' AND MONTH(FDate)='{1}'", year, month);
+                DBUtils.Execute(context, sql);
+                Log(context, "info", "删除上月数据" + objs.Count.ToString() + "条。");
+                InsertData(accToken, false);
+            }
+            
+        }
+
+        /// <summary>
+        /// 数据库中插入签到数据
+        /// </summary>
+        /// <param name="accToken"></param>
+        /// <param name="isCurrMonth">是否当前月</param>
+        private void InsertData(string accToken, bool isCurrMonth)
+        {
+            var datas = GetClockInDatas(accToken, isCurrMonth);
             string sql = "";
             foreach (var data in datas)
             {
                 sql += string.Format("INSERT INTO " +
                     "ora_HR_SignInData(FClockID, FPosition, FDate, FTimeStamp, FFullDate, FOpenID, FInOut, FUserNA, FDeptNA, FRemark) " +
-                    "VALUES('{0}','{1}','{2}','{3}','{4}'," +
-                    "'{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}');\n",
+                    "VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}');\n",
                     data.clockId, data.position, data.day, data.time, TimeStampToDateTime(data.time).ToString(),
                     data.openId, data.positionResult, data.userName, data.department, data.remark);
             }
             try
             {
-                DBUtils.Execute(ctx, sql);
+                DBUtils.Execute(context, sql);
+                string month = isCurrMonth ? "本月" : "上月";
+                Log(context, "info", "插入" + month + "数据：" + datas.Count + "条。");
             }
             catch (Exception e)
             {
-                Console.WriteLine("打卡数据插入出错：{0}", e.Message);
+                Log(context, "error", "签到数据插入出错：" + e.Message);
             }
         }
         #endregion
 
         #region Utils
+        private void Log(Context ctx, string level, string msg)
+        {
+            string _namespase = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Namespace;
+            string _classname = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.FullName;
+            string time = DateTime.Now.ToString();
+            //msg = "\"" + msg.Replace("'", "\"") + "\"";
+            string sql = string.Format("insert into ora_CZ_LogRecord(FLogLevel, FNameSpace, FClassName, FErrTime, FErrMessage) " +
+                "values('{0}', '{1}', '{2}', '{3}', '{4}')", level, _namespase, _classname, time, msg);
+            DBUtils.Execute(ctx, sql);
+        }
+
         private long GetTimestamp(DateTime time)
         {
             System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
@@ -111,7 +183,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             }
             if (!accToken.success)
             {
-                Console.WriteLine("获取Token失败：{0}.", accToken.error);
+                Log(context, "error", "获取Token失败：" + accToken.error);
                 return "";
             }
 
@@ -123,18 +195,21 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
         /// 获取一页签到数据，数据量最大200
         /// </summary>
         /// <param name="accToken"></param>
-        /// <param name="page"></param>
+        /// <param name="lastId"></param>
         /// <returns></returns>
-        private ClockInResult GetClockInPage(string accToken, int page, bool isCurrMonth = false)
+        private ClockInResult GetClockInPage(string accToken, string lastId, bool isCurrMonth = false)
         {
-            string clockInUrl = "https://www.yunzhijia.com/gateway/attendance-data/v1/clockIn/list?accessToken=" + accToken;
+            string clockInUrl = "https://www.yunzhijia.com/gateway/attendance-data/v1/clockIn/clockintime/list?accessToken=" + accToken;
             var currDate = DateTime.Now;
-            int month = isCurrMonth ? currDate.Month : currDate.Month - 1;
-            int day = isCurrMonth ? currDate.Day : DateTime.DaysInMonth(currDate.Year, currDate.Month - 1);
-            string workDateFrom = currDate.Year.ToString() + "-" + month.ToString() + "-01";
-            string workDateTo = currDate.Year.ToString() + "-" + month.ToString() + "-" + day.ToString();
-            //Console.WriteLine("s: {0}, e: {1}", workDateFrom, workDateTo);
-            string data = "workDateFrom=" + workDateFrom + "&workDateTo=" + workDateTo + "&eid=16898719&start=" + page.ToString();
+            int year = isCurrMonth ? currDate.Year : (currDate.Month == 1 ? currDate.Year - 1 : currDate.Year);
+            int month = isCurrMonth ? currDate.Month : (currDate.Month == 1 ? 12 : currDate.Month - 1);
+            int day = isCurrMonth ? currDate.Day : DateTime.DaysInMonth(year, month);
+            string workDateFrom = year.ToString() + "-" + month.ToString() + "-01";
+            string workDateTo = year.ToString() + "-" + month.ToString() + "-" + day.ToString();
+
+            lastId = lastId == "" ? "" : "&lastId=" + lastId;
+            string data = "workDateFrom=" + GetTimestamp(DateTime.Parse(workDateFrom)).ToString() + 
+                "&workDateTo=" + GetTimestamp(DateTime.Parse(workDateTo)).ToString() + lastId;
             string ClockInJson = HttpPost(clockInUrl, data);
             ClockInResult clockInResult = new ClockInResult();
             using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(ClockInJson)))
@@ -144,42 +219,33 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             }
             if (!clockInResult.success)
             {
-                Console.WriteLine("获取签到数据失败：{0}.", clockInResult.errorMsg);
+                Log(context, "error", "获取签到数据失败：" + clockInResult.errorMsg);
             }
             return clockInResult;
         }
 
-        private List<ClockInData> ParallelGetClockInData(string accToken, bool isCurrMonth)
+        private List<ClockInData> GetClockInDatas(string accToken, bool isCurrMonth)
         {
-            var clockInResult = GetClockInPage(accToken, 1, isCurrMonth);
-            int total = int.Parse(clockInResult.total.ToString());
-            int maxPage = total / 200 + 1;
+            var clockInResult = GetClockInPage(accToken, "", isCurrMonth);
 
             List<ClockInData> allData = new List<ClockInData>();
-
-            Parallel.For(0, maxPage, (int i, ParallelLoopState pls) => {
-                var results = GetClockInPage(accToken, i + 1, isCurrMonth);
+            allData.AddRange(clockInResult.data);
+            while (true)
+            {
+                var results = GetClockInPage(accToken, allData[allData.Count - 1].clockId, isCurrMonth);
                 if (!results.success)
                 {
-                    Console.WriteLine("发生错误，循环中断：{0}", clockInResult.errorMsg);
-                    pls.Break();
+                    Log(context, "error", "发生错误，循环中断：" + clockInResult.errorMsg);
+                    break;
                 }
-                else
+                if (results.data.Count == 0)
                 {
-                    Console.WriteLine("Page: {0}, MaxPage: {1}.", i + 1, maxPage);
-                    lock (allData)
-                    {
-                        allData.AddRange(results.data);
-                    }
+                    Log(context, "info", "数据获取完成。");
+                    break;
                 }
-            });
-
-            if (allData.Count != total && ReTryCount <= 1)
-            {
-                ReTryCount++;
-                Console.WriteLine("出现错误，重新获取数据！");
-                return ParallelGetClockInData(accToken, isCurrMonth);
+                allData.AddRange(results.data);
             }
+
             return allData;
         }
 
