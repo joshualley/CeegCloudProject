@@ -22,11 +22,13 @@ namespace CZ.CEEG.BosPmt.PmtDeliver
             if (FDocumentStatus == "Z")
             {
                 string FOrderNo = this.View.OpenParameter.GetCustomParameter("FOrderNo") == null ? "" : this.View.OpenParameter.GetCustomParameter("FOrderNo").ToString();
+                string FSerialNum = this.View.OpenParameter.GetCustomParameter("FSerialNum") == null ? "" : this.View.OpenParameter.GetCustomParameter("FSerialNum").ToString();
                 string FSellerID = this.View.OpenParameter.GetCustomParameter("FSellerID") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FSellerID").ToString();
                 string FDeptID = this.View.OpenParameter.GetCustomParameter("FDeptID") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FDeptID").ToString();
                 this.View.Model.SetValue("FOrderNo", FOrderNo);
                 this.View.Model.SetValue("FSellerID", FSellerID);
                 this.View.Model.SetValue("FDeptID", FDeptID);
+                this.View.Model.SetValue("FSerialNum", FSerialNum);
             }
 
         }

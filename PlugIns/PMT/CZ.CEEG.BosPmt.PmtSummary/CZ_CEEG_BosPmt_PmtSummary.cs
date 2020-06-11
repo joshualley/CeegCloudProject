@@ -24,7 +24,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         {
             base.AfterBindData(e);
             DateTime currDt = DateTime.Now;
-            string sDt = currDt.Year.ToString() + "-" + (currDt.Month - 1).ToString() + "-01";
+            string sDt = currDt.Year.ToString() + "-" + currDt.Month.ToString() + "-01";
             string eDt = currDt.ToString();
             this.View.Model.SetValue("FSDate", sDt);
             this.View.UpdateView("FSDate");
@@ -61,6 +61,26 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             }
         }
 
+        public override void AfterBarItemClick(AfterBarItemClickEventArgs e)
+        {
+            base.AfterBarItemClick(e);
+            string key = e.BarItemKey.ToUpperInvariant();
+            switch (key)
+            {
+                case "ORA_TBDELV": //ora_tbDelv
+                    DynamicObject rowData;
+                    int rowIndex = -1;
+                    this.Model.TryGetEntryCurrentRow("FEntity", out rowData, out rowIndex);
+                    if(rowIndex == -1)
+                    {
+                        this.View.ShowWarnningMessage("未选中明细表中的行！");
+                        return;
+                    }
+                    Act_ShowDeliverForm(rowIndex);
+                    break;
+            }
+        }
+
         #endregion
 
         #region Actions
@@ -78,11 +98,13 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             para.Status = OperationStatus.ADDNEW;
 
             string FOrderNo = this.Model.GetValue("FOrderNo", Row).ToString();
+            string FSerialNum = this.Model.GetValue("FSerialNum", Row).ToString();
             string FSellerID = this.Model.GetValue("FSellerID", Row) == null ? "0" : (this.Model.GetValue("FSellerID") as DynamicObject)["Id"].ToString();
             string FDeptID = this.Model.GetValue("FDeptID", Row) == null ? "0" : (this.Model.GetValue("FDeptID") as DynamicObject)["Id"].ToString();
             para.CustomParams.Add("FOrderNo", FOrderNo);
             para.CustomParams.Add("FSellerID", FSellerID);
             para.CustomParams.Add("FDeptID", FDeptID);
+            para.CustomParams.Add("FSerialNum", FSerialNum);
 
             this.View.ShowForm(para);
         }
@@ -100,8 +122,14 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             {
                 this.View.Model.CreateNewEntryRow("FEntity");
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
-                //this.View.Model.SetValue("FBranchLeader", objs[i]["FBranchLeader"].ToString(), i);
-                //this.View.Model.SetValue("FDirector", objs[i]["FDirector"].ToString(), i);
+                this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
+                string[] FStrDirectors = objs[i]["FDirectors"].ToString().Split(',');
+                List<long> FDirectors = new List<long>();
+                foreach(var d in FStrDirectors)
+                {
+                    FDirectors.Add(int.Parse(d));
+                }
+                this.View.Model.SetValue("FDirectors", FDirectors, i);
                 this.View.Model.SetValue("FSaleOrgID", objs[i]["FSaleOrgID"].ToString(), i);
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.View.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
@@ -116,10 +144,10 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
                 this.View.Model.SetValue("FNormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
                 this.View.Model.SetValue("FNormUnoverduePmt", objs[i]["FNormUnoverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FOverduePmt", objs[i]["FOverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FTOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FTUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FTExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
+                this.View.Model.SetValue("FOverduePmt", objs[i]["FOverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FTOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FTUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FTExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
                 this.View.Model.SetValue("FOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FTWarranty", objs[i]["FTWarranty"].ToString(), i);
@@ -163,10 +191,10 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FEOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
                 this.View.Model.SetValue("FENormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
                 this.View.Model.SetValue("FENormUnoverduePmt", objs[i]["FNormUnoverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FEOverduePmt", objs[i]["FOverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FETOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FETUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
-                //this.View.Model.SetValue("FETExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
+                this.View.Model.SetValue("FEOverduePmt", objs[i]["FOverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FETOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FETUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
+                this.View.Model.SetValue("FETExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
                 this.View.Model.SetValue("FEOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FEUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FEWarranty", objs[i]["FTWarranty"].ToString(), i);

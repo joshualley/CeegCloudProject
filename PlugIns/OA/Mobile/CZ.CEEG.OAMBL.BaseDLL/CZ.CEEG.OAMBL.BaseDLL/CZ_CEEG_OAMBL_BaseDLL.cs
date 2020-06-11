@@ -354,7 +354,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             while (len < dataBuff.Length)
             {
                 // 文件服务器采用分段上传，每次上传4096字节, 最后一次如果不够则上传剩余长度
-                less = (dataBuff.Length - len) >= 4096 ? 4096 : (dataBuff.Length - len);
+                less = (dataBuff.Length - len) >= 16384 ? 16384 : (dataBuff.Length - len);
                 buff = new byte[less];
                 Array.Copy(dataBuff, len, buff, 0, less);
                 len += less;
@@ -413,7 +413,10 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 }
                 catch (Exception) { }
 
-                if (_FFileUpdateCtl != null) _FFileUpdateCtl.UploadFieldBatch();
+                if (_FFileUpdateCtl != null) 
+                    _FFileUpdateCtl.UploadFieldBatch();
+                else
+                    Jump2Audit();
             }
         }
         #endregion
@@ -500,12 +503,15 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         public override void AfterDoOperation(AfterDoOperationEventArgs e)
         {
             base.AfterDoOperation(e);
-            CZ_DoFileUpLoad();
+            
             string opKey = e.Operation.Operation.ToLowerInvariant();
             switch (opKey)
             {
+                case "SAVE":
+                    CZ_DoFileUpLoad();
+                    break;
                 case "SUBMIT":
-                    Jump2Audit();
+                    CZ_DoFileUpLoad();
                     break;
             }
         }
@@ -538,8 +544,20 @@ namespace CZ.CEEG.OAMBL.BaseDLL
 
             List<DynamicObject> dynList = new List<DynamicObject>();
             StringBuilder sb = new StringBuilder();
+
+            if(e.FileNameArray.Count > 0)
+            {
+                this.View.ShowMessage("正在上传附件，请不要关闭页面！", MessageBoxOptions.OK);
+            }
+
             foreach (FiledUploadEntity file in e.FileNameArray)
             {
+                //在版本PT139774 [7.3.1351.3]及以上，增加了FileId，并且新上传的附件临时ID是一个小数，可以以此来判断是否新上传附件
+                if (file.FileId.IndexOf("0.") < 0)
+                {
+                    continue;
+                }
+
                 // 检查文件是否成功上传到临时目录
                 if (!file.IsSuccess)
                 {
@@ -604,16 +622,17 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 dyn["InterID"] = _InterID;
 
                 // 上传文件服务器成功后才加入列表
-                dyn["AttachmentName"] = file.FileName;
+                dyn["AttachmentName"] = file.OldName;
                 dyn["AttachmentSize"] = Math.Round(dataBuff.Length / 1024.0, 2);
                 dyn["EntryInterID"] = -1;// 参照属性解读
 
                 dyn["CreateMen_Id"] = Convert.ToInt32(this.Context.UserId);
                 dyn["CreateMen"] = GetUser(this.Context.UserId.ToString());
                 dyn["ModifyTime"] = dyn["CreateTime"] = TimeServiceHelper.GetSystemDateTime(this.Context);
-                dyn["ExtName"] = System.IO.Path.GetExtension(file.FileName);
+                dyn["ExtName"] = System.IO.Path.GetExtension(file.OldName);
                 dyn["FileStorage"] = submitType.ToString();
                 dyn["EntryKey"] = " ";
+                dyn["IsAllowDownLoad"] = 0;//参考PC端，历史原因 0 允许下载，1 不允许下载
 
                 dynList.Add(dyn);
             }
@@ -632,8 +651,22 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             {
                 this.Model.SetValue("FLog", sb.ToString());
             }
-
             base.AfterMobileUpload(e);
+
+            this.View.ShowMessage("附件上传完成，是否退出页面？",
+                MessageBoxOptions.YesNo,
+                new Action<MessageBoxResult>((result) =>
+                {
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        //关闭页面
+                        JSONObject arg = new JSONObject();
+                        arg.Put("pageId", this.View.PageId);
+                        this.View.AddAction("closeWebViewWithXT", arg);
+                    }
+                })
+            );
+            
             //Jump2Audit();
         }
 

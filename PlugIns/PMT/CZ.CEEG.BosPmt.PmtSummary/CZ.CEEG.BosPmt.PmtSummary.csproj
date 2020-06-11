@@ -58,7 +58,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_BosPmt_FullPmtDelv.cs" />
+    <Compile Include="CZ_CEEG_BosPmt_PmtDepartment.cs" />
     <Compile Include="CZ_CEEG_BosPmt_PmtDeliver.cs" />
+    <Compile Include="CZ_CEEG_BosPmt_OuterPmt.cs" />
     <Compile Include="CZ_CEEG_BosPmt_PmtSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
