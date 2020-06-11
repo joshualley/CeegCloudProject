@@ -354,7 +354,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             while (len < dataBuff.Length)
             {
                 // 文件服务器采用分段上传，每次上传4096字节, 最后一次如果不够则上传剩余长度
-                less = (dataBuff.Length - len) >= 16384 ? 16384 : (dataBuff.Length - len);
+                less = (dataBuff.Length - len) >= 4096000 ? 4096000 : (dataBuff.Length - len);
                 buff = new byte[less];
                 Array.Copy(dataBuff, len, buff, 0, less);
                 len += less;
@@ -413,11 +413,17 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 }
                 catch (Exception) { }
 
-                if (_FFileUpdateCtl != null) 
+                if (_FFileUpdateCtl != null)
+                {
+                    this.View.ShowMessage("正在上传附件，请不要关闭页面！", MessageBoxOptions.OK);
                     _FFileUpdateCtl.UploadFieldBatch();
+                }
                 else
+                {
                     Jump2Audit();
+                }
             }
+            
         }
         #endregion
 
@@ -427,7 +433,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         /// </summary>
         private void Jump2Audit()
         {
-            Thread.Sleep(1000);
             this.View.ShowMessage("提交成功，是否退出页面？", 
                 MessageBoxOptions.YesNo,
                 new Action<MessageBoxResult>((result) =>
@@ -504,7 +509,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         {
             base.AfterDoOperation(e);
             
-            string opKey = e.Operation.Operation.ToLowerInvariant();
+            string opKey = e.Operation.Operation.ToUpperInvariant();
             switch (opKey)
             {
                 case "SAVE":
@@ -544,11 +549,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
 
             List<DynamicObject> dynList = new List<DynamicObject>();
             StringBuilder sb = new StringBuilder();
-
-            if(e.FileNameArray.Count > 0)
-            {
-                this.View.ShowMessage("正在上传附件，请不要关闭页面！", MessageBoxOptions.OK);
-            }
 
             foreach (FiledUploadEntity file in e.FileNameArray)
             {
@@ -653,7 +653,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             }
             base.AfterMobileUpload(e);
 
-            this.View.ShowMessage("附件上传完成，是否退出页面？",
+            this.View.ShowMessage("提交成功，是否退出页面？",
                 MessageBoxOptions.YesNo,
                 new Action<MessageBoxResult>((result) =>
                 {

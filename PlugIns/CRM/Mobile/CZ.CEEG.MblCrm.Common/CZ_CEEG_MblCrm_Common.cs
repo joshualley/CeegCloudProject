@@ -1,10 +1,12 @@
 ﻿using Kingdee.BOS.App.Data;
 using Kingdee.BOS.Core;
+using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.FileServer.Core;
 using Kingdee.BOS.FileServer.Core.Object;
 using Kingdee.BOS.FileServer.ProxyService;
+using Kingdee.BOS.JSON;
 using Kingdee.BOS.Mobile.Metadata.ControlDataEntity;
 using Kingdee.BOS.Mobile.PlugIn;
 using Kingdee.BOS.Mobile.PlugIn.ControlModel;
@@ -27,7 +29,13 @@ namespace CZ.CEEG.MblCrm.Common
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
-            SetDefualtField();
+            string formId = this.View.GetFormId();
+            string notRequired = "ora_CRM_SaleOffer, ora_CRM_Contract";
+            if (!notRequired.Contains(formId))
+            {
+                SetDefualtField();
+            }
+            
         }
 
         /// <summary>
@@ -59,7 +67,16 @@ namespace CZ.CEEG.MblCrm.Common
         public override void AfterDoOperation(AfterDoOperationEventArgs e)
         {
             base.AfterDoOperation(e);
-            CZ_DoFileUpLoad();
+            string opKey = e.Operation.Operation.ToUpperInvariant();
+            switch (opKey)
+            {
+                case "SAVE":
+                    CZ_DoFileUpLoad();
+                    break;
+                case "SUBMIT":
+                    CZ_DoFileUpLoad();
+                    break;
+            }
         }
         /// <summary>
         /// 上传类型, 0为数据库，1为文件服务，2为亚马逊云，3为金蝶云
@@ -82,7 +99,7 @@ namespace CZ.CEEG.MblCrm.Common
             while (len < dataBuff.Length)
             {
                 // 文件服务器采用分段上传，每次上传4096字节, 最后一次如果不够则上传剩余长度
-                less = (dataBuff.Length - len) >= 4096 ? 4096 : (dataBuff.Length - len);
+                less = (dataBuff.Length - len) >= 4096000 ? 4096000 : (dataBuff.Length - len);
                 buff = new byte[less];
                 Array.Copy(dataBuff, len, buff, 0, less);
                 len += less;
@@ -141,7 +158,26 @@ namespace CZ.CEEG.MblCrm.Common
                 }
                 catch (Exception) { }
 
-                if (_FFileUpdateCtl != null) _FFileUpdateCtl.UploadFieldBatch();
+                if (_FFileUpdateCtl != null)
+                {
+                    this.View.ShowMessage("正在上传附件，请不要关闭页面！", MessageBoxOptions.OK);
+                    _FFileUpdateCtl.UploadFieldBatch();
+                }
+                else
+                {
+                    this.View.ShowMessage("提交成功，是否退出页面？",
+                        MessageBoxOptions.YesNo,
+                        new Action<MessageBoxResult>((result) =>
+                        {
+                            if (result == MessageBoxResult.Yes)
+                            {
+                                //关闭页面
+                                this.View.Close();
+                            }
+                        })
+                    );
+                }
+
             }
         }
 
@@ -173,6 +209,7 @@ namespace CZ.CEEG.MblCrm.Common
 
             List<DynamicObject> dynList = new List<DynamicObject>();
             StringBuilder sb = new StringBuilder();
+
             foreach (FiledUploadEntity file in e.FileNameArray)
             {
                 // 检查文件是否成功上传到临时目录
@@ -239,16 +276,17 @@ namespace CZ.CEEG.MblCrm.Common
                 dyn["InterID"] = _InterID;
 
                 // 上传文件服务器成功后才加入列表
-                dyn["AttachmentName"] = file.FileName;
+                dyn["AttachmentName"] = file.OldName;
                 dyn["AttachmentSize"] = Math.Round(dataBuff.Length / 1024.0, 2);
                 dyn["EntryInterID"] = -1;// 参照属性解读
 
                 dyn["CreateMen_Id"] = Convert.ToInt32(this.Context.UserId);
                 dyn["CreateMen"] = GetUser(this.Context.UserId.ToString());
                 dyn["ModifyTime"] = dyn["CreateTime"] = TimeServiceHelper.GetSystemDateTime(this.Context);
-                dyn["ExtName"] = System.IO.Path.GetExtension(file.FileName);
+                dyn["ExtName"] = System.IO.Path.GetExtension(file.OldName);
                 dyn["FileStorage"] = submitType.ToString();
                 dyn["EntryKey"] = " ";
+                dyn["IsAllowDownLoad"] = 0;//参考PC端，历史原因 0 允许下载，1 不允许下载
 
                 dynList.Add(dyn);
             }
@@ -269,6 +307,21 @@ namespace CZ.CEEG.MblCrm.Common
             }
 
             base.AfterMobileUpload(e);
+
+            this.View.ShowMessage("提交成功，是否退出页面？",
+                MessageBoxOptions.YesNo,
+                new Action<MessageBoxResult>((result) =>
+                {
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        //关闭页面
+                        //JSONObject arg = new JSONObject();
+                        //arg.Put("pageId", this.View.PageId);
+                        //this.View.AddAction("closeWebViewWithXT", arg);
+                        this.View.Close();
+                    }
+                })
+            );
         }
 
         /// <summary>

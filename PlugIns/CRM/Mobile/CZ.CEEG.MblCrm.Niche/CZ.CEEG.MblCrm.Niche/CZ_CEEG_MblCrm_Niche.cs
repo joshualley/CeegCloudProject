@@ -500,7 +500,6 @@ namespace CZ.CEEG.MblCrm.Niche
                         //如果是下推生成的单据，则建立起它们的关联关系
                         CreateBillRelation();
                     }
-                    Jump2Audit();
                     break;
             }
         }
