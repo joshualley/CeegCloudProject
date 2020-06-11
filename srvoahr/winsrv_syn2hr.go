@@ -93,6 +93,7 @@ func RunService() {
 
 func AllService() {
 	logger.Info("Starting...")
+	synTask2()
 	scheduler := gocron.NewScheduler()
 	scheduler.Every(1).Minutes().Do(synTask)
 	scheduler.Every(1).Days().At("01:00:01").Do(synTask2)
