@@ -1,4 +1,6 @@
 ﻿using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
+using Kingdee.BOS.Core.List;
 using Kingdee.BOS.Core.List.PlugIn.Args;
 using Kingdee.BOS.Mobile.PlugIn;
 using Kingdee.BOS.Util;
@@ -16,9 +18,10 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
     {
         public override void PrepareFilterParameter(FilterArgs e)
         {
-            base.PrepareFilterParameter(e);
             string _filter = Act_SetCustFilter();
-            e.AppendQueryFilter(_filter);
+            //e.FilterString = _filter;
+            e.AppendQueryOrderby(" FCreateDate DESC");
+            
         }
 
         private string Act_SetCustFilter()
@@ -31,7 +34,7 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
             var ids = new List<string>();
             foreach(var obj in objs)
             {
-                ids.Add(obj["FSalesmanId"].ToString());
+                ids.Add("'" + obj["FSalesmanId"].ToString() + "'");
             }
             string ids_str = "-1";
             if(ids.Count > 0)
@@ -39,21 +42,22 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
                 ids_str = string.Join(",", ids);
             }
 
-            string _filter = " FSalerId in (" + ids_str + ")";
+            string _filter = " FSALERID in (" + ids_str + ")";
 
-            //for (int i = 0; i < objs.Count; i++)
-            //{
-            //    if (i < objs.Count - 1)
-            //        _filter += "'" + objs[i]["FSalesmanId"].ToString() + "',";
-            //    else
-            //        _filter += "'" + objs[i]["FSalesmanId"].ToString() + "'";
-            //}
-
-            //if (objs.Count <= 0)
-            //    _filter += "'-1'";
-
-            //_filter += ")";
             return _filter;
+        }
+
+        public override void OnInitialize(InitializeEventArgs e)
+        {
+            base.OnInitialize(e);
+            
+        }
+
+        public override void BeforeF7Select(BeforeF7SelectEventArgs e)
+        {
+            base.BeforeF7Select(e);
+            //取消组织隔离
+            ((ListShowParameter)e.DynamicFormShowParameter).IsIsolationOrg = false;
         }
     }
 }

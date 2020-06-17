@@ -486,7 +486,7 @@ namespace CZ.CEEG.OABos.BaseDLL
             while (len < dataBuff.Length)
             {
                 // 文件服务器采用分段上传，每次上传4096字节, 最后一次如果不够则上传剩余长度
-                less = (dataBuff.Length - len) >= 4096 ? 4096 : (dataBuff.Length - len);
+                less = (dataBuff.Length - len) >= 4096000 ? 4096000 : (dataBuff.Length - len);
                 buff = new byte[less];
                 Array.Copy(dataBuff, len, buff, 0, less);
                 len += less;

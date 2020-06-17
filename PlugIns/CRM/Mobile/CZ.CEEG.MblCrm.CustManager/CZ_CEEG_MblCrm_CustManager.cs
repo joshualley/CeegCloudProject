@@ -35,7 +35,7 @@ namespace CZ.CEEG.MblCrm.CustManager
                 this.View.BillModel.SetValue("FCreateOrgId", 1);
                 Act_SetSalerByUser();
                 var submitBtn = this.View.GetControl("FSubmitBtn");
-                submitBtn.SetCustomPropertyValue("wisth", 310);
+                submitBtn.SetCustomPropertyValue("width", 310);
                 this.View.GetControl("FSaveBtn").Visible = false;
             }
             if (ds == "B" || ds == "D")
