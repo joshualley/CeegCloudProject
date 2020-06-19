@@ -19,9 +19,9 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
         public override void PrepareFilterParameter(FilterArgs e)
         {
             string _filter = Act_SetCustFilter();
-            //e.FilterString = _filter;
+            e.FilterString = _filter;
             e.AppendQueryOrderby(" FCreateDate DESC");
-            
+            e.CustomFilter["FSelectAllOrg"] = true;
         }
 
         private string Act_SetCustFilter()

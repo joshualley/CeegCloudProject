@@ -22,7 +22,6 @@ namespace CZ.CEEG.BosPmt.PmtDeliver
             base.AfterBindData(e);
             QueryDeptAging();
             QueryFactoryAging();
-            this.View.ShowMessage("hello");
 
         }
 

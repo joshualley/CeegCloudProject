@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_MblCrm_MaintainContract.cs" />
     <Compile Include="CZ_CEEG_MblCrm_MaintainOffer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

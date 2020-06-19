@@ -89,7 +89,7 @@ namespace CZ.CEEG.CRMListFilter
             }
             addTimeOutFilter();
             e.AppendQueryFilter(Str_Filter);
-            //this.View.RefreshByFilter();
+            e.AppendQueryOrderby(" FCreateDate DESC");
         }
 
         #region Action

@@ -15,9 +15,9 @@ using System.Text;
 
 namespace CZ.CEEG.MblCrm.MaintainOffer
 {
-    [Description("Mbl维修报价")]
+    [Description("Mbl维修合同")]
     [HotUpdate]
-    public class CZ_CEEG_MblCrm_MaintainOffer : AbstractMobileBillPlugin
+    public class CZ_CEEG_MblCrm_MaintainContract : AbstractMobileBillPlugin
     {
         #region overrides
 
@@ -47,11 +47,11 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
             string key = e.Key.ToUpperInvariant();
             switch (key)
             {
-                case "FPUSHBTN":
-                    Act_ABC_PushMaintainContract();
-                    break;
                 case "FNEWROW": //新增行
                     AddNewEntryRow();
+                    break;
+                case "FTRACKUP": //上查
+                    Act_TrackUp();
                     break;
             }
         }
@@ -59,6 +59,29 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
         #endregion
 
         #region Actions
+        private void Act_TrackUp()
+        {
+            string FBillNo = this.View.BillModel.GetValue("FSourceBillNo").ToString();
+            string sql = "SELECT FID FROM ora_CRM_MantainOffer WHERE FBillNo='" + FBillNo + "'";
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
+            if(objs.Count > 0)
+            {
+                var para = new MobileShowParameter();
+                para.FormId = "ora_CRM_MBL_MaintainOffer"; //源单FormId
+                para.OpenStyle.ShowType = ShowType.Modal;
+                para.ParentPageId = this.View.PageId;
+                para.Status = OperationStatus.EDIT;
+                para.PKey = objs[0]["FID"].ToString();
+                string strTitle = "维修报价";
+                var formTitle = new LocaleValue();
+                formTitle.Add(new KeyValuePair<int, string>(this.Context.UserLocale.LCID, strTitle));
+                this.View.SetFormTitle(formTitle);
+                this.View.ShowForm(para);
+            }
+            
+        }
+
+
         /// <summary>
         /// 表体可编辑
         /// </summary>
@@ -103,25 +126,15 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
             string _FDocumentStatus = this.View.BillModel.GetValue("FDocumentStatus").ToString();
             if (_FDocumentStatus == "Z" || _FDocumentStatus == "A" || _FDocumentStatus == "D")
             {
+                this.View.GetControl("FTrackUp").Visible = false;
                 var submitBtn = this.View.GetControl("FSubmitBtn");
-                var pushBtn = this.View.GetControl("FPushBtn");
-                submitBtn.Visible = true;
-                pushBtn.Visible = false;
                 submitBtn.SetCustomPropertyValue("width", 310);
-            }
-            else if (_FDocumentStatus == "B")
-            {
-                var submitBtn = this.View.GetControl("FSubmitBtn");
-                var pushBtn = this.View.GetControl("FPushBtn");
-                submitBtn.Visible = false;
-                pushBtn.Visible = false;
             }
             else
             {
-                var pushBtn = this.View.GetControl("FPushBtn");
-                pushBtn.Visible = true;
-                pushBtn.SetCustomPropertyValue("width", 310);
                 this.View.GetControl("FSubmitBtn").Visible = false;
+                var FTrackUp = this.View.GetControl("FTrackUp");
+                FTrackUp.SetCustomPropertyValue("width", 310);
             }
         }
 
@@ -134,18 +147,48 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
             if (flag == "ADD")
             {
                 string srcFID = this.View.OpenParameter.GetCustomParameter("FID") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FID").ToString();
-                string sql = string.Format(@"SELECT * FROM ora_CRM_CCRP WHERE FID='{0}'", srcFID);
+                string sql = string.Format(@"SELECT * FROM ora_CRM_MantainOffer WHERE FID='{0}'", srcFID);
                 var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
                 if (objs.Count <= 0)
                 {
                     return;
                 }
                 this.View.BillModel.SetValue("FSourceBillNo", objs[0]["FBillNo"].ToString());
-                this.View.BillModel.SetValue("FSaleOrderNo", objs[0]["F_ora_SourceBillNo"].ToString());
+                this.View.BillModel.SetValue("FSaleOrderNo", objs[0]["FSaleOrderNo"].ToString());
                 this.View.BillModel.SetValue("FNicheNo", objs[0]["FNicheNo"].ToString());
                 this.View.BillModel.SetValue("FContractNo", objs[0]["FContractNo"].ToString());
                 this.View.BillModel.SetValue("FCustID", objs[0]["FCustID"].ToString());
-                this.View.BillModel.SetValue("FProjName", objs[0]["FPrjName"].ToString());
+                this.View.BillModel.SetValue("FProjName", objs[0]["FProjName"].ToString());
+                this.View.BillModel.SetValue("FSalerID", objs[0]["FSalerID"].ToString());
+                this.View.BillModel.SetValue("FDept", objs[0]["FDept"].ToString());
+                sql = "SELECT * FROM ora_CRM_MantainOfferEntry WHERE FID='" + srcFID + "'";
+                objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
+                for (int i = 0;  i < objs.Count; i++)
+                {
+                    if(i != 0)
+                    {
+                        this.View.BillModel.CreateNewEntryRow("FEntity");
+                    }
+                    this.View.BillModel.SetValue("FMaterialID", objs[i]["FMaterialID"].ToString(), i);
+                    this.View.BillModel.SetValue("FUnitID", objs[i]["FUnitID"].ToString(), i);
+                    this.View.BillModel.SetValue("FTaxRate", objs[i]["FTaxRate"].ToString(), i);
+                    this.View.BillModel.SetValue("FQty", objs[i]["FQty"].ToString(), i);
+
+                    decimal FBRptPrice = decimal.Parse(objs[i]["FBasePrice"].ToString());
+                    decimal FQty = decimal.Parse(objs[i]["FQty"].ToString());
+                    decimal FTaxRate = decimal.Parse(objs[i]["FTaxRate"].ToString());
+
+                    this.View.BillModel.SetValue("FUtPriceTax", FBRptPrice/FQty, i);
+                    this.View.BillModel.SetValue("FUtPrice", FBRptPrice / FQty / (1 + FTaxRate / 100), i);
+                    this.View.BillModel.SetValue("FBTaxAmt", FBRptPrice - FBRptPrice / (1 + FTaxRate / 100), i);
+                    this.View.BillModel.SetValue("FBNTAmt", FBRptPrice / (1 + FTaxRate / 100), i);
+
+                    this.View.BillModel.SetValue("FNote", objs[i]["FNote"].ToString(), i);
+                    this.View.BillModel.SetValue("FBasePrice", objs[i]["FPurPrice"].ToString(), i);
+                    this.View.BillModel.SetValue("FBPAmtGroup", objs[i]["FCost"].ToString(), i);
+                    this.View.BillModel.SetValue("FBRptPrice", FBRptPrice, i);
+                }
+                this.View.UpdateView("FEntity");
             }
         }
 
@@ -176,13 +219,13 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
             {
                 return;
             }
-            string lktable = "ora_CRM_MantainOffer_LK";
+            string lktable = "ora_CRM_MtnCont_LK";
             string targetfid = tgtFID;
-            string targettable = "ora_CRM_MantainOffer";
-            string targetformid = "ora_CRM_MantainOffer";
+            string targettable = "ora_CRM_MtnCont";
+            string targetformid = "ora_CRM_MantainContract";
             string sourcefid = srcFID;
-            string sourcetable = "ora_CRM_CCRP";
-            string sourceformid = "ora_CRM_CCRP";
+            string sourcetable = "ora_CRM_MantainOffer";
+            string sourceformid = "ora_CRM_MantainOffer";
             string sourcefentryid = "0";
             string sourcefentrytable = "";
             string sql = String.Format(@"exec proc_czly_CreateBillRelation 
@@ -193,74 +236,6 @@ namespace CZ.CEEG.MblCrm.MaintainOffer
             DBUtils.ExecuteDynamicObject(this.Context, sql);
         }
 
-        /// <summary>
-        /// 下推维修合同
-        /// </summary>
-        private void Act_ABC_PushMaintainContract()
-        {
-            string FID = "0";
-            string _FBillNo = this.View.BillModel.GetValue("FBillNo").ToString();
-            string sql = "select FID from ora_CRM_MtnCont where FSourceBillNo='" + _FBillNo + "'";
-            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            if (objs.Count > 0)
-            {
-                FID = objs[0]["FID"].ToString();
-            }
-            Act_Push_Common("ora_CRM_MBL_MaintainContract", "维修合同评审", FID);
-
-        }
-
-
-        /// <summary>
-        /// 通用下推
-        /// </summary>
-        private void Act_Push_Common(string formId, string title, string distFID)
-        {
-            var para = new MobileShowParameter();
-            para.FormId = formId;
-            para.OpenStyle.ShowType = ShowType.Modal;
-            para.ParentPageId = this.View.PageId;
-            para.Status = OperationStatus.EDIT;
-            string srcFID = this.View.BillModel.DataObject["Id"] == null ? "0" : this.View.BillModel.DataObject["Id"].ToString();
-            para.CustomParams.Add("FID", srcFID);
-            if (distFID != "0")
-            {
-                this.View.ShowMessage("已存在下推的单据，是否打开？", MessageBoxOptions.YesNo, new Action<MessageBoxResult>((result) =>
-                {
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        para.PKey = distFID;
-                        para.CustomParams.Add("Flag", "EDIT");
-                        //设置表单Title
-                        string strTitle = title;
-                        var formTitle = new LocaleValue();
-                        formTitle.Add(new KeyValuePair<int, string>(this.Context.UserLocale.LCID, strTitle));
-                        this.View.SetFormTitle(formTitle);
-                        this.View.ShowForm(para);
-
-                    }
-                }));
-
-            }
-            else
-            {
-                para.CustomParams.Add("Flag", "ADD");
-                this.View.ShowMessage("是否要下推生成" + title + "?", MessageBoxOptions.YesNo, (result) =>
-                {
-                    if (result == MessageBoxResult.Yes)
-                    {
-                        //设置表单Title
-                        string strTitle = title;
-                        var formTitle = new LocaleValue();
-                        formTitle.Add(new KeyValuePair<int, string>(this.Context.UserLocale.LCID, strTitle));
-                        this.View.SetFormTitle(formTitle);
-                        this.View.ShowForm(para);
-                    }
-                });
-
-            }
-
-        }
 
         #endregion
     }
