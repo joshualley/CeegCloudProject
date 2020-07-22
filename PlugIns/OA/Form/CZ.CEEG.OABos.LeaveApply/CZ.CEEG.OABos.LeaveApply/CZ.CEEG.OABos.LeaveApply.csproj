@@ -93,10 +93,12 @@
     <Compile Include="LeaveType\Imp\Maternity.cs" />
     <Compile Include="LeaveType\Imp\Nursing.cs" />
     <Compile Include="LeaveType\Imp\OccupationalInjury.cs" />
+    <Compile Include="LeaveType\Imp\Other.cs" />
     <Compile Include="LeaveType\Imp\PersonalAffairs.cs" />
     <Compile Include="LeaveType\Imp\Relocation.cs" />
     <Compile Include="LeaveType\Imp\SalemanHome.cs" />
     <Compile Include="LeaveType\Imp\Sick.cs" />
+    <Compile Include="LeaveType\Imp\SpecialHome.cs" />
     <Compile Include="LeaveType\LeaveFactory.cs" />
     <Compile Include="LeaveType\LeaveTypeName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

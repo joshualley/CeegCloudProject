@@ -61,9 +61,9 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             }
         }
 
-        public override void AfterBarItemClick(AfterBarItemClickEventArgs e)
+        public override void AfterEntryBarItemClick(AfterBarItemClickEventArgs e)
         {
-            base.AfterBarItemClick(e);
+            base.AfterEntryBarItemClick(e);
             string key = e.BarItemKey.ToUpperInvariant();
             switch (key)
             {
@@ -71,7 +71,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                     DynamicObject rowData;
                     int rowIndex = -1;
                     this.Model.TryGetEntryCurrentRow("FEntity", out rowData, out rowIndex);
-                    if(rowIndex == -1)
+                    if (rowIndex == -1)
                     {
                         this.View.ShowWarnningMessage("未选中明细表中的行！");
                         return;

@@ -66,8 +66,10 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
                     return new DonateBlood(context, leaver, days);
                 case LeaveTypeName.SalemanHomeLeave:
                     return new SalemanHome(context, leaver, days);
+                case LeaveTypeName.SpecialHomeLeave:
+                    return new SpecialHome(context, leaver, days);
                 default:
-                    return null;
+                    return new Other(context, leaver, days);
             }
         }
         /// <summary>

@@ -9,6 +9,11 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
     public enum LeaveTypeName
     {
         /// <summary>
+        /// 其他，冗余新增请假
+        /// </summary>
+        [Description("其他")]
+        OtherLeave = 0,
+        /// <summary>
         /// 产检假
         /// </summary>
         [Description("产检假")]
@@ -107,6 +112,11 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
         /// 销售员探亲假
         /// </summary>
         [Description("销售员探亲假")]
-        SalemanHomeLeave = 20
+        SalemanHomeLeave = 20,
+        /// <summary>
+        /// 特殊探亲假
+        /// </summary>
+        [Description("特殊探亲假")]
+        SpecialHomeLeave = 22
     }
 }
