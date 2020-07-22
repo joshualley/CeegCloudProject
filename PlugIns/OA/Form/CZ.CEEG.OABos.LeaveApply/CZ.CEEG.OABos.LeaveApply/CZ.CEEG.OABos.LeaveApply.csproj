@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>C:\Program Files %28x86%29\Kingdee\K3Cloud\WebSite\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -76,7 +76,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_OABos_LeaveApplyNew.cs" />
     <Compile Include="CZ_CEEG_OABos_LeaveApply.cs" />
+    <Compile Include="LeaveType\Gender.cs" />
+    <Compile Include="LeaveType\Imp\Annual.cs" />
+    <Compile Include="LeaveType\Imp\AntenatalCare.cs" />
+    <Compile Include="LeaveType\ILeaveType.cs" />
+    <Compile Include="LeaveType\BaseType.cs" />
+    <Compile Include="LeaveType\Imp\Breastfeeding.cs" />
+    <Compile Include="LeaveType\Imp\DonateBlood.cs" />
+    <Compile Include="LeaveType\Imp\Funeral.cs" />
+    <Compile Include="LeaveType\Imp\Home.cs" />
+    <Compile Include="LeaveType\Imp\JoinArmy.cs" />
+    <Compile Include="LeaveType\Imp\Lieu.cs" />
+    <Compile Include="LeaveType\Imp\Marriage.cs" />
+    <Compile Include="LeaveType\Imp\Maternity.cs" />
+    <Compile Include="LeaveType\Imp\Nursing.cs" />
+    <Compile Include="LeaveType\Imp\OccupationalInjury.cs" />
+    <Compile Include="LeaveType\Imp\PersonalAffairs.cs" />
+    <Compile Include="LeaveType\Imp\Relocation.cs" />
+    <Compile Include="LeaveType\Imp\SalemanHome.cs" />
+    <Compile Include="LeaveType\Imp\Sick.cs" />
+    <Compile Include="LeaveType\LeaveFactory.cs" />
+    <Compile Include="LeaveType\LeaveTypeName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

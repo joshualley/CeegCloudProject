@@ -23,7 +23,7 @@ using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
 namespace CZ.CEEG.OABos.LeaveApply
 {
     [HotUpdate]
-    [Description("BOS请假控制")]
+    [Description("BOS请假控制Old")]
     public class CZ_CEEG_OABos_LeaveApply : AbstractBillPlugIn
     {
         //需要实现的功能：
