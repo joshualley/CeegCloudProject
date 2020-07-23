@@ -36,49 +36,49 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 mYearAllowDays = 5;
 
                 // 按月释放
-                if(IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if(IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 60) mOnceAllowDays = 0;
             }
             else if(mSocialWorkYear == 10)
             {
                 if(now.Year - mJoinDate.Year == 10)
                 {
-                    mYearAllowDays = 5 + Math.Floor(5 * (12 - mJoinDate.Month) / 12.0);
+                    mYearAllowDays = 5 + Math.Floor(5.0 * (12 - mJoinDate.Month) / 12.0);
                 }
                 else if(now.Year - mJoinDate.Year == 11)
                 {
                     mYearAllowDays = 10;
                 }
                 // 按月释放
-                if (IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 90) mOnceAllowDays = 0;
             }
             else if (10 < mSocialWorkYear && mSocialWorkYear < 20)
             {
                 mYearAllowDays = 10;
                 // 按月释放
-                if (IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 90) mOnceAllowDays = 0;
             }
             else if (mSocialWorkYear == 20)
             {
-                if (now.Year - mJoinDate.Year == 10)
+                if (now.Year - mJoinDate.Year == 20)
                 {
-                    mYearAllowDays = 10 + Math.Floor(5 * (12 - mJoinDate.Month) / 12.0);
+                    mYearAllowDays = 10 + Math.Floor(5.0 * (12 - mJoinDate.Month) / 12.0);
                 }
-                else if (now.Year - mJoinDate.Year == 11)
+                else if (now.Year - mJoinDate.Year == 21)
                 {
                     mYearAllowDays = 15;
                 }
                 // 按月释放
-                if (IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 120) mOnceAllowDays = 0;
             }
             else if (mSocialWorkYear > 20)
             {
                 mYearAllowDays = 15;
                 // 按月释放
-                if (IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 120) mOnceAllowDays = 0;
             }
             
@@ -87,7 +87,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 // 向下取整（年假天数/12×入职月份）
                 mYearAllowDays = Math.Floor((mCompanyWorkMonth * mYearAllowDays) / 12.0);
                 // 按月释放
-                if (IsKaiMan()) mOnceAllowDays = Math.Floor((mYearAllowDays * now.Month) / 12.0);
+                if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
             }
             
         }

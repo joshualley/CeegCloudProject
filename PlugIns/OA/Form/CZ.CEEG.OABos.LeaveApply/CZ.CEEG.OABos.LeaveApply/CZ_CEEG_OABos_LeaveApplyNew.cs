@@ -112,6 +112,11 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
                 var _FEntity = this.View.Model.DataObject["FEntity"] as DynamicObjectCollection;
 
                 string orgId = this.View.Model.DataObject["FOrgID"] == null ? "" : (this.View.Model.DataObject["FOrgID"] as DynamicObject)["Id"].ToString();
+                if(orgId == "")
+                {
+                    this.View.ShowMessage("请先选择组织！");
+                    return;
+                }
                 string startDate = _FEntity[e.Row]["FStartDate"] == null ? "" : _FEntity[e.Row]["FStartDate"].ToString();
                 string endDate = _FEntity[e.Row]["FEndDate"] == null ? "" : _FEntity[e.Row]["FEndDate"].ToString();
                 string startTimeFrame = _FEntity[e.Row]["FStartTimeFrame"] == null ? "" : _FEntity[e.Row]["FStartTimeFrame"].ToString();
@@ -119,7 +124,7 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
                 string sTime = _FEntity[e.Row]["FSTime"] == null ? "" : _FEntity[e.Row]["FSTime"].ToString();
                 string eTime = _FEntity[e.Row]["FETime"] == null ? "" : _FEntity[e.Row]["FETime"].ToString();
 
-                if (startDate != "" && startTimeFrame != "" && endDate != "" && endTimeFrame != "" && orgId != "")
+                if (startDate != "" && startTimeFrame != "" && endDate != "" && endTimeFrame != "")
                 {
                     //同步时间和时段1 : 如果改动的是时段 
                     //根据开始时段上下午设置开始时间

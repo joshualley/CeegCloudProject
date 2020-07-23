@@ -198,15 +198,12 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             {
                 return mIsKaiman == 1 ? true : false;
             }
-            string sql = "SELECT FORGID FROM T_ORG_ORGANIZATIONS";
+            string sql = "SELECT FORGID FROM T_ORG_ORGANIZATIONS WHERE FORGID=100221";
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
-            foreach(var o in obj)
+            if(obj.Count > 0)
             {
-                if(o["FORGID"].ToString() == "100003")
-                {
-                    mIsKaiman = 1;
-                    return true;
-                }
+                mIsKaiman = 1;
+                return true;
             }
             mIsKaiman = 0;
             return false;
