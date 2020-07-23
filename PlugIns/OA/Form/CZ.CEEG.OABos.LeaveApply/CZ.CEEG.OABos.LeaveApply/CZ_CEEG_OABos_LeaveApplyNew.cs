@@ -8,6 +8,8 @@ using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.Util;
 using Kingdee.BOS.App.Data;
 using CZ.CEEG.OABos.LeaveApply.LeaveType;
+using Kingdee.BOS.ServiceHelper;
+using Kingdee.BOS.Core.DynamicForm;
 
 namespace CZ.CEEG.OABos.LeaveApplyNew
 {

@@ -45,6 +45,8 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
         /// </summary>
         protected Context mContext;
 
+        private int mIsKaiman = -1;
+
 
         public BaseType(Context context, LeaveTypeName leaveType, long leaver, double days)
         {
@@ -184,6 +186,30 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 return value;
             DescriptionAttribute descriptionAttribute = (DescriptionAttribute)objs[0];
             return descriptionAttribute.Description;
+        }
+
+        /// <summary>
+        /// 是否为开曼集团
+        /// </summary>
+        /// <returns></returns>
+        public bool IsKaiMan()
+        {
+            if(mIsKaiman != -1)
+            {
+                return mIsKaiman == 1 ? true : false;
+            }
+            string sql = "SELECT FORGID FROM T_ORG_ORGANIZATIONS";
+            var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
+            foreach(var o in obj)
+            {
+                if(o["FORGID"].ToString() == "100003")
+                {
+                    mIsKaiman = 1;
+                    return true;
+                }
+            }
+            mIsKaiman = 0;
+            return false;
         }
     }
 }
