@@ -33,7 +33,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             if (0 <= mSocialWorkYear && mSocialWorkYear < 10)
             {
                 mYearAllowDays = 5;
-
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 60) mOnceAllowDays = 0;
@@ -48,7 +48,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 {
                     mYearAllowDays = 10;
                 }
-                
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 90) mOnceAllowDays = 0;
@@ -56,6 +56,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             else if (10 < mSocialWorkYear && mSocialWorkYear < 20)
             {
                 mYearAllowDays = 10;
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 90) mOnceAllowDays = 0;
@@ -70,6 +71,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 {
                     mYearAllowDays = 15;
                 }
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 120) mOnceAllowDays = 0;
@@ -77,6 +79,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             else if (mSocialWorkYear > 20)
             {
                 mYearAllowDays = 15;
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
                 if (lastSickDays >= 120) mOnceAllowDays = 0;
@@ -86,6 +89,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             {
                 // 向下取整（年假天数/12×入职月份）
                 mYearAllowDays = Math.Floor((double)(mCompanyWorkMonth * mYearAllowDays) / 12.0);
+                mOnceAllowDays = mYearAllowDays;
                 // 按月释放
                 if (IsKaiMan()) mOnceAllowDays = Math.Floor((double)(mYearAllowDays * now.Month) / 12.0);
             }
