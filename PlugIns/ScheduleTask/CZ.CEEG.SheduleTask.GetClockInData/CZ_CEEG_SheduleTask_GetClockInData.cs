@@ -203,9 +203,12 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             var currDate = DateTime.Now;
             int year = isCurrMonth ? currDate.Year : (currDate.Month == 1 ? currDate.Year - 1 : currDate.Year);
             int month = isCurrMonth ? currDate.Month : (currDate.Month == 1 ? 12 : currDate.Month - 1);
-            int day = isCurrMonth ? currDate.Day : DateTime.DaysInMonth(year, month);
+            //int month = currDate.Month;
+            //int day = isCurrMonth ? currDate.Day : DateTime.DaysInMonth(year, month);
+            int day = isCurrMonth ? currDate.Day : 1;
             string workDateFrom = year.ToString() + "-" + month.ToString() + "-01";
-            string workDateTo = year.ToString() + "-" + month.ToString() + "-" + day.ToString();
+            // 如果是上月，则以当前月份1号作为结束日期
+            string workDateTo = year.ToString() + "-" + currDate.Month.ToString() + "-" + day.ToString();
 
             lastId = lastId == "" ? "" : "&lastId=" + lastId;
             string data = "workDateFrom=" + GetTimestamp(DateTime.Parse(workDateFrom)).ToString() + 

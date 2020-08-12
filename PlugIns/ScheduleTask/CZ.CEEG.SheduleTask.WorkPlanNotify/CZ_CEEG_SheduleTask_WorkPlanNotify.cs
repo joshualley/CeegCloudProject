@@ -38,7 +38,7 @@ namespace CZ.CEEG.SheduleTask.WorkPlanNotify
                     users.Add(openId);
                     //var bv = OpenWebView(ctx, "ora_CRM_MBL_XS", fid);
                     //string pageId = bv.PageId.ToString();
-                    string url = @"http://erp.ceegpower.com/k3cloud/html5/index.aspx?ud=eyJkYmlkIjoiNWQzZWExN2Y4NWIwNTMiLCJlbnRyeXJvbGUiOiJYVCIsImxjaWQiOjIwNTIsIm9yaWdpbnR5cGUiOiJYVCIsImZvcm1pZCI6Im9yYV9UYXNrX1BlcnNvbmFsUmVwb3J0IiwiZm9ybXR5cGUiOiJiaWxsIiwicGtpZCI6IiJ9&acctid=5d3ea17f85b053";
+                    string url = @"http://erp.ceegpower.com/k3cloud/html5/index.aspx?ud=eyJkYmlkIjoiNWQzZWExN2Y4NWIwNTMiLCJlbnRyeXJvbGUiOiJYVCIsImxjaWQiOjIwNTIsIm9yaWdpbnR5cGUiOiJYVCIsImZvcm1pZCI6Im9yYV9UYXNrX1BlcnNvbmFsUmVwb3J0IiwiZm9ybXR5cGUiOiJiaWxsIiwicGtpZCI6IiJ9&acctid=5f279f59935b22";
                     SendYZJMessage(ctx, users, title, content, url);
                 }
             }

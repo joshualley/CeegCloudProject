@@ -3,6 +3,7 @@ using Kingdee.BOS.Core;
 using Kingdee.BOS.Core.Bill;
 using Kingdee.BOS.Core.Bill.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
+using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.Orm.DataEntity;
@@ -43,8 +44,66 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             }
         }
 
+        public override void EntryBarItemClick(BarItemClickEventArgs e)
+        {
+            base.EntryBarItemClick(e);
+            string key = e.BarItemKey.ToUpperInvariant();
+            switch(key)
+            {
+                case "TBALLITEMS": //tbAllItems
+                    Act_ShowSellerDetail("0");
+                    break;
+                case "TBONEITEM": //tbOneItem
+                    DynamicObject rowData;
+                    int rowIndex;
+                    this.Model.TryGetEntryCurrentRow("FEntity", out rowData, out rowIndex);
+                    if (rowData != null)
+                    {
+                        string FSellerID = rowData == null ? "0" : (rowData["FSellerID"] as DynamicObject)["Id"].ToString();
+                        Act_ShowSellerDetail(FSellerID);
+                    }
+                    else
+                    {
+                        this.View.ShowMessage("未选择有效的单据体行！");
+                    }
+                        
+                    break;
+            }
+        }
+
+        public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
+        {
+            base.EntityRowDoubleClick(e);
+            string formId = this.View.GetFormId();
+            if("ora_PMT_SalesmanPmt".Equals(formId))
+            {
+                string FSellerID = this.View.Model.GetValue("FSellerID", e.Row) == null ? "0" :
+                    (this.View.Model.GetValue("FSellerID", e.Row) as DynamicObject)["Id"].ToString();
+                Act_ShowSellerDetail(FSellerID);
+            }
+        }
+
 
         #region Actions
+
+        /// <summary>
+        /// 显示销售员货款详情
+        /// </summary>
+        /// <param name="FSellerID">为0值时显示所有的销售员详情</param>
+        private void Act_ShowSellerDetail(string FSellerID)
+        {
+            string FSDate = this.View.Model.GetValue("FSDate").ToString();
+            string FEDate = this.View.Model.GetValue("FEDate").ToString();
+            var para = new DynamicFormShowParameter();
+            para.FormId = "ora_PMT_SalesmanItemPmt";
+            para.OpenStyle.ShowType = ShowType.Modal;
+            para.ParentPageId = this.View.PageId;
+            para.CustomParams.Add("FSDate", FSDate);
+            para.CustomParams.Add("FEDate", FEDate);
+            para.CustomParams.Add("FSellerID", FSellerID);
+            this.View.ShowForm(para);
+        }
+
         private void Act_QueryPmt(string sDt, string eDt)
         {
             string formId = this.View.GetFormId();
