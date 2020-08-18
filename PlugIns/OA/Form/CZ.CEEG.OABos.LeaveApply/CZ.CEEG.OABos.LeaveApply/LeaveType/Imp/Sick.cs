@@ -18,6 +18,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
         public Sick(Context context, long leaver, double days) : base(context, LeaveTypeName.SickLeave, leaver, days)
         {
             InitWorkAge();
+            SetAllowDays();
         }
 
         private void InitWorkAge()

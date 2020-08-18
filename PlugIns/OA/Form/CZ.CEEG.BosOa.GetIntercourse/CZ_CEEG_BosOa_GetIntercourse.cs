@@ -290,12 +290,12 @@ namespace CZ.CEEG.BosOa.GetIntercourse
                 case "ORG_Organizations":
                     _FValueSource = "ORG_Organizations";
                     _ObjAcctWhile = "";
-                    _ObjMstIDSch = "select FMasterID FObjMID from t_CN_BANKACNT where FBankAcntID=#objID# ";
+                    _ObjMstIDSch = "select FOrgID FObjMID from t_ORG_Organizations where FOrgID=#objID# ";
                     break;
                 case "CN_BANKACNT":
                     _FValueSource = "CN_BANKACNT";
                     _ObjAcctWhile = "";
-                    _ObjMstIDSch = "select FOrgID FObjMID from t_ORG_Organizations where FOrgID=#objID# ";
+                    _ObjMstIDSch = "select FMasterID FObjMID from t_CN_BANKACNT where FBankAcntID=#objID# ";
                     break;
                 default:
                     break;

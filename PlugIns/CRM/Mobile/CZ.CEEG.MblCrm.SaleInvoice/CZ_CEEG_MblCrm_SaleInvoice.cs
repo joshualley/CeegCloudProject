@@ -135,6 +135,7 @@ namespace CZ.CEEG.MblCrm.SaleInvoice
                 this.View.BillModel.SetValue("FSaleOrderNo", objs[0]["FSaleOrderBillNo"].ToString());
                 this.View.BillModel.SetValue("FNicheNo", objs[0]["FNicheBillNo"].ToString());
                 this.View.BillModel.SetValue("FSaleCntNo", objs[0]["FContractBillNo"].ToString());
+                this.View.BillModel.SetValue("FCustOrgId", objs[0]["FCustOrgID"].ToString());
                 this.View.BillModel.SetValue("FCustID", objs[0]["FCustID"].ToString());
                 this.View.BillModel.SetValue("FOrderAmt", objs[0]["FOrderAmt"].ToString());
                 this.View.BillModel.SetValue("FSendPdtAmt", objs[0]["FSendPdtAmt"].ToString());
