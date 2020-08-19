@@ -320,18 +320,19 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void AfterBindData(EventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
+                
+            //}
+            base.AfterBindData(e);
+            addEntryLeaver();
+            if (isFirstOpen)
             {
-                base.AfterBindData(e);
-                addEntryLeaver();
-                if (isFirstOpen)
-                {
-                    isFirstOpen = false;
-                    string type = this.View.Model.GetValue("FLeaveType", 0).ToString();
-                    string msg = "";
-                    msg = QueryLeftDays(type, 0, true);
-                    this.View.Model.SetValue("FDispLeaveDay", msg);
-                }
+                isFirstOpen = false;
+                string type = this.View.Model.GetValue("FLeaveType", 0).ToString();
+                string msg = "";
+                msg = QueryLeftDays(type, 0, true);
+                this.View.Model.SetValue("FDispLeaveDay", msg);
             }
         }
 
@@ -343,21 +344,22 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void DataChanged(DataChangedEventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
+                
+            //}
+            base.DataChanged(e);
+            Act_SetLeaveDays(e);
+            if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
             {
-                base.DataChanged(e);
-                Act_SetLeaveDays(e);
-                if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
+                if (e.Field.Key == "FName")
                 {
-                    if (e.Field.Key == "FName")
-                    {
-                        setEmpInfo(e.Row);
-                    }
-                    string type = this.View.Model.GetValue("FLeaveType", e.Row).ToString();
-                    string msg = "";
-                    msg = QueryLeftDays(type, e.Row, false);
-                    this.View.Model.SetValue("FDispLeaveDay", msg); //代理字段使用BillModel，单据字段使用Model
+                    setEmpInfo(e.Row);
                 }
+                string type = this.View.Model.GetValue("FLeaveType", e.Row).ToString();
+                string msg = "";
+                msg = QueryLeftDays(type, e.Row, false);
+                this.View.Model.SetValue("FDispLeaveDay", msg); //代理字段使用BillModel，单据字段使用Model
             }
         }
 
@@ -367,22 +369,23 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
-            if (this.Context.ClientType.ToString() != "Mobile")
+            //if (this.Context.ClientType.ToString() != "Mobile")
+            //{
+                
+            //}
+            base.BeforeDoOperation(e);
+            string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
+            if (_opKey == "SUBMIT")
             {
-                base.BeforeDoOperation(e);
-                string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
-                if (_opKey == "SUBMIT")
+                if (!IsPass())
                 {
-                    if (!IsPass())
-                    {
-                        e.Cancel = true;
-                    }
-                    SetMaxLeaveDay();
+                    e.Cancel = true;
                 }
-                else if (_opKey == "SAVE")
-                {
-                    SetMaxLeaveDay();
-                }
+                SetMaxLeaveDay();
+            }
+            else if (_opKey == "SAVE")
+            {
+                SetMaxLeaveDay();
             }
         }
         #endregion

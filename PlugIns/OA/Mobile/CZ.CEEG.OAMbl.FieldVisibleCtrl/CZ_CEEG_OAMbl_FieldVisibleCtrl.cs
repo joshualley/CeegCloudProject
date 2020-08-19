@@ -38,7 +38,8 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
         private void HideBtn()
         {
             string _FDocumentStatus = this.CZ_GetValue("FDocumentStatus");
-            if (_FDocumentStatus == "Z" || _FDocumentStatus == "A" || _FDocumentStatus == "D")
+
+            if (_FDocumentStatus == "Z" || _FDocumentStatus == "A")
             {
                 var submitBtn = this.View.GetControl("FSubmitBtn");
                 var saveBtn = this.View.GetControl("FSaveBtn");
@@ -48,9 +49,29 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
             else if (_FDocumentStatus == "B")
             {
                 var submitBtn = this.View.GetControl("FSubmitBtn");
-                var saveBtn = this.View.GetControl("FSaveBtn");              
+                var saveBtn = this.View.GetControl("FSaveBtn");
                 submitBtn.Visible = false;
                 saveBtn.SetCustomPropertyValue("width", 310);
+            }else if (_FDocumentStatus == "D")
+            {
+                string FID = this.View.BillModel.DataObject["Id"].ToString();
+                string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
+                string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "'";
+                var data = CZDB_GetData(sql);
+                if (data.Count > 0 && (data[0]["FSTATUS"].ToString() != "3" || data[0]["FSTATUS"].ToString() != "4"))
+                {
+                    var submitBtn = this.View.GetControl("FSubmitBtn");
+                    var saveBtn = this.View.GetControl("FSaveBtn");
+                    saveBtn.Visible = false;
+                    submitBtn.SetCustomPropertyValue("width", 310);
+                }
+                else
+                {
+                    var submitBtn = this.View.GetControl("FSubmitBtn");
+                    var saveBtn = this.View.GetControl("FSaveBtn");
+                    submitBtn.Visible = false;
+                    saveBtn.SetCustomPropertyValue("width", 310);
+                }
             }
 
         }
