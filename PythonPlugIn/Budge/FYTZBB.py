@@ -4,7 +4,7 @@
 def ButtonClick(e):
 	if e.Key.upper() == "FQUERY":
 		webobj = {}
-		webobj["source"] = "http://buidu.com"
+		webobj["source"] = "10.8.8.8:9000/index"
 		webobj["height"] = 540
 		webobj["width"] = 810
 		webobj["isweb"] = False

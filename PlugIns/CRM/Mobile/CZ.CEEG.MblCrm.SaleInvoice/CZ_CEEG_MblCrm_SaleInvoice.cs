@@ -140,7 +140,19 @@ namespace CZ.CEEG.MblCrm.SaleInvoice
                 this.View.BillModel.SetValue("FOrderAmt", objs[0]["FOrderAmt"].ToString());
                 this.View.BillModel.SetValue("FSendPdtAmt", objs[0]["FSendPdtAmt"].ToString());
                 this.View.BillModel.SetValue("FRecAmt", objs[0]["FRecAmt"].ToString());
-                this.View.BillModel.SetValue("FInvAmt", objs[0]["FInvAmt"].ToString());
+                sql = "SELECT ISNULL(SUM(FInvCurAmt), 0) FInvAmt FROM ora_CRM_SaleInvoice WHERE FSaleOrderID='" + objs[0]["FSaleOrderBillNo"].ToString() + "'";
+                var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+                if(obj.Count > 0)
+                {
+                    this.View.BillModel.SetValue("FInvAmt", obj[0]["FInvAmt"]);
+                    decimal FInvNoAmt = decimal.Parse(objs[0]["FOrderAmt"].ToString()) - decimal.Parse(obj[0]["FInvAmt"].ToString());
+                    this.View.BillModel.SetValue("FInvNoAmt", FInvNoAmt);
+                } else
+                {
+                    this.View.BillModel.SetValue("FInvNoAmt", objs[0]["FOrderAmt"].ToString());
+                }
+
+
                 sql = "SELECT FADDRESS,FTEL,FTAXREGISTERCODE,ISNULL(FBANKCODE,'')FBANKCODE,ISNULL(FACCOUNTNAME,'')FACCOUNTNAME FROM T_BD_CUSTOMER c " +
                       "LEFT JOIN T_BD_CUSTBANK cb ON c.FCUSTID=cb.FCUSTID WHERE c.FCUSTID='" + objs[0]["FCustID"].ToString() + "'";
                 var cust = DBUtils.ExecuteDynamicObject(this.Context, sql);
