@@ -22,7 +22,7 @@ namespace CZ.CEEG.OAWF.SealApply
     
     [Description("印章使用审批中验证")]
     [HotUpdate]
-    public class CZ_CEEG_OAWF_AdminService : AbstractOperationServicePlugIn
+    public class CZ_CEEG_OAWF_SealApply : AbstractOperationServicePlugIn
     {
         private const int Seal_NodeID = 457;       //股份盖章节点ID
 
