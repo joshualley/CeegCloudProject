@@ -28,10 +28,6 @@ namespace CZ.CEEG.BosOA.ForPubFund
 
         private void GetContractPartyInfo(DataChangedEventArgs e)
         {
-            if(this.Context.ClientType.ToString() == "Mobile")
-            {
-                return;
-            }
             string FContractPartyType = this.View.Model.GetValue("FContractPartyType") == null ? "" : this.View.Model.GetValue("FContractPartyType").ToString();
             //this.View.ShowMessage(FContractPartyType);
             string FContractParty = e.NewValue == null ? "0" : e.NewValue.ToString();
