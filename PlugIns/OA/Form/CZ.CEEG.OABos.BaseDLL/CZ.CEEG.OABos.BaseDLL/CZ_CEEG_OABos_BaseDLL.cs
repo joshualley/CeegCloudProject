@@ -257,7 +257,7 @@ namespace CZ.CEEG.OABos.BaseDLL
                     this.View.Model.SetValue("F_ora_Workplace", obj["FWorkAddress"].ToString());//工作地点
                     this.View.Model.SetValue("F_ora_Level", obj["FRankID"].ToString());//职级
                     this.View.Model.SetValue("F_ora_ContractType", obj["FContractType"].ToString());//合同类型
-                    sql = string.Format("select FID from T_BD_STAFFTEMP where FPostID='{0}'", obj["FSuperiorPost"].ToString());
+                    sql = string.Format("select FID from T_BD_STAFFTEMP where FPostID='{0}' and fisfirstpost = 1 ", obj["FSuperiorPost"].ToString());
                     objs = CZDB_GetData(sql);
                     if(objs.Count > 0)
                     {
