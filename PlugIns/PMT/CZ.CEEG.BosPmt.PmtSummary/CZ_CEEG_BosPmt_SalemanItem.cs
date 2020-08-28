@@ -20,21 +20,28 @@ namespace CZ.CEEG.BosPmt.SalemanItem
         {
             base.AfterBindData(e);
 
-            string fStartDate = this.View.OpenParameter.GetCustomParameter("FSDate") == null ? "" : this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
-            string fEndDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" : this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
-            string fSellerID = this.View.OpenParameter.GetCustomParameter("FSellerID") == null ? "" : this.View.OpenParameter.GetCustomParameter("FSellerID").ToString();
+            string FSDate = this.View.OpenParameter.GetCustomParameter("FSDate") == null ? "" : this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
+            string FEDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" : this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
+            string FSellerID = this.View.OpenParameter.GetCustomParameter("FSellerID") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FSellerID").ToString();
+            string FQDeptId = this.View.OpenParameter.GetCustomParameter("FQDeptId") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FQDeptId").ToString();
+            string FQSalerId = this.View.OpenParameter.GetCustomParameter("FQSalerId") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FQSalerId").ToString();
+            string FQCustId = this.View.OpenParameter.GetCustomParameter("FQCustId") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FQCustId").ToString();
+            string FQFactoryId = this.View.OpenParameter.GetCustomParameter("FQFactoryId") == null ? "0" : this.View.OpenParameter.GetCustomParameter("FQFactoryId").ToString();
+            string FQOrderNo = this.View.OpenParameter.GetCustomParameter("FQOrderNo") == null ? "" : this.View.OpenParameter.GetCustomParameter("FQOrderNo").ToString();
 
-            Act_QueryPmt(fStartDate, fEndDate, fSellerID);
+            string formId = this.View.GetFormId();
+            string sql = string.Format(@"EXEC proc_czly_GetPmt @FormId='{0}', @sDt='{1}', @eDt='{2}', @FSellerID='{3}',
+@FQDeptId={4}, @FQSalerId={5}, @FQCustId={6}, @FQFactoryId={7}, @FQOrderNo='{8}'",
+                formId, FSDate, FEDate, FSellerID, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
+            Act_QueryPmt(objs);
         }
 
 
         #region Actions
-        private void Act_QueryPmt(string sDt, string eDt, string FSellerID)
+        private void Act_QueryPmt(DynamicObjectCollection objs)
         {
-            string formId = this.View.GetFormId();
-            string sql = string.Format("EXEC proc_czly_GetPmt @FormId='{0}', @sDt='{1}', @eDt='{2}', @FSellerID='{3}'",
-                formId, sDt, eDt, FSellerID);
-            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
+           
             for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.CreateNewEntryRow("FEntity");
