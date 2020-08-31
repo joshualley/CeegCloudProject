@@ -1,5 +1,6 @@
 ﻿using Kingdee.BOS;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
@@ -38,22 +39,17 @@ namespace CZ.CEEG.Report.CostAccount
                 this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
             string FEDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" : 
                 this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
-            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "" :
+            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "0" :
                 this.View.OpenParameter.GetCustomParameter("FOrgId").ToString();
-            string FDeptID = this.View.OpenParameter.GetCustomParameter("FDeptID") == null ? "" :
+            string FDeptID = this.View.OpenParameter.GetCustomParameter("FDeptID") == null ? "0" :
                 this.View.OpenParameter.GetCustomParameter("FDeptID").ToString();
+            string FAccountId = this.View.OpenParameter.GetCustomParameter("FAccountId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FAccountId").ToString();
 
-            string sql = "";
-            if (FOrgId == "0")
-            {
-                sql = string.Format("EXEC proc_czly_AccountOrg @SDt='{0}', @EDt='{1}'", FSDate, FEDate);
-            }
-            else
-            {
-                sql = string.Format("EXEC proc_czly_AccountDept @SDt='{0}', @EDt='{1}', @FOrgId='{2}', @FDeptId='{3}'", 
-                    FSDate, FEDate, FOrgId, FDeptID);
-            }
-            
+            string sql = string.Format(@"EXEC proc_czly_AccountDept @SDt='{0}', @EDt='{1}', 
+@FOrgId='{2}', @FDeptId='{3}', @FAccountId='{4}'",
+                    FSDate, FEDate, FOrgId, FDeptID, FAccountId);
+
 
             Field textField = _currBusinessInfo.GetField("FField");
             //var textApp = _currLayoutInfo.GetEntityAppearance("FField");
@@ -130,6 +126,41 @@ namespace CZ.CEEG.Report.CostAccount
                 }
             }
             this.View.UpdateView("FEntity");
+        }
+
+        public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
+        {
+            base.EntityRowDoubleClick(e);
+
+            string FDeptName = this.View.Model.GetValue("FField1", e.Row) == null ? "" :
+                this.View.Model.GetValue("FField1", e.Row).ToString();
+
+            if (FDeptName == "")
+            {
+                return;
+            }
+
+            string FSDate = this.View.OpenParameter.GetCustomParameter("FSDate") == null ? "" :
+                this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
+            string FEDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" :
+                this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
+            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FOrgId").ToString();
+            string FAccountId = this.View.OpenParameter.GetCustomParameter("FAccountId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FAccountId").ToString();
+
+            DynamicFormShowParameter param = new DynamicFormShowParameter();
+            param.ParentPageId = this.View.PageId;
+            param.FormId = "ora_VounterDetail";
+            param.OpenStyle.ShowType = ShowType.Modal;
+
+            param.CustomParams.Add("FSDate", FSDate);
+            param.CustomParams.Add("FEDate", FEDate);
+            param.CustomParams.Add("FOrgId", FOrgId);
+            param.CustomParams.Add("FAccountId", FAccountId);
+            param.CustomParams.Add("FDeptName", FDeptName);
+
+            this.View.ShowForm(param);
         }
     }
 }

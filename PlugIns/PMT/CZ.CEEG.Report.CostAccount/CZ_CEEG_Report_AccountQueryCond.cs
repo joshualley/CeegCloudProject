@@ -55,17 +55,20 @@ namespace CZ.CEEG.Report.AccountQueryCond
                         (this.View.Model.GetValue("FOrgId") as DynamicObject)["Id"].ToString();
                     string FDeptID = this.View.Model.GetValue("FDeptID") == null ? "0" :
                         (this.View.Model.GetValue("FDeptID") as DynamicObject)["Id"].ToString();
+                    string FAccountId = this.View.Model.GetValue("FAccountId") == null ? "0" :
+                        (this.View.Model.GetValue("FAccountId") as DynamicObject)["Id"].ToString();
 
 
                     DynamicFormShowParameter param = new DynamicFormShowParameter();
                     param.ParentPageId = this.View.PageId;
                     param.FormId = "ora_CZ_CostAmount";
-                    param.OpenStyle.ShowType = ShowType.Modal;
+                    param.OpenStyle.ShowType = ShowType.MainNewTabPage;
 
                     param.CustomParams.Add("FSDate", FSDate);
                     param.CustomParams.Add("FEDate", FEDate);
                     param.CustomParams.Add("FOrgId", FOrgId);
                     param.CustomParams.Add("FDeptID", FDeptID);
+                    param.CustomParams.Add("FAccountId", FAccountId);
 
                     this.View.ShowForm(param);
                     break;

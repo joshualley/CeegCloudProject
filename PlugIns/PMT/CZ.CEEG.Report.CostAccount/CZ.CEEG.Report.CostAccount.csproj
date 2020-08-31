@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_Report_VounterDetail.cs" />
     <Compile Include="CZ_CEEG_Report_AccountQueryCond.cs" />
     <Compile Include="CZ_CEEG_Report_CostAccount.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
