@@ -8,6 +8,7 @@ using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.Core.Metadata.ControlElement;
 using Kingdee.BOS.Core.Metadata.EntityElement;
 using Kingdee.BOS.Core.Metadata.FieldElement;
+using Kingdee.BOS.Core.Metadata.GroupElement;
 using Kingdee.BOS.Util;
 using System;
 using System.ComponentModel;
@@ -52,6 +53,7 @@ namespace CZ.CEEG.Report.CostAccount
 
 
             Field textField = _currBusinessInfo.GetField("FField");
+            Field decimalField = _currBusinessInfo.GetField("FDecimal");
             //var textApp = _currLayoutInfo.GetEntityAppearance("FField");
 
             entityData = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0];
@@ -59,7 +61,22 @@ namespace CZ.CEEG.Report.CostAccount
             {
                 string name = "FField" + (i + 1).ToString();
                 //Field field = new Field();
-                Field field = (Field)ObjectUtils.CreateCopy(textField);
+                Field field;
+                if (i == 0)
+                {
+                    field = (Field)ObjectUtils.CreateCopy(textField);
+                }
+                else
+                {
+                    field = (Field)ObjectUtils.CreateCopy(decimalField);
+                    // 增加合计列
+                    GroupSumColumn sumColumn = new GroupSumColumn();
+                    sumColumn.FieldKey = name;
+                    sumColumn.Precision = -1;
+                    sumColumn.SumType = 1;
+                    entity.GroupColumnInfo.AddGroupSumColumn(sumColumn);
+                }
+                 
                 field.DynamicProperty = null;
                 //field.ElementType = ElementType.BarItemElementType_TextField;
                 field.Entity = entity;
@@ -71,7 +88,8 @@ namespace CZ.CEEG.Report.CostAccount
                 _currBusinessInfo.Add(field);
             }
 
-            _currBusinessInfo.Remove(_currBusinessInfo.GetElement("FField"));
+            _currBusinessInfo.Remove(textField);
+            _currBusinessInfo.Remove(decimalField);
             // 强制要求重新构建单据的ORM模型
             _currBusinessInfo.GetDynamicObjectType(true);
 
@@ -87,21 +105,40 @@ namespace CZ.CEEG.Report.CostAccount
             string entityKey = "FEntity";
             //Entity entity = _currBusinessInfo.GetEntity(entityKey);
             EntityAppearance entityApp = _currLayoutInfo.GetEntityAppearance(entityKey);
+            Entity entity = entityApp.Entity;
             var textApp = _currLayoutInfo.GetFieldAppearance("FField");
+            var decimalApp = _currLayoutInfo.GetFieldAppearance("FDecimal");
 
             for (int i = 0; i < entityData.Columns.Count; i++)
             {
                 string name = "FField" + (i + 1).ToString();
                 //FieldAppearance field = new FieldAppearance();
-                FieldAppearance field = (FieldAppearance)ObjectUtils.CreateCopy(textApp);
+                FieldAppearance field;
+                if (i == 0)
+                {
+                    field = (FieldAppearance)ObjectUtils.CreateCopy(textApp);
+                }
+                else
+                {
+                    field = (FieldAppearance)ObjectUtils.CreateCopy(decimalApp);
+                    //添加合计列
+                    GroupSumColumn sumColumn = new GroupSumColumn();
+                    sumColumn.FieldKey = name;
+                    sumColumn.Precision = -1;
+                    sumColumn.SumType = 1;
+                    entity.GroupColumnInfo.AddGroupSumColumn(sumColumn);
+                }
                 field.Key = name;
                 field.Caption = new LocaleValue(entityData.Columns[i].ColumnName);
                 field.Field = _currBusinessInfo.GetField(name);
                 field.Tabindex = i + 1;
                 _currLayoutInfo.Add(field);
+
+                
             }
 
-            _currLayoutInfo.Remove(_currLayoutInfo.GetAppearance("FField"));
+            _currLayoutInfo.Remove(textApp);
+            _currLayoutInfo.Remove(decimalApp);
 
             entityApp.Layoutinfo.Sort();
             e.LayoutInfo = _currLayoutInfo;

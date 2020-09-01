@@ -50,6 +50,8 @@ namespace CZ.CEEG.Report.AccountQueryCond
                 this.View.Model.SetValue("FDetailID", objs[i]["FDetailID"], i);
                 this.View.Model.SetValue("FDEBIT", objs[i]["FDEBIT"], i);
                 this.View.Model.SetValue("FCREDIT", objs[i]["FCREDIT"], i);
+                this.View.Model.SetValue("FAMOUNTFOR", objs[i]["FAMOUNTFOR"], i);
+                this.View.Model.SetValue("FEntrySeq", objs[i]["FEntrySeq"], i);
             }
             this.View.UpdateView("FEntity");
 
