@@ -21,8 +21,9 @@ namespace CZ.CEEG.Report.CostAccount
             if(e.ControlAppearance.OriginKey == "FEntity")
             {
                 // 显示表体过滤行
-                e.Control.Put("showFilterRow", true);
+                //e.Control.Put("showFilterRow", true);
                 // 查询数据
+                
                 string FSDate = this.ParentPageView.OpenParameter.GetCustomParameter("FSDate") == null ? "" :
                 this.ParentPageView.OpenParameter.GetCustomParameter("FSDate").ToString();
                 string FEDate = this.ParentPageView.OpenParameter.GetCustomParameter("FEDate") == null ? "" :
@@ -45,16 +46,17 @@ namespace CZ.CEEG.Report.CostAccount
                 {
                     string name = "FField" + (i + 1).ToString();
                     JSONObject sumObj = new JSONObject();
-                    sumObj["fieldKeys"] = name;
-                    sumObj["sumType"] = 2;
+                    sumObj["fieldKey"] = name;
+                    sumObj["sumType"] = 1;
                     sumFields.Add(sumObj);
                 }
-                
+
                 JSONArray columnsInfo = new JSONArray();
                 JSONObject infoObj = new JSONObject();
                 infoObj["groupSumColums"] = sumFields;
                 columnsInfo.Add(infoObj);
                 e.Control["groupColumnsInfo"] = columnsInfo;
+                
             }
         }
     }
