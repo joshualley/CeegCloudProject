@@ -16,7 +16,7 @@ using System.Data;
 
 namespace CZ.CEEG.Report.CostAccount
 {
-    [Description("费用台账报表构建")]
+    [Description("费用台账报表单据体动态列")]
     [HotUpdate]
     public class CZ_CEEG_Report_CostAccount : AbstractDynamicFormPlugIn
     {
@@ -163,6 +163,7 @@ namespace CZ.CEEG.Report.CostAccount
                 }
             }
             this.View.UpdateView("FEntity");
+            
         }
 
         public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
