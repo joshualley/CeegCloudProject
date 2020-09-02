@@ -23,11 +23,18 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             DateTime currDt = DateTime.Now;
             string sDt = currDt.Year.ToString() + "-" + currDt.Month.ToString() + "-01";
             string eDt = currDt.ToString();
+            //设置开始日期为订单最早日期
+            string sql = "SELECT TOP 1 FDate FROM T_SAL_ORDER ORDER BY FDate ASC";
+            var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+            if (obj.Count > 0)
+            {
+                sDt = obj[0]["FDate"].ToString();
+            }
             this.View.Model.SetValue("FSDate", sDt);
             this.View.UpdateView("FSDate");
             this.View.Model.SetValue("FEDate", eDt);
             this.View.UpdateView("FEDate");
-            Act_QueryPmt(sDt, eDt);
+            Act_QueryPmt();
         }
 
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
@@ -37,13 +44,15 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             switch (key)
             {
                 case "FQUERYBTN":
-                    string sDt = this.View.Model.GetValue("FSDate").ToString();
-                    string eDt = this.View.Model.GetValue("FEDate").ToString();
-                    Act_QueryPmt(sDt, eDt);
+                    Act_QueryPmt();
                     break;
             }
         }
 
+        /// <summary>
+        /// 销售员货款，查看明细
+        /// </summary>
+        /// <param name="e"></param>
         public override void EntryBarItemClick(BarItemClickEventArgs e)
         {
             base.EntryBarItemClick(e);
@@ -71,6 +80,10 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             }
         }
 
+        /// <summary>
+        /// 销售员货款，双击行打开明细
+        /// </summary>
+        /// <param name="e"></param>
         public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
         {
             base.EntityRowDoubleClick(e);
@@ -92,8 +105,13 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
         /// <param name="FSellerID">为0值时显示所有的销售员详情</param>
         private void Act_ShowSellerDetail(string FSellerID)
         {
-            string FSDate = this.View.Model.GetValue("FSDate").ToString();
-            string FEDate = this.View.Model.GetValue("FEDate").ToString();
+            string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
+            string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
+            string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "0" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
+            string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "0" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
+            string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "0" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
+            string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
+            string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
             var para = new DynamicFormShowParameter();
             para.FormId = "ora_PMT_SalesmanItemPmt";
             para.OpenStyle.ShowType = ShowType.Modal;
@@ -101,14 +119,29 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             para.CustomParams.Add("FSDate", FSDate);
             para.CustomParams.Add("FEDate", FEDate);
             para.CustomParams.Add("FSellerID", FSellerID);
+            para.CustomParams.Add("FQDeptId", FQDeptId);
+            para.CustomParams.Add("FQSalerId", FQSalerId);
+            para.CustomParams.Add("FQCustId", FQCustId);
+            para.CustomParams.Add("FQFactoryId", FQFactoryId);
+            para.CustomParams.Add("FQOrderNo", FQOrderNo);
             this.View.ShowForm(para);
         }
 
-        private void Act_QueryPmt(string sDt, string eDt)
+        private void Act_QueryPmt()
         {
+            string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
+            string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
+            string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "0" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
+            string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "0" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
+            string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "0" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
+            string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
+            string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
+
             string formId = this.View.GetFormId();
-            string sql = string.Format("EXEC proc_czly_GetPmt @FormId='{0}', @sDt='{1}', @eDt='{2}'",
-                formId, sDt, eDt);
+            string sql = string.Format(@"EXEC proc_czly_GetPmt @FormId='{0}', @sDt='{1}', @eDt='{2}', 
+@FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId={6}, @FQOrderNo='{7}'",
+                formId, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
+            
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
             Act_CreateEntry(objs);
         }

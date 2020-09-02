@@ -23,15 +23,25 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
+
             DateTime currDt = DateTime.Now;
             string sDt = currDt.Year.ToString() + "-" + currDt.Month.ToString() + "-01";
             string eDt = currDt.ToString();
+
+            //设置开始日期为订单最早日期
+            string sql = "SELECT TOP 1 FDate FROM T_SAL_ORDER ORDER BY FDate ASC";
+            var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+            if(obj.Count > 0)
+            {
+                sDt = obj[0]["FDate"].ToString();
+            }
+           
             this.View.Model.SetValue("FSDate", sDt);
             this.View.UpdateView("FSDate");
             this.View.Model.SetValue("FEDate", eDt);
             this.View.UpdateView("FEDate");
-            Act_QuerySummaryData(sDt, eDt);
-            Act_QueryDetailData(sDt, eDt);
+            Act_QuerySummaryData();
+            //Act_QueryDetailData();
         }
 
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
@@ -41,10 +51,9 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             switch (key)
             {
                 case "FQUERYBTN":
-                    string sDt = this.View.Model.GetValue("FSDate").ToString();
-                    string eDt = this.View.Model.GetValue("FEDate").ToString();
-                    Act_QuerySummaryData(sDt, eDt);
-                    Act_QueryDetailData(sDt, eDt);
+                    
+                    Act_QuerySummaryData();
+                    Act_QueryDetailData();
                     break;
             }
         }
@@ -112,9 +121,20 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         /// <summary>
         /// 查询货款汇总数据
         /// </summary>
-        private void Act_QuerySummaryData(string sDt, string eDt)
+        private void Act_QuerySummaryData()
         {
-            string sql = "exec proc_czly_GetPmtSummary @SDt='" + sDt + "', @EDt='" + eDt + "'";
+            string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
+            string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
+            string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "0" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
+            string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "0" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
+            string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "0" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
+            //string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
+            string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
+
+
+            string sql = string.Format(@"exec proc_czly_GetPmtSummary @SDt='{0}', @EDt='{1}', 
+@FQDeptId={2}, @FQSalerId={3}, @FQCustId={4}, @FQOrderNo='{5}'",
+            FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
             this.View.Model.DeleteEntryData("FEntity");
@@ -160,9 +180,19 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         /// <summary>
         /// 查询货款明细
         /// </summary>
-        private void Act_QueryDetailData(string sDt, string eDt)
+        private void Act_QueryDetailData()
         {
-            string sql = "exec proc_czly_GetPmtDetail @SDt='" + sDt + "', @EDt='" + eDt + "'";
+            string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
+            string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
+            string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "0" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
+            string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "0" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
+            string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "0" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
+            string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
+            string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
+
+            string sql = string.Format(@"exec proc_czly_GetPmtDetail @SDt='{0}', @EDt='{1}', 
+@FQDeptId={2}, @FQSalerId={3}, @FQCustId={4}, @FQFactoryId={5}, @FQOrderNo='{6}'",
+            FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
             this.View.Model.DeleteEntryData("FDetailEntity");

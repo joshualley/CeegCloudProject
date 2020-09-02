@@ -1,5 +1,6 @@
 ﻿using Kingdee.BOS;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
@@ -7,6 +8,7 @@ using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.Core.Metadata.ControlElement;
 using Kingdee.BOS.Core.Metadata.EntityElement;
 using Kingdee.BOS.Core.Metadata.FieldElement;
+using Kingdee.BOS.Core.Metadata.GroupElement;
 using Kingdee.BOS.Util;
 using System;
 using System.ComponentModel;
@@ -14,7 +16,7 @@ using System.Data;
 
 namespace CZ.CEEG.Report.CostAccount
 {
-    [Description("费用台账报表构建")]
+    [Description("费用台账报表单据体动态列")]
     [HotUpdate]
     public class CZ_CEEG_Report_CostAccount : AbstractDynamicFormPlugIn
     {
@@ -38,24 +40,20 @@ namespace CZ.CEEG.Report.CostAccount
                 this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
             string FEDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" : 
                 this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
-            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "" :
+            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "0" :
                 this.View.OpenParameter.GetCustomParameter("FOrgId").ToString();
-            string FDeptID = this.View.OpenParameter.GetCustomParameter("FDeptID") == null ? "" :
+            string FDeptID = this.View.OpenParameter.GetCustomParameter("FDeptID") == null ? "0" :
                 this.View.OpenParameter.GetCustomParameter("FDeptID").ToString();
+            string FAccountId = this.View.OpenParameter.GetCustomParameter("FAccountId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FAccountId").ToString();
 
-            string sql = "";
-            if (FOrgId == "0")
-            {
-                sql = string.Format("EXEC proc_czly_AccountOrg @SDt='{0}', @EDt='{1}'", FSDate, FEDate);
-            }
-            else
-            {
-                sql = string.Format("EXEC proc_czly_AccountDept @SDt='{0}', @EDt='{1}', @FOrgId='{2}', @FDeptId='{3}'", 
-                    FSDate, FEDate, FOrgId, FDeptID);
-            }
-            
+            string sql = string.Format(@"EXEC proc_czly_AccountDept @SDt='{0}', @EDt='{1}', 
+@FOrgId='{2}', @FDeptId='{3}', @FAccountId='{4}'",
+                    FSDate, FEDate, FOrgId, FDeptID, FAccountId);
+
 
             Field textField = _currBusinessInfo.GetField("FField");
+            Field decimalField = _currBusinessInfo.GetField("FDecimal");
             //var textApp = _currLayoutInfo.GetEntityAppearance("FField");
 
             entityData = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0];
@@ -63,7 +61,22 @@ namespace CZ.CEEG.Report.CostAccount
             {
                 string name = "FField" + (i + 1).ToString();
                 //Field field = new Field();
-                Field field = (Field)ObjectUtils.CreateCopy(textField);
+                Field field;
+                if (i == 0)
+                {
+                    field = (Field)ObjectUtils.CreateCopy(textField);
+                }
+                else
+                {
+                    field = (Field)ObjectUtils.CreateCopy(decimalField);
+                    // 增加合计列
+                    GroupSumColumn sumColumn = new GroupSumColumn();
+                    sumColumn.FieldKey = name;
+                    sumColumn.Precision = -1;
+                    sumColumn.SumType = 1;
+                    entity.GroupColumnInfo.AddGroupSumColumn(sumColumn);
+                }
+                 
                 field.DynamicProperty = null;
                 //field.ElementType = ElementType.BarItemElementType_TextField;
                 field.Entity = entity;
@@ -75,7 +88,8 @@ namespace CZ.CEEG.Report.CostAccount
                 _currBusinessInfo.Add(field);
             }
 
-            _currBusinessInfo.Remove(_currBusinessInfo.GetElement("FField"));
+            _currBusinessInfo.Remove(textField);
+            _currBusinessInfo.Remove(decimalField);
             // 强制要求重新构建单据的ORM模型
             _currBusinessInfo.GetDynamicObjectType(true);
 
@@ -91,21 +105,40 @@ namespace CZ.CEEG.Report.CostAccount
             string entityKey = "FEntity";
             //Entity entity = _currBusinessInfo.GetEntity(entityKey);
             EntityAppearance entityApp = _currLayoutInfo.GetEntityAppearance(entityKey);
+            Entity entity = entityApp.Entity;
             var textApp = _currLayoutInfo.GetFieldAppearance("FField");
+            var decimalApp = _currLayoutInfo.GetFieldAppearance("FDecimal");
 
             for (int i = 0; i < entityData.Columns.Count; i++)
             {
                 string name = "FField" + (i + 1).ToString();
                 //FieldAppearance field = new FieldAppearance();
-                FieldAppearance field = (FieldAppearance)ObjectUtils.CreateCopy(textApp);
+                FieldAppearance field;
+                if (i == 0)
+                {
+                    field = (FieldAppearance)ObjectUtils.CreateCopy(textApp);
+                }
+                else
+                {
+                    field = (FieldAppearance)ObjectUtils.CreateCopy(decimalApp);
+                    //添加合计列
+                    GroupSumColumn sumColumn = new GroupSumColumn();
+                    sumColumn.FieldKey = name;
+                    sumColumn.Precision = -1;
+                    sumColumn.SumType = 1;
+                    entity.GroupColumnInfo.AddGroupSumColumn(sumColumn);
+                }
                 field.Key = name;
                 field.Caption = new LocaleValue(entityData.Columns[i].ColumnName);
                 field.Field = _currBusinessInfo.GetField(name);
                 field.Tabindex = i + 1;
                 _currLayoutInfo.Add(field);
+
+                
             }
 
-            _currLayoutInfo.Remove(_currLayoutInfo.GetAppearance("FField"));
+            _currLayoutInfo.Remove(textApp);
+            _currLayoutInfo.Remove(decimalApp);
 
             entityApp.Layoutinfo.Sort();
             e.LayoutInfo = _currLayoutInfo;
@@ -130,6 +163,42 @@ namespace CZ.CEEG.Report.CostAccount
                 }
             }
             this.View.UpdateView("FEntity");
+            
+        }
+
+        public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
+        {
+            base.EntityRowDoubleClick(e);
+
+            string FDeptName = this.View.Model.GetValue("FField1", e.Row) == null ? "" :
+                this.View.Model.GetValue("FField1", e.Row).ToString();
+
+            if (FDeptName == "")
+            {
+                return;
+            }
+
+            string FSDate = this.View.OpenParameter.GetCustomParameter("FSDate") == null ? "" :
+                this.View.OpenParameter.GetCustomParameter("FSDate").ToString();
+            string FEDate = this.View.OpenParameter.GetCustomParameter("FEDate") == null ? "" :
+                this.View.OpenParameter.GetCustomParameter("FEDate").ToString();
+            string FOrgId = this.View.OpenParameter.GetCustomParameter("FOrgId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FOrgId").ToString();
+            string FAccountId = this.View.OpenParameter.GetCustomParameter("FAccountId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FAccountId").ToString();
+
+            DynamicFormShowParameter param = new DynamicFormShowParameter();
+            param.ParentPageId = this.View.PageId;
+            param.FormId = "ora_VounterDetail";
+            param.OpenStyle.ShowType = ShowType.Modal;
+
+            param.CustomParams.Add("FSDate", FSDate);
+            param.CustomParams.Add("FEDate", FEDate);
+            param.CustomParams.Add("FOrgId", FOrgId);
+            param.CustomParams.Add("FAccountId", FAccountId);
+            param.CustomParams.Add("FDeptName", FDeptName);
+
+            this.View.ShowForm(param);
         }
     }
 }
