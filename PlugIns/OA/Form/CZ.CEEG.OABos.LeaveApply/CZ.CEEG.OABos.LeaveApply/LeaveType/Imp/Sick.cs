@@ -73,7 +73,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             double leaveDays = getAlreadyLeaveDays();
             double leftDays = mYearAllowDays - leaveDays;
             return string.Format("{0}, 剩余可请{1}天，已请{2}天，本年可请{3}天。\n",
-                getLeaveName(), leaveDays, leftDays, mYearAllowDays);
+                getLeaveName(), leftDays, leaveDays, mYearAllowDays);
         }
 
         public override bool ValidateLeave(ref string msg)
