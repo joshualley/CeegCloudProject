@@ -314,6 +314,30 @@ namespace CZ.CEEG.WFTask.PersonalReport
                 return true;
             }
 
+            //打分校验,不能超过105分
+            private bool ValidatePreSum(Kingdee.BOS.Core.ExtendedDataEntity dataEntity)
+            {
+                var entityL = dataEntity["FEntityL"] as DynamicObjectCollection;
+                if (entityL.Count > 0)
+                {
+                    float SumPre = 0;
+                    foreach (var row in entityL)
+                    {
+                        if (row["FLSrcID"].ToString() != "0")
+                        {
+                            SumPre += float.Parse(row["FLDirectorGrade"].ToString());
+                        }
+                    }
+
+                    if (SumPre > 105)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
 
             public override void Validate(Kingdee.BOS.Core.ExtendedDataEntity[] dataEntities, ValidateContext validateContext, Kingdee.BOS.Context ctx)
             {
@@ -379,6 +403,18 @@ namespace CZ.CEEG.WFTask.PersonalReport
                         }
                     }
 
+                    if (!ValidatePreSum(dataEntity))
+                    {
+                        ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
+                                string.Empty,
+                                FID,
+                                dataEntity.DataEntityIndex,
+                                dataEntity.RowIndex,
+                                FID,
+                                "汇报人上月工作总评分不能超过105！",
+                                string.Empty);
+                        validateContext.AddError(null, ValidationErrorInfo);
+                    }                 
                 }
             }
         }
