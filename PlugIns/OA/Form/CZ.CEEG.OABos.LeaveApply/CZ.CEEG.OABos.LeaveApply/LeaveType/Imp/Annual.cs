@@ -143,15 +143,15 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public override bool ValidateLeave(ref string msg)
         {
-            Annual annual = new Annual(mContext, mLeaver, 0);
-            double annualLeaveDays = annual.getAlreadyLeaveDays();
-            double carryDays = annual.getLastYearCarryOverDays();
+            Home home = new Home(mContext, mLeaver, 0);
+            double homeLeaveDays = home.getAlreadyLeaveDays();
+            double carryDays = home.getLastYearCarryOverDays();
             double leaveDays = getAlreadyLeaveDays();
-            double leftDays = IsKaiMan() ? mYearAllowDays + carryDays - leaveDays - annualLeaveDays :
-                mYearAllowDays - leaveDays - annualLeaveDays;
+            double leftDays = IsKaiMan() ? mYearAllowDays + carryDays - leaveDays - homeLeaveDays :
+                mYearAllowDays - leaveDays - homeLeaveDays;
             if (leftDays < mLeaveDays)
             {
-                msg += string.Format("{0}的{1}提交失败, 原因：超出了目前可请假的天数{2}天。\n", getLeaver(), getLeaveName(), mOnceAllowDays);
+                msg += string.Format("{0}的{1}提交失败, 原因：超出了目前可请假的天数{2}天。\n", getLeaver(), getLeaveName(), leftDays);
                 return false;
             }
             return true;

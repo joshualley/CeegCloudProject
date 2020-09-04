@@ -153,7 +153,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 mYearAllowDays - leaveDays - annualLeaveDays;
             if (leftDays < mLeaveDays)
             {
-                msg += string.Format("{0}的{1}提交失败, 原因：超出了目前可请假的天数{2}天。\n", getLeaver(), getLeaveName(), mOnceAllowDays);
+                msg += string.Format("{0}的{1}提交失败, 原因：超出了目前可请假的天数{2}天。\n", getLeaver(), getLeaveName(), leftDays);
                 return false;
             }
             return true;
