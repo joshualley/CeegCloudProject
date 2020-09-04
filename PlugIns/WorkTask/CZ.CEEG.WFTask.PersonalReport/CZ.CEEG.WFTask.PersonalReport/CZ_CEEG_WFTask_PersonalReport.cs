@@ -349,57 +349,35 @@ namespace CZ.CEEG.WFTask.PersonalReport
                     }
                     */
                     //获取当前流程节点
-                    string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(ctx, this.formId, FID);
-                    List<ChartActivityInfo> routeCollection = WorkflowChartServiceHelper.GetProcessRouter(ctx, procInstId);
-                    var WFNode = routeCollection[routeCollection.Count - 1];
 
-                    if (WFNode.ActivityId == Director_NodeID)
-                    {
-                        var entityL = dataEntity["FEntityL"] as DynamicObjectCollection;
-                        foreach (var row in entityL)
-                        {
-                            if (row["FLSrcID"].ToString() != "0")
-                            {
-                                if (row["FLDirectorGrade"].ToString() == "0" )//|| row["FLDirectorIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
-                                {
-                                    ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
-                                            string.Empty,
-                                            FID,
-                                            dataEntity.DataEntityIndex,
-                                            dataEntity.RowIndex,
-                                            FID,
-                                            "请对汇报人上月工作进行评分！",
-                                            string.Empty);
-                                    validateContext.AddError(null, ValidationErrorInfo);
-                                }
-                            }
-                        }
+                    //string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(ctx, this.formId, FID);
+                    //List<ChartActivityInfo> routeCollection = WorkflowChartServiceHelper.GetProcessRouter(ctx, procInstId);
+                    //var WFNode = routeCollection[routeCollection.Count - 1];
+
+                    //if (WFNode.ActivityId == Director_NodeID)
+                    //{
                         
-                    }
-                    /*
-                    else if (WFNode.ActivityId == GManager_NodeID)
+                    //}
+
+                    var entityL = dataEntity["FEntityL"] as DynamicObjectCollection;
+                    foreach (var row in entityL)
                     {
-                        var entityAL = dataEntity["FEntityAL"] as DynamicObjectCollection;
-                        foreach (var row in entityAL)
+                        if (row["FLSrcID"].ToString() != "0")
                         {
-                            if (row["FALSrcID"].ToString() != "0")
+                            if (row["FLDirectorGrade"].ToString() == "0")//|| row["FLDirectorIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
                             {
-                                if (row["FALGManagerGrade"].ToString() == "0" )//|| row["FALGManagerIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
-                                {
-                                    ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
-                                            string.Empty,
-                                            FID,
-                                            dataEntity.DataEntityIndex,
-                                            dataEntity.RowIndex,
-                                            FID,
-                                            "请对汇报人上月工作进行评分！",
-                                            string.Empty);
-                                    validateContext.AddError(null, ValidationErrorInfo);
-                                }
+                                ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
+                                        string.Empty,
+                                        FID,
+                                        dataEntity.DataEntityIndex,
+                                        dataEntity.RowIndex,
+                                        FID,
+                                        "请对汇报人上月工作进行评分！",
+                                        string.Empty);
+                                validateContext.AddError(null, ValidationErrorInfo);
                             }
                         }
                     }
-                    */
 
                 }
             }
