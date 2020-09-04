@@ -99,13 +99,12 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         private void InitWorkAge()
         {
-            string sql = "/*dialect*/SELECT [dbo].[fn_GetWorkYear](FJoinDate,GETDATE()) FSoYear," +
-                "[dbo].[fn_GetWorkYear](F_HR_BOBDATE,GETDATE()) FCpYear," +
-                "FJoinDate, " +
-                "DATEDIFF(MONTH,F_HR_BOBDATE,GETDATE()) FCpMonth " +
-                "FROM T_HR_EMPINFO WHERE FID='" + mLeaver + "'";
+            string sql = string.Format(@"/*dialect*/SELECT [dbo].[fn_GetWorkYear](FJoinDate,GETDATE()) FSoYear,
+[dbo].[fn_GetWorkYear](F_HR_BOBDATE,GETDATE()) FCpYear, FJoinDate, 
+DATEDIFF(MONTH,F_HR_BOBDATE,GETDATE()) FCpMonth 
+FROM T_HR_EMPINFO WHERE FID='{0}'", mLeaver);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
-            if(obj.Count > 0)
+            if (obj.Count > 0)
             {
                 mSocialWorkYear = int.Parse(obj[0]["FSoYear"].ToString());
                 mCompanyWorkYear = int.Parse(obj[0]["FCpYear"].ToString());
@@ -145,6 +144,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public override bool ValidateLeave(ref string msg)
         {
+            
             Annual annual = new Annual(mContext, mLeaver, 0);
             double annualLeaveDays = annual.getAlreadyLeaveDays();
             double carryDays = annual.getLastYearCarryOverDays();

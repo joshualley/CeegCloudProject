@@ -98,11 +98,10 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         private void InitWorkAge()
         {
-            string sql = "/*dialect*/SELECT [dbo].[fn_GetWorkYear](FJoinDate,GETDATE()) FSoYear," +
-                "[dbo].[fn_GetWorkYear](F_HR_BOBDATE,GETDATE()) FCpYear," +
-                "FJoinDate, " +
-                "DATEDIFF(MONTH,F_HR_BOBDATE,GETDATE()) FCpMonth " +
-                "FROM T_HR_EMPINFO WHERE FID='" + mLeaver + "'";
+            string sql = string.Format(@"/*dialect*/ SELECT [dbo].[fn_GetWorkYear](FJoinDate,GETDATE()) FSoYear,
+[dbo].[fn_GetWorkYear](F_HR_BOBDATE,GETDATE()) FCpYear, FJoinDate, 
+DATEDIFF(MONTH,F_HR_BOBDATE,GETDATE()) FCpMonth 
+FROM T_HR_EMPINFO WHERE FID='{0}'", mLeaver);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
             if (obj.Count > 0)
             {
@@ -119,13 +118,14 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public override string GetLeftLeaveMessage()
         {
+            string msg = "";
             Home home = new Home(mContext, mLeaver, 0);
             double homeLeaveDays = home.getAlreadyLeaveDays();
             double carryDays = getLastYearCarryOverDays();
             double leaveDays = getAlreadyLeaveDays();
             string leaveName = getLeaveName();
             double leftDays = 0;
-            string msg = "";
+            
             if (IsKaiMan())
             {
                 leftDays = mOnceAllowDays + carryDays - leaveDays - homeLeaveDays;

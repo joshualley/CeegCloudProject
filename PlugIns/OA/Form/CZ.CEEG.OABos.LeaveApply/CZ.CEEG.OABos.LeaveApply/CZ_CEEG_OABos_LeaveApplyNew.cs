@@ -320,10 +320,6 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void AfterBindData(EventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                
-            //}
             base.AfterBindData(e);
             addEntryLeaver();
             if (isFirstOpen)
@@ -344,10 +340,6 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void DataChanged(DataChangedEventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                
-            //}
             base.DataChanged(e);
             Act_SetLeaveDays(e);
             if (e.Field.Key == "FLeaveType" || e.Field.Key == "FName")
@@ -369,10 +361,6 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
         /// <param name="e"></param>
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
-            //if (this.Context.ClientType.ToString() != "Mobile")
-            //{
-                
-            //}
             base.BeforeDoOperation(e);
             string _opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
             if (_opKey == "SUBMIT")

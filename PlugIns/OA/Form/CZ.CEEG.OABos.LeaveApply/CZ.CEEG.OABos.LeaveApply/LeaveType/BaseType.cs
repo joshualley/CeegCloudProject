@@ -88,9 +88,9 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 return mLastYearLeaveDays;
             }
             int year = DateTime.Now.Year - 1;
-            string sql = string.Format("SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le " +
-                "INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=0 AND FDocumentStatus='C' " +
-                "WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' ",
+            string sql = string.Format(@"SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le 
+INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=0 AND FDocumentStatus='C' 
+WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' ",
                 mLeaver, (int)mLeaveType, year);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
             if (obj.Count <= 0)
@@ -117,9 +117,9 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 return mLastYearCarryOverDays;
             }
             int year = DateTime.Now.Year;
-            string sql = string.Format("SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le " +
-                "INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=1 AND FDocumentStatus='C' " +
-                "WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2} ",
+            string sql = string.Format(@"SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le 
+INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=1 AND FDocumentStatus='C' 
+WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' ",
                 mLeaver, (int)mLeaveType, year);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
             if(obj.Count <= 0)
@@ -144,9 +144,9 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 return mAlreadyLeaveDays;
             }
             int year = DateTime.Now.Year;
-            string sql = string.Format("SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le " +
-                "INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=0 AND FDocumentStatus='C' " +
-                "WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' ",
+            string sql = string.Format(@"SELECT ISNULL(SUM(FDayNum),0) days FROM ora_t_Leave le
+INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=0 AND FDocumentStatus='C' 
+WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' ",
                 mLeaver, (int)mLeaveType, year);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
             if (obj.Count <= 0)
