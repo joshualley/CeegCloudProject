@@ -97,7 +97,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
                 sql += string.Format("INSERT INTO " +
                     "ora_HR_SignInData(FClockID, FPosition, FDate, FTimeStamp, FFullDate, FOpenID, FInOut, FUserNA, FDeptNA, FRemark) " +
                     "VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}');\n",
-                    data.clockId, data.position, data.day, data.time, TimeStampToDateTime(data.time).ToString(),
+                    data.clockId, data.position.Replace("'", "''"), data.day, data.time, TimeStampToDateTime(data.time).ToString(),
                     data.openId, data.positionResult, data.userName, data.department, data.remark);
             }
             try
