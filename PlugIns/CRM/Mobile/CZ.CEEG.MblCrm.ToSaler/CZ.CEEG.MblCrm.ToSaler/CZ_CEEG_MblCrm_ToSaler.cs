@@ -286,14 +286,16 @@ namespace CZ.CEEG.MblCrm.ToSaler
                 this.View.GetControl("FBidMakerFL").Visible = false;
                 string FID = this.View.BillModel.DataObject["Id"].ToString();
                 string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
-                string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "'";
+                string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "' order by FCREATETIME desc";
                 var data = CZDB_GetData(sql);
-                if (data.Count > 0 && (data[0]["FSTATUS"].ToString() != "3" || data[0]["FSTATUS"].ToString() != "4"))
+                // FSTATUS=1 --> 流程终止或撤销
+                if (data.Count > 0 && (data[0]["FSTATUS"].ToString() == "1"))
                 {
                     saveBtn.Visible = false;
                     pushBtn.Visible = false;
                     submitBtn.SetCustomPropertyValue("width", 310);
                 }
+                // FSTATUS=2、4 --> 打回发起人
                 else
                 {
                     submitBtn.Visible = false;

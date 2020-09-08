@@ -22,6 +22,7 @@ using Kingdee.BOS.FileServer.Core.Object;
 using Kingdee.BOS.Core.Const;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
 using Kingdee.BOS.Mobile;
+using Kingdee.BOS.Workflow.ServiceHelper;
 
 namespace CZ.CEEG.MblCrm.SaleContact
 {
@@ -119,7 +120,7 @@ namespace CZ.CEEG.MblCrm.SaleContact
         private void HideBtn()
         {
             string _FDocumentStatus = this.View.BillModel.GetValue("FDocumentStatus").ToString();
-            if (_FDocumentStatus == "Z" || _FDocumentStatus == "A" || _FDocumentStatus == "D")
+            if (_FDocumentStatus == "Z" || _FDocumentStatus == "A")
             {
                 var submitBtn = this.View.GetControl("FSubmitBtn");
                 var saveBtn = this.View.GetControl("FSaveBtn");
@@ -139,6 +140,32 @@ namespace CZ.CEEG.MblCrm.SaleContact
                 var saveBtn = this.View.GetControl("FSaveBtn");
                 saveBtn.Visible = false;
                 submitBtn.Visible = false;
+            }
+            else if (_FDocumentStatus == "D")
+            {
+
+                var submitBtn = this.View.GetControl("FSubmitBtn");
+                var saveBtn = this.View.GetControl("FSaveBtn");
+                var pushBtn = this.View.GetControl("FPUSH");
+
+                string FID = this.View.BillModel.DataObject["Id"].ToString();
+                string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
+                string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "' order by FCREATETIME desc";
+                var data = CZDB_GetData(sql);
+                // FSTATUS=1 --> 流程终止或撤销
+                if (data.Count > 0 && (data[0]["FSTATUS"].ToString() == "1"))
+                {
+                    saveBtn.Visible = false;
+                    pushBtn.Visible = false;
+                    submitBtn.SetCustomPropertyValue("width", 310);
+                }
+                // FSTATUS=2、4 --> 打回发起人
+                else
+                {
+                    submitBtn.Visible = false;
+                    pushBtn.Visible = false;
+                    saveBtn.SetCustomPropertyValue("width", 310);
+                }
             }
         }
 
