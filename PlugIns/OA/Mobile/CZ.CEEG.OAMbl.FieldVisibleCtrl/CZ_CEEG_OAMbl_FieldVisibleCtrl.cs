@@ -58,7 +58,7 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
                 string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
                 string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "'";
                 var data = CZDB_GetData(sql);
-                if (data.Count > 0 && (data[0]["FSTATUS"].ToString() != "3" || data[0]["FSTATUS"].ToString() != "4"))
+                if (data.Count > 0 && data[0]["FSTATUS"].ToString() == "1")
                 {
                     var submitBtn = this.View.GetControl("FSubmitBtn");
                     var saveBtn = this.View.GetControl("FSaveBtn");
