@@ -1,4 +1,5 @@
 ﻿using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core;
 using Kingdee.BOS.Core.Bill;
 using Kingdee.BOS.Core.Bill.PlugIn;
 using Kingdee.BOS.Core.DynamicForm;
@@ -123,18 +124,19 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         /// </summary>
         private void Act_QuerySummaryData()
         {
+            string formid = this.View.GetFormId();
             string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
             string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
             string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "0" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
             string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "0" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
             string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "0" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
-            //string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
+            string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
             string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
 
 
-            string sql = string.Format(@"exec proc_czly_GetPmtSummary @SDt='{0}', @EDt='{1}', 
-@FQDeptId={2}, @FQSalerId={3}, @FQCustId={4}, @FQOrderNo='{5}'",
-            FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQOrderNo);
+            string sql = string.Format(@"exec proc_czly_GetPmt @FormId='{0}', @SDt='{1}', @EDt='{2}', 
+@FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
+            formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
             this.View.Model.DeleteEntryData("FEntity");
