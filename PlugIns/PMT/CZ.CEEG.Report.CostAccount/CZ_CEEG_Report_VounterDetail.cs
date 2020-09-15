@@ -33,9 +33,12 @@ namespace CZ.CEEG.Report.AccountQueryCond
                 this.View.OpenParameter.GetCustomParameter("FAccountId").ToString();
             string FDeptName = this.View.OpenParameter.GetCustomParameter("FDeptName") == null ? "" :
                 this.View.OpenParameter.GetCustomParameter("FDeptName").ToString();
+            string FCostItemId = this.View.OpenParameter.GetCustomParameter("FCostItemId") == null ? "0" :
+                this.View.OpenParameter.GetCustomParameter("FCostItemId").ToString();
 
             string sql = string.Format(@"EXEC proc_czly_AccountVocunter @SDt='{0}', @EDt='{1}', 
-@FOrgId='{2}', @FAccountId='{3}', @FDeptName='{4}'", FSDate, FEDate, FOrgId, FAccountId, FDeptName);
+@FOrgId='{2}', @FAccountId='{3}', @FDeptName='{4}', @FCostItemId='{5}'", 
+            FSDate, FEDate, FOrgId, FAccountId, FDeptName, FCostItemId);
             
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
@@ -52,6 +55,7 @@ namespace CZ.CEEG.Report.AccountQueryCond
                 this.View.Model.SetValue("FCREDIT", objs[i]["FCREDIT"], i);
                 this.View.Model.SetValue("FAMOUNTFOR", objs[i]["FAMOUNTFOR"], i);
                 this.View.Model.SetValue("FEntrySeq", objs[i]["FEntrySeq"], i);
+                this.View.Model.SetValue("FRealCostItem", objs[i]["FCostItem"], i);
             }
             this.View.UpdateView("FEntity");
 

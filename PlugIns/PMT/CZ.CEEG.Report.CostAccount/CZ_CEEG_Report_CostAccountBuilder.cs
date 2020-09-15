@@ -44,7 +44,7 @@ namespace CZ.CEEG.Report.CostAccount
                 JSONArray sumFields = new JSONArray();
                 for (int i = 1; i < entityData.Columns.Count; i++)
                 {
-                    string name = "FField" + (i + 1).ToString();
+                    string name = "FField_" + (i + 1).ToString();
                     JSONObject sumObj = new JSONObject();
                     sumObj["fieldKey"] = name;
                     sumObj["sumType"] = 1;
