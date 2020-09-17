@@ -145,12 +145,12 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("into #aco from T_ORG_Organizations i inner join t_bd_AccountBook ab on i.FOrgID=ab.FAccountOrgID ");
                     _sb.Append("inner join T_BAS_SystemProFile sy on ab.FBOOKID=sy.FAccountBookID and sy.FCategory='GL' and sy.FKEY='CurrentYear' ");
                     _sb.Append("inner join T_BAS_SystemProFile sp on ab.FBOOKID=sp.FAccountBookID and sp.FCategory='GL' and sp.FKEY='CurrentPeriod';");
-                    _sb.Append("select b.FBeginBalance FGOBAmt,aco.FOrgID FOrgID,a.FMODIFYDATE Date,'B' mType from(" + _ObjMstIDSch + ")o1 ");
+                    _sb.Append("select b.FBeginBalance FGOBAmt,aco.FOrgID FOrgID,SUBSTRING(CONVERT(varchar(100), a.FMODIFYDATE, 120  ),1,10) Date,'' fexplanation,'B' mType from(" + _ObjMstIDSch + ")o1 ");
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_BALANCE b on f.FID=b.FDetailID and aco.FBOOKID=b.FACCOUNTBOOKID and aco.FCBYear=b.FYEAR and aco.FCBPeriod=b.FPeriod and b.FCURRENCYID=0 ");
                     _sb.Append("inner join T_BD_ACCOUNT a on b.FACCOUNTID=a.FACCTID ");
                     _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " union all ");
-                    _sb.Append("select ve.FDC*ve.FAmount FGOBAmt,aco.FOrgID FOrgID,v.FDATE Date,'R' mType from(" + _ObjMstIDSch + ")o1 ");
+                    _sb.Append("select ve.FDC*ve.FAmount FGOBAmt,aco.FOrgID FOrgID,SUBSTRING(CONVERT(varchar(100), v.FDATE, 120  ),1,10) Date,ve.fexplanation,'R' mType from(" + _ObjMstIDSch + ")o1 ");
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and FPOSTDATE is not null and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
@@ -250,7 +250,8 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     money = (new Decimal(Convert.ToDouble(GetObjValue(dList[i], "FGOBAmt"))) - new Decimal(dList.Where(d=>d["mType"].ToString().Equals("R")).Sum(d => Convert.ToDouble(d["FGOBAmt"])))).ToString();
                 }
 
-                this.View.Model.SetValue("F_ora_tMoney_"+ comp, money, i);
+                this.View.Model.SetValue("F_ora_exp_" + comp, GetObjValue(dList[i], "fexplanation"), i);
+                this.View.Model.SetValue("F_ora_tMoney_"+ comp, money, i);             
                 this.View.Model.SetValue("F_ora_tDate_"+ comp, GetObjValue(dList[i], "Date"), i);
             }
             this.View.UpdateView("F_ora_d"+ comp);
