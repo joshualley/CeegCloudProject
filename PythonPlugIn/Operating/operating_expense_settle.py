@@ -8,7 +8,6 @@ clr.AddReference('Kingdee.BOS.App')
 from Kingdee.BOS.App.Data import *
 from System import DateTime
 
-
 def AfterBindData(e):
 	now = DateTime.Now;
 	year = now.Year - 1 if now.Month == 1 else now.Year
@@ -17,9 +16,8 @@ def AfterBindData(e):
 	this.Model.SetValue("FQSDate", sDt)
 	this.Model.SetValue("FQEDate", str(now))
 
-def ButtonClick(e):
-	key = e.Key.upper()
-	if key == "FSETTLEBTN":
+def AfterButtonClick(e):
+	if e.Key == "FSETTLEBTN":
 		FDocumentStatus = this.Model.GetValue("FDocumentStatus")
 		if str(FDocumentStatus) != "Z":
 			this.View.ShowMessage("单据已经完成结算，不允许再次结算！")
@@ -41,22 +39,21 @@ def ButtonClick(e):
 
 
 def search_split_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
-	sql = """
-SELECT s.FBillNo FSplitNo, F_ora_OrgId FRcvOrgId,
-    sp.FCustID, FOrderNo, s.FCreateDate FRcvDate, FSplitAmount, s.FID
+	sql = """SELECT s.FBillNo FSplitNo, F_ora_OrgId FRcvOrgId,
+    sp.FCustID, FOrderNo, s.FCreateDate FRcvDate, FSplitAmount, s.FID, sp.FEntryIDOP
 FROM T_CZ_ReceiptSplitOrderPlan sp
 INNER JOIN T_CZ_ReceiptSplit s ON sp.FID=s.FID
 INNER JOIN T_SAL_ORDER o ON sp.FOrderInterID=o.FID
 INNER JOIN V_BD_SALESMAN sm ON sm.FID=o.FSALERID
-WHERE s.FCreateDate BETWEEN '{}' AND '{}'
+WHERE s.FCreateDate BETWEEN '{}' AND '{}' 
 	""".format(FQSDate, FQEDate)
 	if FQOrderNo != "":
-		sql += "AND sp.FOrderNo='{}' \n".format(FQOrderNo)
+		sql += " AND sp.FOrderNo='{}'  ".format(FQOrderNo)
 	if FQSellerNumber != "":
-		sql += "AND sm.FNUMBER LIKE '%{}%' \n".format(FQSellerNumber)
-
-	this.Model.DeleteEntryData("FEntitySp")
+		sql += " AND sm.FNUMBER LIKE '%{}%' ".format(FQSellerNumber)
+	
 	objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	this.Model.DeleteEntryData("FEntitySp")
 	if objs.Count <= 0:
 		return
 	
@@ -69,11 +66,13 @@ WHERE s.FCreateDate BETWEEN '{}' AND '{}'
 		this.Model.SetValue("FSRcvDate", objs[i]["FRcvDate"], i)
 		this.Model.SetValue("FSRcvAmt", objs[i]["FSplitAmount"], i)
 		this.Model.SetValue("FSplitInterID", objs[i]["FID"], i)
+		this.Model.SetValue("FSplitEntryId", objs[i]["FEntryIDOP"], i)
 	this.View.UpdateView("FEntitySp")
 
 
 def create_settle_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
 	sql = "EXEC CZ_Prc_EmpContractJS  '{}','{}','{}','{}'".format(FQSDate, FQEDate, FQOrderNo, FQSellerNumber)
+
 	objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 	this.Model.DeleteEntryData("FEntity")
 	if objs.Count <= 0:
@@ -105,4 +104,10 @@ def create_settle_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
 		this.Model.SetValue("FRealSettleAmt", objs[i]["FRealAmount"], i)
 		this.Model.SetValue("FOrderInterID", objs[i]["FORDERINTERID"], i)
 		this.Model.SetValue("FOrderEntryID", objs[i]["FEntryID"], i)
+		this.Model.SetValue("F_ora_ProdGroupAmt", objs[i]["F_ORA_PRODGROUPAMT"], i)
+		this.Model.SetValue("FLastDate", objs[i]["FLastDate"], i)
+		this.Model.SetValue("FRecDate", objs[i]["FRecDate"], i)
+		this.Model.SetValue("F_CZ_FBRangeAmtGp", objs[i]["F_CZ_FBRANGEAMTGP"], i)
+		this.Model.SetValue("FCWRateAmount", objs[i]["FCWRateAmount"], i)
+		
 	this.View.UpdateView("FEntity")

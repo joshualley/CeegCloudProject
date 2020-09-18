@@ -12,10 +12,15 @@ def BeginOperationTransaction(e):
 	opKey = this.FormOperation.Operation.upper()
 	for d in e.DataEntitys:
 		FID = str(d["Id"])
+		if opKey == "DELETE":
+			untag_split(FID)
+
+def EndOperationTransaction(e):
+	opKey = this.FormOperation.Operation.upper()
+	for d in e.DataEntitys:
+		FID = str(d["Id"])
 		if opKey == "SAVE":
 			tag_split(FID)
-		elif opKey == "DELETE":
-			untag_split(FID)
 
 
 def tag_split(FID):
