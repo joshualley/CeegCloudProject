@@ -127,13 +127,19 @@ WHERE s.FCreateDate BETWEEN '{}' AND '{}'
 
 
 def create_settle_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
-	sql = "EXEC CZ_Prc_EmpContractJS  '{}','{}','{}','{}'".format(FQSDate, FQEDate, FQOrderNo, FQSellerNumber)
-
-	objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	entity = this.Model.DataObject['FEntityOrd']
 	this.Model.DeleteEntryData("FEntity")
+	
+	if entity.Count > 0:
+		orderNos = ','.join([str(row['FOSourceBillNo']) for row in entity])
+		sql = "EXEC CZ_Prc_EmpContractJS_TS '{}'".format(orderNos)
+		objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	else:
+		sql = "EXEC CZ_Prc_EmpContractJS  '{}','{}','{}','{}'".format(FQSDate, FQEDate, FQOrderNo, FQSellerNumber)
+		objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	
 	if objs.Count <= 0:
 		return
-
 	this.Model.BatchCreateNewEntryRow("FEntity", objs.Count)
 	for i in range(objs.Count):
 		this.Model.SetValue("FSellerId", objs[i]["FSALERID"], i)

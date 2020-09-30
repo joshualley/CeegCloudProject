@@ -159,7 +159,7 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
             switch (formId)
             {
                 case "ora_PMT_OfficePmt": //办事处
-                    Parallel.For(0, objs.Count, (i) =>
+                    for(int i = 0; i < objs.Count; i++)
                     {
                         this.View.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
                         this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
@@ -169,12 +169,11 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
                         this.View.Model.SetValue("FRatioForTExceedePmt", objs[i]["FRatioForTExceedePmt"].ToString(), i);
                         this.View.Model.SetValue("FTUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
                         this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-                    });
+                    }
                     break;
                 case "ora_PMT_CustomerPmt": //客户
-                    Parallel.For(0, objs.Count, (i) =>
+                    for (int i = 0; i < objs.Count; i++)
                     {
-                        this.View.Model.CreateNewEntryRow("FEntity");
                         this.View.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
                         this.View.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
                         this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
@@ -182,12 +181,11 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
                         this.View.Model.SetValue("FTOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
                         this.View.Model.SetValue("FRatioForTPmt", objs[i]["FRatioForTPmt"].ToString(), i);
                         this.View.Model.SetValue("FRatioForTExceedePmt", objs[i]["FRatioForTExceedePmt"].ToString(), i);
-                    });
+                    }
                     break;
                 case "ora_PMT_SalesmanPmt": //销售员
-                    Parallel.For(0, objs.Count, (i) =>
+                    for (int i = 0; i < objs.Count; i++)
                     {
-                        this.View.Model.CreateNewEntryRow("FEntity");
                         this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                         this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
                         this.View.Model.SetValue("FNormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
@@ -197,12 +195,11 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
                         this.View.Model.SetValue("FOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                         this.View.Model.SetValue("FUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                         this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-                    });
+                    }
                     break;
                 case "ora_PMT_FactoryPmt": //子公司
-                    Parallel.For(0, objs.Count, (i) =>
+                    for (int i = 0; i < objs.Count; i++)
                     {
-                        this.View.Model.CreateNewEntryRow("FEntity");
                         this.View.Model.SetValue("FFactoryID", objs[i]["FFactoryID"].ToString(), i);
                         this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
                         this.View.Model.SetValue("FNormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
@@ -210,12 +207,11 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
                         this.View.Model.SetValue("FTExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
                         this.View.Model.SetValue("FTOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
                         this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-                    });
+                    }
                     break;
                 case "ora_PMT_FactoryCustPmt": //子公司客户
-                    Parallel.For(0, objs.Count, (i) =>
+                    for (int i = 0; i < objs.Count; i++)
                     {
-                        this.View.Model.CreateNewEntryRow("FEntity");
                         this.View.Model.SetValue("FFactoryID", objs[i]["FFactoryID"].ToString(), i);
                         this.View.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
                         this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
@@ -226,7 +222,7 @@ namespace CZ.CEEG.BosPmt.DiffKindsPmt
                         this.View.Model.SetValue("FOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                         this.View.Model.SetValue("FUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                         this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-                    });
+                    }
                     break;
             }
             this.View.UpdateView("FEntity");

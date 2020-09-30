@@ -81,7 +81,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
@@ -97,7 +97,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 //this.View.Model.SetValue("FOptExpense", objs[i]["FOptExpense"].ToString(), i);
                 //this.View.Model.SetValue("FInterestPenalty", objs[i]["FInterestPenalty"].ToString(), i);
                 this.View.Model.SetValue("FRemark", objs[i]["FRemark"].ToString(), i);
-            });
+            }
             this.View.UpdateView("FEntity");
         }
 

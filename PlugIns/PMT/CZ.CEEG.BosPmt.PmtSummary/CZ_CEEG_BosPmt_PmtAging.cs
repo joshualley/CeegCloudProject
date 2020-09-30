@@ -39,12 +39,12 @@ namespace CZ.CEEG.BosPmt.PmtDeliver
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FDEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
                 this.View.Model.SetValue("FAging", objs[i]["FAging"].ToString(), i);
                 this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
-            });
+            }
             this.View.UpdateView("FDEntity");
         }
 

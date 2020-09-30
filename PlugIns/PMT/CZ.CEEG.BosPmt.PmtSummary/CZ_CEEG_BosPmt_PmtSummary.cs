@@ -144,7 +144,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
@@ -178,7 +178,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FTWarranty", objs[i]["FTWarranty"].ToString(), i);
                 this.View.Model.SetValue("FIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.View.Model.SetValue("FIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
-            });
+            }
             this.View.UpdateView("FEntity");
         }
 
@@ -205,7 +205,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FDetailEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FEOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FEOrderSeq", objs[i]["FOrderSeq"].ToString(), i);
@@ -238,7 +238,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FEWarranty", objs[i]["FTWarranty"].ToString(), i);
                 this.View.Model.SetValue("FEIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.View.Model.SetValue("FEIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
-            });
+            }
             
             this.View.UpdateView("FDetailEntity");
 

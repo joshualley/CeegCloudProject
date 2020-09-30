@@ -47,7 +47,7 @@ namespace CZ.CEEG.BosPmt.SalemanItem
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
@@ -59,7 +59,7 @@ namespace CZ.CEEG.BosPmt.SalemanItem
                 this.View.Model.SetValue("FOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-            });
+            }
             this.View.UpdateView("FEntity");
         }
 

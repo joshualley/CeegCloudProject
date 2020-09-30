@@ -84,7 +84,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FDeliverEntity", objs.Count);
-            Parallel.For(0, objs.Count, (i) =>
+            for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
@@ -110,7 +110,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 this.View.Model.SetValue("FProdCapacity", objs[i]["FProdCapacity"].ToString(), i);
                 this.View.Model.SetValue("FDelvQty", objs[i]["FDelvQty"].ToString(), i);
                 this.View.Model.SetValue("FDelvCapacity", objs[i]["FDelvCapacity"].ToString(), i);
-            });
+            }
             this.View.UpdateView("FDeliverEntity");
         }
 
@@ -132,11 +132,15 @@ namespace CZ.CEEG.BosPmt.OuterPmt
 @FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
                 formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
             this.View.Model.DeleteEntryData("FContractEntity");
+            if (objs.Count <= 0)
+            {
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FContractEntity", objs.Count);
             for (int i = 0; i < objs.Count; i++)
             {
-                this.View.Model.CreateNewEntryRow("FContractEntity");
+                
                 this.View.Model.SetValue("FCOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FCBillDt", objs[i]["FBillDt"].ToString(), i);
                 this.View.Model.SetValue("FCSerialNum", objs[i]["FSerialNum"].ToString(), i);
