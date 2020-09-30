@@ -129,8 +129,8 @@ FROM T_HR_EMPINFO WHERE FID='{0}'", mLeaver);
             if (IsKaiMan())
             {
                 leftDays = mOnceAllowDays + carryDays - leaveDays - annualLeaveDays;
-                msg = string.Format("{0}, 目前剩余可请{1}天（含去年结转{2}天），已请{3}天，年休假已清{4}天，本年总可请{5}天，目前释放{6}天。\n",
-                leaveName, leftDays, carryDays, leaveDays, annualLeaveDays, mYearAllowDays, mOnceAllowDays);
+                msg = string.Format("{0}, 目前剩余可请{1}天（含去年结转{2}天），已请{3}天，年休假已清{4}天，本年总可请(含结转){5}天，目前释放(含结转){6}天。\n",
+                leaveName, leftDays, carryDays, leaveDays, annualLeaveDays, mYearAllowDays+carryDays, mOnceAllowDays+carryDays);
             }
             else
             {
@@ -147,10 +147,10 @@ FROM T_HR_EMPINFO WHERE FID='{0}'", mLeaver);
             
             Annual annual = new Annual(mContext, mLeaver, 0);
             double annualLeaveDays = annual.getAlreadyLeaveDays();
-            double carryDays = annual.getLastYearCarryOverDays();
+            double carryDays = getLastYearCarryOverDays();
             double leaveDays = getAlreadyLeaveDays();
-            double leftDays = IsKaiMan() ? mYearAllowDays + carryDays - leaveDays - annualLeaveDays :
-                mYearAllowDays - leaveDays - annualLeaveDays;
+            double leftDays = IsKaiMan() ? mOnceAllowDays + carryDays - leaveDays - annualLeaveDays :
+                mOnceAllowDays - leaveDays - annualLeaveDays;
             if (leftDays < mLeaveDays)
             {
                 msg += string.Format("{0}的{1}提交失败, 原因：超出了目前可请假的天数{2}天。\n", getLeaver(), getLeaveName(), leftDays);

@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CZ.CEEG.BosPmt.PmtSummary
 {
@@ -52,9 +53,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             switch (key)
             {
                 case "FQUERYBTN":
-                    
                     Act_QuerySummaryData();
-                    Act_QueryDetailData();
+                    //Act_QueryDetailData();
                     break;
             }
         }
@@ -138,16 +138,19 @@ namespace CZ.CEEG.BosPmt.PmtSummary
 @FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
             formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
             this.View.Model.DeleteEntryData("FEntity");
-            for (int i = 0; i < objs.Count; i++)
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
                 string[] FStrDirectors = objs[i]["FDirectors"].ToString().Split(',');
                 List<long> FDirectors = new List<long>();
-                foreach(var d in FStrDirectors)
+                foreach (var d in FStrDirectors)
                 {
                     FDirectors.Add(int.Parse(d));
                 }
@@ -175,7 +178,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FTWarranty", objs[i]["FTWarranty"].ToString(), i);
                 this.View.Model.SetValue("FIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.View.Model.SetValue("FIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FEntity");
         }
 
@@ -192,15 +195,18 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "0" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
             string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
 
-            string sql = string.Format(@"exec proc_czly_GetPmtDetail @SDt='{0}', @EDt='{1}', 
+            string sql = string.Format(@"exec proc_czly_GetPmtDetail2 @SDt='{0}', @EDt='{1}', 
 @FQDeptId={2}, @FQSalerId={3}, @FQCustId={4}, @FQFactoryId={5}, @FQOrderNo='{6}'",
             FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
             this.View.Model.DeleteEntryData("FDetailEntity");
-            for (int i = 0; i < objs.Count; i++)
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FDetailEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FDetailEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FEOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FEOrderSeq", objs[i]["FOrderSeq"].ToString(), i);
                 this.View.Model.SetValue("FESellerID", objs[i]["FSellerID"].ToString(), i);
@@ -232,7 +238,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FEWarranty", objs[i]["FTWarranty"].ToString(), i);
                 this.View.Model.SetValue("FEIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.View.Model.SetValue("FEIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
-            }
+            });
+            
             this.View.UpdateView("FDetailEntity");
 
         }

@@ -10,6 +10,7 @@ using Kingdee.BOS.App.Data;
 using CZ.CEEG.OABos.LeaveApply.LeaveType;
 using Kingdee.BOS.ServiceHelper;
 using Kingdee.BOS.Core.DynamicForm;
+using System.Linq;
 
 namespace CZ.CEEG.OABos.LeaveApplyNew
 {
@@ -91,7 +92,30 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
             return _LeaveWDDays;
         }
 
-
+        /// <summary>
+        /// 计算请假天数，不忽略双休及节假日
+        /// </summary>
+        /// <param name="beginDt"></param>
+        /// <param name="beginFrame"></param>
+        /// <param name="endDt"></param>
+        /// <param name="endFrame"></param>
+        /// <returns></returns>
+        private double Act_CalLeaveDays(string beginDt, string beginFrame, string endDt, string endFrame)
+        {
+            DateTime sDt = DateTime.Parse(beginDt);
+            DateTime eDt = DateTime.Parse(endDt);
+            if(sDt.CompareTo(eDt) > 0)
+            {
+                return 0;
+            }
+            double days = eDt.Subtract(sDt).Days;
+            if (beginDt == endDt)
+            {
+                days = 0;
+            }
+            days += beginFrame == endFrame ? 0.5 : (beginFrame == "1" && endFrame == "2" ? 1 : 0);
+            return days;
+        }
 
         /// <summary>
         /// 根据情况设置请假天数值
@@ -111,12 +135,12 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
             {
                 var _FEntity = this.View.Model.DataObject["FEntity"] as DynamicObjectCollection;
 
-                string orgId = this.View.Model.DataObject["FOrgID"] == null ? "" : (this.View.Model.DataObject["FOrgID"] as DynamicObject)["Id"].ToString();
-                if(orgId == "")
-                {
-                    this.View.ShowMessage("请先选择组织！");
-                    return;
-                }
+                //string orgId = this.View.Model.DataObject["FOrgID"] == null ? "" : (this.View.Model.DataObject["FOrgID"] as DynamicObject)["Id"].ToString();
+                //if(orgId == "")
+                //{
+                //    this.View.ShowMessage("请先选择组织！");
+                //    return;
+                //}
                 string startDate = _FEntity[e.Row]["FStartDate"] == null ? "" : _FEntity[e.Row]["FStartDate"].ToString();
                 string endDate = _FEntity[e.Row]["FEndDate"] == null ? "" : _FEntity[e.Row]["FEndDate"].ToString();
                 string startTimeFrame = _FEntity[e.Row]["FStartTimeFrame"] == null ? "" : _FEntity[e.Row]["FStartTimeFrame"].ToString();
@@ -173,9 +197,18 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
                         endTimeFrame = "2";
                         this.View.UpdateView("F_ora_MobileProxyEntryEntity");
                     }
-
-                    //计算请假时长（忽略节假日，周末）
-                    string day = CZDB_GetLeaveWorkDaysAP(orgId, startDate, startTimeFrame, endDate, endTimeFrame);
+                    string day = "";
+                    if ("4,8,12,13,14,15,16".Split(',').Contains(leaveType))
+                    {
+                        // 产假、病假、婚假需计算双休日
+                        day = Act_CalLeaveDays(startDate, startTimeFrame, endDate, endTimeFrame).ToString();
+                    }
+                    else
+                    {
+                        //计算请假时长（忽略节假日，周末）
+                        day = CZDB_GetLeaveWorkDaysAP("", startDate, startTimeFrame, endDate, endTimeFrame);
+                    }
+                    
                     //如果是哺乳假
                     if (leaveType == "11")
                     {

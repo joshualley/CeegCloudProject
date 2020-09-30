@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CZ.CEEG.BosPmt.OuterPmt
 {
@@ -74,11 +75,14 @@ namespace CZ.CEEG.BosPmt.OuterPmt
 @FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
             formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
             this.View.Model.DeleteEntryData("FEntity");
-            for (int i = 0; i < objs.Count; i++)
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.View.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
@@ -93,7 +97,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 //this.View.Model.SetValue("FOptExpense", objs[i]["FOptExpense"].ToString(), i);
                 //this.View.Model.SetValue("FInterestPenalty", objs[i]["FInterestPenalty"].ToString(), i);
                 this.View.Model.SetValue("FRemark", objs[i]["FRemark"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FEntity");
         }
 

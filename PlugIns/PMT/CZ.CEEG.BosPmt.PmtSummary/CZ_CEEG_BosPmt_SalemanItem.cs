@@ -9,6 +9,7 @@ using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.Util;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace CZ.CEEG.BosPmt.SalemanItem
 {
@@ -41,10 +42,13 @@ namespace CZ.CEEG.BosPmt.SalemanItem
         #region Actions
         private void Act_QueryPmt(DynamicObjectCollection objs)
         {
-           
-            for (int i = 0; i < objs.Count; i++)
+            if(objs.Count < 0)
             {
-                this.View.Model.CreateNewEntryRow("FEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
@@ -55,7 +59,7 @@ namespace CZ.CEEG.BosPmt.SalemanItem
                 this.View.Model.SetValue("FOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
                 this.View.Model.SetValue("FWarranty", objs[i]["FWarranty"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FEntity");
         }
 

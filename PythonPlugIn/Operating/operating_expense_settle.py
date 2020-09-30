@@ -4,8 +4,16 @@
 单据：业务费结算
 """
 import clr
+clr.AddReference('Kingdee.BOS')
+clr.AddReference('Kingdee.BOS.Core')
 clr.AddReference('Kingdee.BOS.App')
+
 from Kingdee.BOS.App.Data import *
+from Kingdee.BOS import *
+from Kingdee.BOS.Core import *
+from Kingdee.BOS.Core.DynamicForm import *
+from Kingdee.BOS.Core.DynamicForm.PlugIn import *
+from Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel import *
 from System import DateTime
 
 def AfterBindData(e):
@@ -15,6 +23,54 @@ def AfterBindData(e):
 	sDt = "{}-{}-01".format(year, month)
 	this.Model.SetValue("FQSDate", sDt)
 	this.Model.SetValue("FQEDate", str(now))
+
+
+def AfterEntryBarItemClick(e):
+	key = e.BarItemKey.upper()
+	if key == 'ORA_DRAW':
+		param = DynamicFormShowParameter()
+		param.FormId = "ora_OptExp_OrderDraw"
+		param.OpenStyle.ShowType = ShowType.Modal
+		param.ParentPageId = this.View.PageId
+		this.View.ShowForm(param, return_callback)
+
+
+def return_callback(FormResult):
+	"""选单返回数据时回调"""
+	if FormResult.ReturnData is None:
+		return
+	fids = str(FormResult.ReturnData)
+	sql = '''SELECT 
+	o.FID, FBillNo FOrderNo, FSalerId, FDate, FCustId, 
+	SUM(FAllAmount_LC) FOrderAmt, SUM(F_CZ_FBPAmt) FBaseAmt
+FROM T_SAL_ORDER o
+INNER JOIN T_SAL_ORDERENTRY oe ON o.FID=oe.FID
+INNER JOIN T_SAL_ORDERENTRY_F oef ON o.FID=oef.FID
+WHERE ISNULL(F_ora_Jjyy, '')='' AND o.FID IN ({})
+GROUP BY o.FID, FBillNo, FSalerId, FDate, FCustId'''.format(fids)
+
+	objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	if objs.Count <= 0:
+		return
+	entity = this.Model.DataObject['FEntityOrd']
+	billNos = [str(row["FOSourceBillNo"]) for row in entity]
+	i = entity.Count
+	for row in objs:
+		if row["FOrderNo"] in billNos:
+			continue
+		this.Model.CreateNewEntryRow("FEntityOrd")
+		this.Model.SetValue("FOSourceBillNo", row["FOrderNo"], i)
+		this.Model.SetValue("FOSellerId", row["FSalerId"], i)
+		this.Model.SetValue("FODate", row["FDate"], i)
+		this.Model.SetValue("FOCustId", row["FCustId"], i)
+		this.Model.SetValue("FOOrderAmt", row["FOrderAmt"], i)
+		this.Model.SetValue("FOBaseAmt", row["FBaseAmt"], i)
+		this.Model.SetValue("FOrderId", row["FID"], i)
+		i += 1 
+
+	this.View.UpdateView("FEntityOrd")
+
+
 
 def AfterButtonClick(e):
 	if e.Key == "FSETTLEBTN":
@@ -111,3 +167,4 @@ def create_settle_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
 		this.Model.SetValue("FCWRateAmount", objs[i]["FCWRateAmount"], i)
 		
 	this.View.UpdateView("FEntity")
+

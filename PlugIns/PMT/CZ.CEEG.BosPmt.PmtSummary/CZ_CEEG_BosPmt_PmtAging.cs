@@ -9,7 +9,7 @@ using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Util;
 using System;
 using System.ComponentModel;
-
+using System.Threading.Tasks;
 
 namespace CZ.CEEG.BosPmt.PmtDeliver
 {
@@ -33,13 +33,18 @@ namespace CZ.CEEG.BosPmt.PmtDeliver
             string sql = "EXEC proc_czly_GetAging @Type='Dept'";
             var objs =  DBUtils.ExecuteDynamicObject(this.Context, sql);
             this.View.Model.DeleteEntryData("FDEntity");
-            for (int i = 0; i < objs.Count; i++)
+
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FDEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FDEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
                 this.View.Model.SetValue("FAging", objs[i]["FAging"].ToString(), i);
                 this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FDEntity");
         }
 
@@ -51,13 +56,17 @@ namespace CZ.CEEG.BosPmt.PmtDeliver
             string sql = "EXEC proc_czly_GetAging @Type='Factory'";
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
             this.View.Model.DeleteEntryData("FFEntity");
-            for (int i = 0; i < objs.Count; i++)
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FFEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FFEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FFactoryID", objs[i]["FFactoryID"].ToString(), i);
                 this.View.Model.SetValue("FFAging", objs[i]["FAging"].ToString(), i);
                 this.View.Model.SetValue("FFOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FFEntity");
 
         }

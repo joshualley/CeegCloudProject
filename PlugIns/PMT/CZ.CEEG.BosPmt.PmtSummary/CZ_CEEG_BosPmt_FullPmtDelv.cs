@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CZ.CEEG.BosPmt.OuterPmt
 {
@@ -76,11 +77,15 @@ namespace CZ.CEEG.BosPmt.OuterPmt
 @FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
             formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-
+            
             this.View.Model.DeleteEntryData("FDeliverEntity");
-            for (int i = 0; i < objs.Count; i++)
+            if (objs.Count <= 0)
             {
-                this.View.Model.CreateNewEntryRow("FDeliverEntity");
+                return;
+            }
+            this.View.Model.BatchCreateNewEntryRow("FDeliverEntity", objs.Count);
+            Parallel.For(0, objs.Count, (i) =>
+            {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
                 this.View.Model.SetValue("FDeliverNo", objs[i]["FDeliverNo"].ToString(), i);
@@ -105,7 +110,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 this.View.Model.SetValue("FProdCapacity", objs[i]["FProdCapacity"].ToString(), i);
                 this.View.Model.SetValue("FDelvQty", objs[i]["FDelvQty"].ToString(), i);
                 this.View.Model.SetValue("FDelvCapacity", objs[i]["FDelvCapacity"].ToString(), i);
-            }
+            });
             this.View.UpdateView("FDeliverEntity");
         }
 

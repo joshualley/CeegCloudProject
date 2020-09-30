@@ -1,16 +1,24 @@
 # 销售订单，替换销售员及其组织部门，替换客户
-
 import clr
 clr.AddReference('Kingdee.BOS.App')
 from Kingdee.BOS.App.Data import *
 
-def AfterBindData(e):
-	if str(this.Context.ClientType) == 'Mobile':
-		return
+def BarItemClick(e):
+	key = e.BarItemKey.upper()
 	FDocumentStatus = str(this.View.Model.GetValue("FDocumentStatus"))
 	if FDocumentStatus == "Z":
-		AlterCustAndSalerByOrg()
-		
+		this.View.ShowMessage('单据未保存!')
+		return
+	fid = str(this.Model.DataObject['Id'])
+	if key == "ORA_CLOSE":
+		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='B', FDocumentStatus='C' where fid='{}'".format(fid)
+		DBUtils.Execute(this.Context, sql)
+		this.View.Refresh()
+	elif key == "ORA_UNCLOSE":
+		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='A', FDocumentStatus='A' where fid='{}'".format(fid)
+		DBUtils.Execute(this.Context, sql)
+		this.View.Refresh()
+
 
 def DataChanged(e):
 	if e.Key == "FSalerId":
@@ -19,11 +27,47 @@ def DataChanged(e):
 		results = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 		if results.Count > 0:
 			this.View.Model.SetValue("FSaleDeptId", str(results[0]["FBizDeptID"]))
-			this.View.UpdateView("FSaleDeptId")
+			this.View.Model.SetValue("FSaleDeptId", str(results[0]["FBizDeptID"]), -1)
 
+def BeforeDoOperation(e):
+	_opKey = e.Operation.FormOperation.Operation
+	if _opKey == 'Save':
+		SumAmtAndFilterRejectedRow()
+
+
+def AfterBindData(e):
+	if str(this.Context.ClientType) == 'Mobile':
+		return
+	FDocumentStatus = str(this.View.Model.GetValue("FDocumentStatus"))
+	if FDocumentStatus == "Z":
+		AlterCustAndSalerByOrg()
+	
+
+def SumAmtAndFilterRejectedRow():
+	"""计算销售订单，并过滤掉拒绝的行"""
+	entity = this.Model.DataObject['SaleOrderEntry']
+	amts = [[
+			float(entity[i]['AllAmount']), float(entity[i]['TaxAmount']), 
+			float(entity[i]['AllAmount_LC']), float(entity[i]['TaxAmount_LC'])]
+		for i in range(entity.Count) 
+		if entity[i]['F_ora_Jjyy'] is None or str(entity[i]['F_ora_Jjyy'])==''
+	]
+	allAmt = sum([i[0] for i in amts])
+	taxAmt = sum([i[1] for i in amts])
+	amt = allAmt - taxAmt
+	allAmtLc = sum([i[2] for i in amts])
+	taxAmtLc = sum([i[3] for i in amts])
+	amtLc = allAmtLc - taxAmtLc
+	this.Model.SetValue("FBillAllAmount", allAmt)
+	this.Model.SetValue("FBillTaxAmount", taxAmt)
+	this.Model.SetValue("FBillAmount", amt)
+	this.Model.SetValue("FBillAllAmount_LC", allAmtLc)
+	this.Model.SetValue("FBillTaxAmount_LC", taxAmtLc)
+	this.Model.SetValue("FBillAmount_LC", amtLc)
 
 
 def AlterCustAndSalerByOrg():
+	"""替换客户，销售员"""
 	FSaleOrgId = 0 if this.View.Model.GetValue("FSaleOrgId") == None else str(this.View.Model.GetValue("FSaleOrgId")["Id"])
 	if FSaleOrgId == 0:
 		return
@@ -50,7 +94,7 @@ def AlterCustAndSalerByOrg():
 
 	if FSalerId == 0 and FCustId == 0:
 		return
-		
+
 	# 获取客户内码
 	sql = """select FCUSTID from T_BD_CUSTOMER where FUSEORGID='{}' 
 		and FNUMBER=(select FNUMBER from T_BD_CUSTOMER where FCUSTID='{}')""".format(FSaleOrgId, FCustId)
@@ -68,5 +112,4 @@ def AlterCustAndSalerByOrg():
 		results = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 		if results.Count > 0:
 			this.View.Model.SetValue("FSaleDeptId", str(results[0]["FBizDeptID"]))
-
 
