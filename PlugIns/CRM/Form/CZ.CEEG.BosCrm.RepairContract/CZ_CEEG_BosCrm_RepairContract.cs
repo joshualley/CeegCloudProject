@@ -39,10 +39,10 @@ namespace CZ.CEEG.BosCrm.RepairContract
 
             //FBTaxRate = FBTaxRate == 0 ? 100 : FBTaxRate;
 
-            this.View.Model.SetValue("FUtPriceTax", FBRptPrice / FBQty); //含税单价
-            this.View.Model.SetValue("FUtPrice", FBRptPrice / FBQty / (FBTaxRate / 100 + 1));  //不含税单价
-            this.View.Model.SetValue("FBTaxAmt", FBRptPrice - (FBRptPrice / (FBTaxRate / 100 + 1)));   //税额
-            this.View.Model.SetValue("FBNTAmt", FBRptPrice / (FBTaxRate / 100 + 1));    //不含税金额
+            this.View.Model.SetValue("FUtPriceTax", FBRptPrice / FBQty, row); //含税单价
+            this.View.Model.SetValue("FUtPrice", FBRptPrice / FBQty / (FBTaxRate / 100 + 1), row);  //不含税单价
+            this.View.Model.SetValue("FBTaxAmt", FBRptPrice - (FBRptPrice / (FBTaxRate / 100 + 1)), row);   //税额
+            this.View.Model.SetValue("FBNTAmt", FBRptPrice / (FBTaxRate / 100 + 1), row);    //不含税金额
         }
 
     }
