@@ -198,7 +198,7 @@ namespace CZ.CEEG.OABos.LeaveApplyNew
                         this.View.UpdateView("F_ora_MobileProxyEntryEntity");
                     }
                     string day = "";
-                    if ("4,8,12,13,14,15,16".Split(',').Contains(leaveType))
+                    if ("3,4,8,12,13,14,15,16".Split(',').Contains(leaveType))
                     {
                         // 产假、病假、婚假需计算双休日
                         day = Act_CalLeaveDays(startDate, startTimeFrame, endDate, endTimeFrame).ToString();
