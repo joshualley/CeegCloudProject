@@ -56,6 +56,11 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             Log(context, "info", "删除本月数据：" + objs.Count.ToString() + "条。");
 
             var datas = GetClockInDatas(accToken, fromDt, toDt);
+            if(datas.Count <= 0)
+            {
+                Log(context, "info", "未获取到签到数据。");
+                return;
+            }
             sql = "";
             foreach (var data in datas)
             {
@@ -65,6 +70,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
                     data.clockId, data.position.Replace("'", "''"), data.day, data.time, TimeStampToDateTime(data.time).ToString(),
                     data.openId, data.positionResult, data.userName, data.department, data.remark);
             }
+            
             try
             {
                 DBUtils.Execute(context, sql);
