@@ -178,6 +178,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.View.Model.SetValue("FTWarranty", objs[i]["FTWarranty"].ToString(), i);
                 this.View.Model.SetValue("FIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.View.Model.SetValue("FIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
+                this.View.Model.SetValue("FRemarks", objs[i]["FRemark"].ToString(), i);
             }
             this.View.UpdateView("FEntity");
         }

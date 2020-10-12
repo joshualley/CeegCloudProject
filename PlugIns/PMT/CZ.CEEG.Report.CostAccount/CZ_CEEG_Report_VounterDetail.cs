@@ -1,5 +1,6 @@
 ﻿using Kingdee.BOS;
 using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Core.Bill;
 using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
@@ -45,6 +46,7 @@ namespace CZ.CEEG.Report.AccountQueryCond
             this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
             for (int i = 0; i < objs.Count; i++)
             {
+                this.View.Model.SetValue("FVoucherID", objs[i]["FVOUCHERID"], i);
                 this.View.Model.SetValue("FVounterNo", objs[i]["FBillNO"], i);
                 this.View.Model.SetValue("FVOUCHERGROUPNO", objs[i]["FVOUCHERGROUPNO"], i);
                 this.View.Model.SetValue("FDate", objs[i]["FDate"], i);
@@ -59,6 +61,18 @@ namespace CZ.CEEG.Report.AccountQueryCond
             }
             this.View.UpdateView("FEntity");
 
+        }
+
+
+        public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
+        {
+            string FVoucherID = this.View.Model.GetValue("FVoucherID", e.Row).ToString();
+            BillShowParameter param = new BillShowParameter();
+            param.ParentPageId = this.View.PageId;
+            param.FormId = "GL_VOUCHER";
+            param.PKey = FVoucherID;
+            param.OpenStyle.ShowType = ShowType.Modal;
+            this.View.ShowForm(param);
         }
 
     }
