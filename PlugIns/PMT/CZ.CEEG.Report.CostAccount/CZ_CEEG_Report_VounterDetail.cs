@@ -71,6 +71,7 @@ namespace CZ.CEEG.Report.AccountQueryCond
             param.ParentPageId = this.View.PageId;
             param.FormId = "GL_VOUCHER";
             param.PKey = FVoucherID;
+            param.Status = OperationStatus.VIEW;
             param.OpenStyle.ShowType = ShowType.Modal;
             this.View.ShowForm(param);
         }
