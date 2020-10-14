@@ -18,7 +18,7 @@ def BarItemClick(e):
 		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='A', FDocumentStatus='A' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
-
+		
 
 def DataChanged(e):
 	if e.Key == "FSalerId":
@@ -41,7 +41,42 @@ def AfterBindData(e):
 	FDocumentStatus = str(this.View.Model.GetValue("FDocumentStatus"))
 	if FDocumentStatus == "Z":
 		AlterCustAndSalerByOrg()
-	
+
+# 订单明细当前点击行
+currEntryRow = 0
+def EntityRowClick(e):
+	if e.Key == "FSaleOrderEntry".upper():
+		global currEntryRow
+		currEntryRow = e.Row
+
+
+def AfterEntryBarItemClick(e):
+	key = e.BarItemKey.upper()
+	if key == 'ORA_TBCUTPAYSMT': #ora_tbCutpaySmt
+		global currEntryRow
+		param = DynamicFormShowParameter()
+		param.FormId = "ora_Sal_CutpaySmtRgst"
+		param.OpenStyle.ShowType = ShowType.Modal
+		param.ParentPageId = this.View.PageId
+
+		entityRow = this.Model.DataObject['SaleOrderEntry'][currEntryRow]
+		#entityRow = clr.Reference[System.Single]()
+		#row = 0
+		#this.Model.TryGetEntryCurrentRow('SaleOrderEntry', entityRow, row)
+		if entityRow is None:
+			this.View.ShowMessage('请选择订单行！')
+			return
+		eid = str(entityRow['Id'])
+		row = str(currEntryRow+1)
+		param.CustomParams.Add('eid', eid)
+		param.CustomParams.Add('row', row)
+
+		this.View.ShowForm(param, CutpaySmtModifyCallback)
+
+def CutpaySmtModifyCallback(FormResult):
+	"""扣款报销修改后，刷新表单"""
+	this.View.Refresh()
+
 
 def SumAmtAndFilterRejectedRow():
 	"""计算销售订单，并过滤掉拒绝的行"""
