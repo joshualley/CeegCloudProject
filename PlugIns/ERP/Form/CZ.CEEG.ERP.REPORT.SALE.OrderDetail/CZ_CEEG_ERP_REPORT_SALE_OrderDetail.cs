@@ -1,6 +1,10 @@
 ﻿using Kingdee.BOS.App.Data;
+using Kingdee.BOS.Business.Bill.Operation;
+using Kingdee.BOS.Core.Bill;
+using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
+using Kingdee.BOS.Core.Metadata;
 using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.Util;
 using System;
@@ -15,6 +19,25 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
     [Description("订单明细")]
     public class CZ_CEEG_ERP_REPORT_SALE_OrderDetail : AbstractDynamicFormPlugIn
     {
+
+        public override void EntityRowDoubleClick(EntityRowClickEventArgs e)
+        {
+            base.EntityRowDoubleClick(e);
+            string key = e.ColKey.ToUpperInvariant();
+            switch (key)
+            {
+                case "F_ORA_SALENO":
+                    var para = new BillShowParameter();
+                    para.FormId = "SAL_SaleOrder";
+                    para.OpenStyle.ShowType = ShowType.Modal;
+                    para.ParentPageId = this.View.PageId;
+                    para.Status = OperationStatus.VIEW;
+                    para.PKey = this.Model.GetValue("F_ora_inner_code", e.Row).ToString();
+                    this.View.ShowForm(para);
+                    break;
+            }
+        }
+
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
         {
             base.AfterButtonClick(e);
@@ -23,28 +46,39 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
             {
                 case "FQUERYBTN":
 
-                    string saleOrg = this.View.Model.GetValue("F_ora_h_sale_org") == null ? "" : (this.View.Model.GetValue("F_ora_h_sale_org") as DynamicObject)["Name"].ToString();
+                    DynamicObjectCollection saleOrgs = (this.View.Model.GetValue("F_ora_h_sale_org") as DynamicObjectCollection);
                     string FQOrderNo = this.View.Model.GetValue("FQOrderNo") == null ? "" : this.View.Model.GetValue("FQOrderNo").ToString().Trim();
                     string orderType = this.View.Model.GetValue("F_ora_h_order_type") == null ? "" : this.View.Model.GetValue("F_ora_h_order_type").ToString();
                     string purNo = this.View.Model.GetValue("FQPurNo") == null ? "" : this.View.Model.GetValue("FQPurNo").ToString();
-                    string FQFactoryId = this.View.Model.GetValue("FQFactoryId") == null ? "" : (this.View.Model.GetValue("FQFactoryId") as DynamicObject)["Number"].ToString();
+                    DynamicObjectCollection FQFactoryIds = (this.View.Model.GetValue("FQFactoryId") as DynamicObjectCollection);
                     string contractMoney = this.View.Model.GetValue("F_ora_h_money") == null ? "" : this.View.Model.GetValue("F_ora_h_money").ToString();
                     string FSDate = this.View.Model.GetValue("FSDate") == null ? "" : this.View.Model.GetValue("FSDate").ToString();
                     string FEDate = this.View.Model.GetValue("FEDate") == null ? "" : this.View.Model.GetValue("FEDate").ToString();
-                    string FQDeptId = this.View.Model.GetValue("FQDeptId") == null ? "" : (this.View.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
-                    string FQSalerId = this.View.Model.GetValue("FQSalerId") == null ? "" : (this.View.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
-                    string FQCustId = this.View.Model.GetValue("FQCustId") == null ? "" : (this.View.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
+                    DynamicObjectCollection FQDeptIds = (this.View.Model.GetValue("FQDeptId") as DynamicObjectCollection);
+                    DynamicObjectCollection FQSalerIds = (this.View.Model.GetValue("FQSalerId") as DynamicObjectCollection);
+                    DynamicObjectCollection FQCustIds = (this.View.Model.GetValue("FQCustId") as DynamicObjectCollection);
                     string matCode = this.View.Model.GetValue("F_ora_h_mat_code") == null ? "" : this.View.Model.GetValue("F_ora_h_mat_code").ToString();
                     string matName = this.View.Model.GetValue("F_ora_h_mat_name") == null ? "" : this.View.Model.GetValue("F_ora_h_mat_name").ToString();
                     string proType = this.View.Model.GetValue("F_ora_h_pro_type") == null ? "" : this.View.Model.GetValue("F_ora_h_pro_type").ToString();
                     string proCap = this.View.Model.GetValue("F_ora_h_pro_cap") == null ? "" : this.View.Model.GetValue("F_ora_h_pro_cap").ToString();
+                    string checkFile = this.View.Model.GetValue("F_ora_h_check_file") == null ? "" : this.View.Model.GetValue("F_ora_h_check_file").ToString();
+                    string projectName = this.View.Model.GetValue("F_ora_h_project_name") == null ? "" : this.View.Model.GetValue("F_ora_h_project_name").ToString();
+                    string priceZone = this.View.Model.GetValue("F_ora_h_price_zone") == null ? "" : this.View.Model.GetValue("F_ora_h_price_zone").ToString();
+                    string rejectReason = this.View.Model.GetValue("F_ora_h_reject_reason") == null ? "" : this.View.Model.GetValue("F_ora_h_reject_reason").ToString();
 
 
                     string saleOrgCondition = "";
 
-                    if (!saleOrg.Equals("")) {
-                        saleOrgCondition = " and t3.FNAME = '" + saleOrg+"' ";
+                    if (saleOrgs != null && saleOrgs.Count > 0)
+                    {
+                        string orgs = "";
+                        for (int i = 0; i < saleOrgs.Count; i++)
+                        {
+                            orgs = orgs + ",'" + (saleOrgs[i]["F_ora_h_sale_org"] as DynamicObject)["Name"] + "'";
+                        }
+                        saleOrgCondition = " and t3.FNAME  in (" + orgs.Substring(1) + ")";
                     }
+
 
                     string orderNoCondition = "";
 
@@ -69,9 +103,14 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
 
                     string facCondition = "";
 
-                    if (!FQFactoryId.Equals(""))
+                    if (FQFactoryIds != null && FQFactoryIds.Count > 0)
                     {
-                        facCondition = " and a6.FNUMBER = " + FQFactoryId;
+                        string facs = "";
+                        for (int i = 0; i < FQFactoryIds.Count; i++)
+                        {
+                            facs = facs + ",'" + (FQFactoryIds[i]["FQFactoryId"] as DynamicObject)["Number"] + "'";
+                        }
+                        facCondition = " and a6.FNUMBER  in (" + facs.Substring(1) + ")";
                     }
 
                     string moneyCondition = "";
@@ -96,23 +135,40 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
 
                     string depCondition = "";
 
-                    if (!FQDeptId.Equals(""))
+                    if (FQDeptIds != null && FQDeptIds.Count > 0)
                     {
-                        depCondition = " and t1.FSALEDEPTID = " + FQDeptId;
+                        string deps = "";
+                        for (int i = 0; i < FQDeptIds.Count; i++)
+                        {
+                            deps = deps + ",'" + (FQDeptIds[i]["FQDeptId"] as DynamicObject)["Id"] + "'";
+                        }
+                        depCondition = " and t1.FSALEDEPTID  in (" + deps.Substring(1) + ")";
                     }
+
 
                     string salerCondition = "";
 
-                    if (!FQSalerId.Equals(""))
+                    if (FQSalerIds != null && FQSalerIds.Count > 0)
                     {
-                        salerCondition = " and t1.FSALERID = " + FQSalerId;
+                        string salers = "";
+                        for (int i = 0; i < FQSalerIds.Count; i++)
+                        {
+                            salers = salers + ",'" + (FQSalerIds[i]["FQSalerId"] as DynamicObject)["Number"] + "'";
+                        }
+                        salerCondition = " and a11.FNUMBER  in (" + salers.Substring(1) + ")";
                     }
+
 
                     string cusCondition = "";
 
-                    if (!FQCustId.Equals(""))
+                    if (FQCustIds != null && FQCustIds.Count > 0)
                     {
-                        cusCondition = " and t1.FCUSTID = " + FQCustId;
+                        string cus = "";
+                        for (int i = 0; i < FQCustIds.Count; i++)
+                        {
+                            cus = cus + ",'" + (FQCustIds[i]["FQCustId"] as DynamicObject)["Id"] + "'";
+                        }
+                        cusCondition = " and t1.FCUSTID  in (" + cus.Substring(1) + ")";
                     }
 
                     string matCodeCondition = "";
@@ -143,7 +199,44 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         proCapCondition = " and ta1.FDATAVALUE like '%" + proCap + "%'";
                     }
 
-                    string sql = "/*dialect*/ select SUBSTRING(CONVERT(varchar(100), t1.FDATE, 111),1,7) 月份,t1.FDATE 日期,t1.FBILLNO 销售订单号,F_ORA_POORDERNO  采购订单号,a7.FDELIVERYDATE 要货日期," +
+                    string checkFileCondition = "";
+
+                    if (!checkFile.Equals(""))
+                    {
+                        checkFileCondition = " and t1.F_ora_SCYJ = '" + checkFile + "'";
+                    }
+
+                    string projectNameCondition = "";
+
+                    if (!projectName.Equals(""))
+                    {
+                        projectNameCondition = " and t1.F_CZ_PrjName = '" + projectName + "'";
+                    }
+
+                    string priceZoneCondition = "";
+
+                    if (!priceZone.Equals(""))
+                    {
+                        switch (priceZone) {
+                            case "1": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)<=-11 ";break;
+                            case "2": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)<0 and  convert(decimal(10),t2.FBDownPoints)>-11 "; break;
+                            case "3": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)=0 "; break;
+                            case "4": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)<=5 and convert(decimal(10),t2.FBDownPoints)>0 "; break;
+                            case "5": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)<=10 and convert(decimal(10),t2.FBDownPoints)>5 "; break;
+                            case "6": priceZoneCondition = " and  convert(decimal(10),t2.FBDownPoints)>10 "; break;
+                            default: priceZoneCondition = "";break;
+                        }                   
+                    }
+
+                    string rejectReasonCondition = "";
+
+                    if (!rejectReason.Equals(""))
+                    {
+                        rejectReasonCondition = " and t2.F_ORA_JJYY = '" + rejectReason + "'";
+                    }
+
+
+                    string sql = "/*dialect*/ select SUBSTRING(CONVERT(varchar(100), t1.FDATE, 111),1,7) 月份,t1.FDATE 日期,t1.Fid 内码,t1.FBILLNO 销售订单号,F_ORA_POORDERNO  采购订单号,a7.FDELIVERYDATE 要货日期," +
                         "t3.FNAME 销售组织,t8.FCAPTION 订单类型,t9.FNAME 办事处," +
                         "a11.FNUMBER 销售员编号," +
                         "case when a1.FNAME is null then F_CZ_OldSaler else a1.FNAME end 销售员," +
@@ -197,9 +290,9 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         "left join T_BAS_ASSISTANTDATAENTRY_L ta on t6.F_ora_Assistant=ta.FENTRYID " +
                         "left join T_BAS_ASSISTANTDATAENTRY_L ta1 on t6.F_ora_Assistant1 = ta1.FENTRYID " +
                         "where 1=1 " +
-                        saleOrgCondition + depCondition + salerCondition + cusCondition + matCodeCondition +
-                        orderNoCondition + matNameCondition + dateCondition + proTypeCondition + proCapCondition + 
-                        orderTypeCondition + purNoCondition + facCondition + moneyCondition;
+                        saleOrgCondition + depCondition + salerCondition + cusCondition + matCodeCondition + checkFileCondition + rejectReasonCondition +
+                        orderNoCondition + matNameCondition + dateCondition + proTypeCondition + proCapCondition + priceZoneCondition + 
+                        orderTypeCondition + purNoCondition + facCondition + moneyCondition + projectNameCondition;
 
                     var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
@@ -251,7 +344,8 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         this.View.Model.SetValue("F_ora_order_rej_rea", ColFormat(objs[i]["拒绝原因"]), i);
                         this.View.Model.SetValue("F_ora_creator", ColFormat(objs[i]["创建者"]), i);
                         this.View.Model.SetValue("F_ora_creator_name", ColFormat(objs[i]["创建者名称"]), i);
-            }
+                        this.View.Model.SetValue("F_ora_inner_code", ColFormat(objs[i]["内码"]), i);
+                    }
 
 
             this.View.UpdateView("F_ora_Entity");
