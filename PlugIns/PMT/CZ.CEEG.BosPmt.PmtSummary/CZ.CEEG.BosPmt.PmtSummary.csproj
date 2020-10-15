@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CZ_CEEG_BosPmt_FullPmtDelv.cs" />
+    <Compile Include="CZ_CEEG_BosPmt_InitialPayment.cs" />
     <Compile Include="CZ_CEEG_BosPmt_PmtAging.cs" />
     <Compile Include="CZ_CEEG_BosPmt_SalemanItem.cs" />
     <Compile Include="CZ_CEEG_BosPmt_PmtDepartment.cs" />
