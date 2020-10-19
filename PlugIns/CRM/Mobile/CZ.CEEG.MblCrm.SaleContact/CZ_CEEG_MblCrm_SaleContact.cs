@@ -146,7 +146,6 @@ namespace CZ.CEEG.MblCrm.SaleContact
 
                 var submitBtn = this.View.GetControl("FSubmitBtn");
                 var saveBtn = this.View.GetControl("FSaveBtn");
-                var pushBtn = this.View.GetControl("FPUSH");
 
                 string FID = this.View.BillModel.DataObject["Id"].ToString();
                 string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
@@ -156,14 +155,12 @@ namespace CZ.CEEG.MblCrm.SaleContact
                 if (data.Count > 0 && (data[0]["FSTATUS"].ToString() == "1"))
                 {
                     saveBtn.Visible = false;
-                    pushBtn.Visible = false;
                     submitBtn.SetCustomPropertyValue("width", 310);
                 }
                 // FSTATUS=2、4 --> 打回发起人
                 else
                 {
                     submitBtn.Visible = false;
-                    pushBtn.Visible = false;
                     saveBtn.SetCustomPropertyValue("width", 310);
                 }
             }
