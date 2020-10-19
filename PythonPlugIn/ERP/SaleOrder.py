@@ -85,8 +85,10 @@ def SumAmtAndFilterRejectedRow():
 			float(entity[i]['AllAmount']), float(entity[i]['TaxAmount']), 
 			float(entity[i]['AllAmount_LC']), float(entity[i]['TaxAmount_LC'])]
 		for i in range(entity.Count) 
-		if entity[i]['F_ora_Jjyy'] is None or str(entity[i]['F_ora_Jjyy'])==''
+		if entity[i]['F_ora_Jjyy'] is None or str(entity[i]['F_ora_Jjyy']).strip()==''
 	]
+	#t = [entity[i]['F_ora_Jjyy'] for i in range(entity.Count)]
+	#this.View.ShowMessage(str(t))
 	allAmt = sum([i[0] for i in amts])
 	taxAmt = sum([i[1] for i in amts])
 	amt = allAmt - taxAmt
