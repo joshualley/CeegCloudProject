@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.BosCW.ReceiptSplit", "CZ.CEEG.BosCW.ReceiptSplit\CZ.CEEG.BosCW.ReceiptSplit.csproj", "{EC2AFCDE-4BA0-454F-8897-D78B5730F849}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC2AFCDE-4BA0-454F-8897-D78B5730F849}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC2AFCDE-4BA0-454F-8897-D78B5730F849}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC2AFCDE-4BA0-454F-8897-D78B5730F849}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC2AFCDE-4BA0-454F-8897-D78B5730F849}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
