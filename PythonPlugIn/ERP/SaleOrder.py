@@ -11,11 +11,19 @@ def BarItemClick(e):
 		return
 	fid = str(this.Model.DataObject['Id'])
 	if key == "ORA_CLOSE":
-		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='B', FDocumentStatus='C' where fid='{}'".format(fid)
+		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='B' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
 	elif key == "ORA_UNCLOSE":
-		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='A', FDocumentStatus='A' where fid='{}'".format(fid)
+		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='A' where fid='{}'".format(fid)
+		DBUtils.Execute(this.Context, sql)
+		this.View.Refresh()
+	elif key == "ORA_AUDIT":
+		sql = "/*dialect*/update T_SAL_ORDER set FDocumentStatus='C' where fid='{}'".format(fid)
+		DBUtils.Execute(this.Context, sql)
+		this.View.Refresh()
+	elif key == "ORA_UNAUDIT":
+		sql = "/*dialect*/update T_SAL_ORDER set FDocumentStatus='D' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
 		
