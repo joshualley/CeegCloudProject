@@ -65,6 +65,10 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                     string projectName = this.View.Model.GetValue("F_ora_h_project_name") == null ? "" : this.View.Model.GetValue("F_ora_h_project_name").ToString();
                     string priceZone = this.View.Model.GetValue("F_ora_h_price_zone") == null ? "" : this.View.Model.GetValue("F_ora_h_price_zone").ToString();
                     string rejectReason = this.View.Model.GetValue("F_ora_h_reject_reason") == null ? "" : this.View.Model.GetValue("F_ora_h_reject_reason").ToString();
+                    string cusCreateTime = this.View.Model.GetValue("F_ora_h_cus_create_time") == null ? "" : this.View.Model.GetValue("F_ora_h_cus_create_time").ToString();
+                    string cusCreateTime2 = this.View.Model.GetValue("F_ora_h_cus_create_time2") == null ? "" : this.View.Model.GetValue("F_ora_h_cus_create_time2").ToString();
+                    string recConCode = this.View.Model.GetValue("F_ora_h_rec_con_code") == null ? "" : this.View.Model.GetValue("F_ora_h_rec_con_code").ToString();
+                    string recConDesc = this.View.Model.GetValue("F_ora_h_rec_con_desc") == null ? "" : this.View.Model.GetValue("F_ora_h_rec_con_desc").ToString();
 
 
                     string saleOrgCondition = "";
@@ -124,13 +128,13 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
 
                     if (!FSDate.Equals("") && !FEDate.Equals(""))
                     {
-                        dateCondition = " and t1.FDATE between '" + FSDate + "' and '" + FEDate+"'";
+                        dateCondition = " and t1.FDATE between '" + FSDate + "' and '" + FEDate.Replace("00:00:00", "23:59:59") + "'";
                     }
                     else if (!FSDate.Equals("")) {
                         dateCondition = " and t1.FDATE >= '" + FSDate + "'";
                     }
                     else if (!FEDate.Equals("")) {
-                        dateCondition = " and t1.FDATE <= '" + FEDate + "'";
+                        dateCondition = " and t1.FDATE <= '" + FEDate.Replace("00:00:00", "23:59:59") + "'";
                     }
 
                     string depCondition = "";
@@ -235,6 +239,34 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         rejectReasonCondition = " and t2.F_ORA_JJYY = '" + rejectReason + "'";
                     }
 
+                    string cusCreateTimeCondition = "";
+
+                    if (!cusCreateTime.Equals("") && !cusCreateTime2.Equals(""))
+                    {
+                        cusCreateTimeCondition = " and t4.FCREATEDATE  between '" + cusCreateTime + "' and '" + cusCreateTime2.Replace("00:00:00", "23:59:59") + "'";
+                    }
+                    else if (!cusCreateTime.Equals(""))
+                    {
+                        cusCreateTimeCondition = " and t4.FCREATEDATE >= '" + cusCreateTime + "'";
+                    }
+                    else if (!cusCreateTime2.Equals(""))
+                    {
+                        cusCreateTimeCondition = " and t4.FCREATEDATE <= '" + cusCreateTime2.Replace("00:00:00", "23:59:59") + "'";
+                    }
+
+                    string recConCodeCondition = "";
+
+                    if (!recConCode.Equals(""))
+                    {
+                        recConCodeCondition = " and t5.FNUMBER = '" + recConCode + "'";
+                    }
+
+                    string recConDescCondition = "";
+
+                    if (!recConDesc.Equals(""))
+                    {
+                        recConDescCondition = " and (r2.FNAME like '%" + recConDesc + "%' or F_CZ_Prepay like '%" + recConDesc + "%')";
+                    }
 
                     string sql = "/*dialect*/ select SUBSTRING(CONVERT(varchar(100), t1.FDATE, 111),1,7) 月份,t1.FDATE 日期,t1.Fid 内码,t1.FBILLNO 销售订单号,F_ORA_POORDERNO  采购订单号,a7.FDELIVERYDATE 要货日期," +
                         "t3.FNAME 销售组织,t8.FCAPTION 订单类型,t9.FNAME 办事处," +
@@ -264,7 +296,9 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         "t4.FCONTRACTORNAME 客户联系人, " +
                         "ta.FDATAVALUE 产品大类, " +
                         "ta1.FDATAVALUE 产品容量, " +
-                        "r3.FBILLALLAMOUNT 订单总金额 " +                               
+                        "r3.FBILLALLAMOUNT 订单总金额, " +
+                        "t4.FCREATEDATE 客户创建时间, " +
+                        "t5.FNUMBER 收款条件编码 " +
                         "from T_SAL_ORDER t1 inner join T_SAL_ORDERENTRY t2 " +
                         "on t1.FID = t2.FID inner join T_ORG_ORGANIZATIONS b1 " +
                         "on t1.FSALEORGID = b1.FORGID inner join T_ORG_ORGANIZATIONS_L t3 " +
@@ -290,9 +324,13 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         "left join T_BAS_ASSISTANTDATAENTRY_L ta on t6.F_ora_Assistant=ta.FENTRYID " +
                         "left join T_BAS_ASSISTANTDATAENTRY_L ta1 on t6.F_ora_Assistant1 = ta1.FENTRYID " +
                         "where 1=1 " +
-                        saleOrgCondition + depCondition + salerCondition + cusCondition + matCodeCondition + checkFileCondition + rejectReasonCondition +
+                        saleOrgCondition + depCondition + salerCondition + cusCondition + matCodeCondition + checkFileCondition + 
+                        rejectReasonCondition + cusCreateTimeCondition + recConCodeCondition + recConDescCondition + 
                         orderNoCondition + matNameCondition + dateCondition + proTypeCondition + proCapCondition + priceZoneCondition + 
                         orderTypeCondition + purNoCondition + facCondition + moneyCondition + projectNameCondition;
+
+
+                    //this.View.ShowMessage(sql);
 
                     var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
@@ -345,6 +383,8 @@ namespace CZ.CEEG.ERP.REPORT.SALE.OrderDetail
                         this.View.Model.SetValue("F_ora_creator", ColFormat(objs[i]["创建者"]), i);
                         this.View.Model.SetValue("F_ora_creator_name", ColFormat(objs[i]["创建者名称"]), i);
                         this.View.Model.SetValue("F_ora_inner_code", ColFormat(objs[i]["内码"]), i);
+                        this.View.Model.SetValue("F_ora_rec_con_code", ColFormat(objs[i]["收款条件编码"]), i);
+                        this.View.Model.SetValue("F_ora_cus_create_time", ColFormat(objs[i]["客户创建时间"]), i);
                     }
 
 
