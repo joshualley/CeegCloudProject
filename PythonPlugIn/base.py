@@ -7,6 +7,7 @@ clr.AddReference('System.Data')
 from Kingdee.BOS import *
 from Kingdee.BOS.Core import *
 from Kingdee.BOS.Core.Bill import *
+from Kingdee.BOS.Core.Metadata import *
 from Kingdee.BOS.Core.DynamicForm.PlugIn import *
 from Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel import *
 from System import *
