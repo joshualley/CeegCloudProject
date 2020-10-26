@@ -36,7 +36,7 @@ def BeforeDoOperation(e):
 	def Pass():
 		year = this.Model.GetValue("FYear")
 		month = this.Model.GetValue("FMonth")
-		sql = "SELECT FID FROM ora_Exp_Balance WHERE FYear={} AND FMonth={}".format(year, month)
+		sql = "SELECT FID FROM ora_Exp_Balance WHERE FYear={} AND FMonth={} AND FDocumentStatus='C'".format(year, month)
 		objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 		if objs.Count > 0:
 			this.View.ShowMessage("本期余额表已经存在，不允许重复创建！")
