@@ -169,6 +169,9 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.Model.SetValue("FTReceiverAmt", objs[i]["FTReceiverAmt"].ToString(), i);
                 this.Model.SetValue("FTInvoiceAmt", objs[i]["FTInvoiceAmt"].ToString(), i);
                 this.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
+                this.Model.SetValue("FOuterPmtAll", 
+                    decimal.Parse(objs[i]["FTDeliverAmt"].ToString()) - 
+                    decimal.Parse(objs[i]["FTReceiverAmt"].ToString()), i);
                 this.Model.SetValue("FNormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
                 this.Model.SetValue("FNormUnoverduePmt", objs[i]["FNormUnoverduePmt"].ToString(), i);
                 this.Model.SetValue("FOverduePmt", objs[i]["FOverduePmt"].ToString(), i);

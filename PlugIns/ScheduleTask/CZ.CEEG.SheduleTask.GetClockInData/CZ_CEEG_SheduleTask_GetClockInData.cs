@@ -74,7 +74,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             try
             {
                 DBUtils.Execute(context, sql);
-                Log(context, "info", string.Format("插入{0}-{1}的数据：{2}条。", fromDt, toDt, datas.Count));
+                Log(context, "info", string.Format("插入{0}至{1}的数据：{2}条。", fromDt, toDt, datas.Count));
             }
             catch (Exception e)
             {
