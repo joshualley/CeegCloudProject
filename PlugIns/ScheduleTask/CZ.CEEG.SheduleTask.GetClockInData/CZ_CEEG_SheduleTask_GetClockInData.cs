@@ -49,11 +49,6 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
             string accToken = GetAccToken();
             if (accToken == "")
                 return;
-            string sql = string.Format("SELECT FID FROM ora_HR_SignInData WHERE FDate BETWEEN '{0}' AND '{1}'", fromDt, toDt);
-            var objs = DBUtils.ExecuteDynamicObject(context, sql);
-            sql = string.Format("DELETE FROM ora_HR_SignInData WHERE FDate BETWEEN '{0}' AND '{1}'", fromDt, toDt);
-            DBUtils.Execute(context, sql);
-            Log(context, "info", "删除本月数据：" + objs.Count.ToString() + "条。");
 
             var datas = GetClockInDatas(accToken, fromDt, toDt);
             if(datas.Count <= 0)
@@ -61,7 +56,21 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
                 Log(context, "info", "未获取到签到数据。");
                 return;
             }
-            sql = "";
+            Log(context, "info", "获取到签到数据" + datas.Count + "条。");
+
+            // 先删除数据
+            string sql1 = string.Format("SELECT FID FROM ora_HR_SignInData WHERE FDate BETWEEN '{0}' AND '{1}'", fromDt, toDt);
+            var objs = DBUtils.ExecuteDynamicObject(context, sql1);
+            sql1 = string.Format("DELETE FROM ora_HR_SignInData WHERE FDate BETWEEN '{0}' AND '{1}'", fromDt, toDt);
+            DBUtils.Execute(context, sql1);
+            Log(context, "info", "删除本月数据：" + objs.Count.ToString() + "条。");
+
+            string sql = "";
+            // 分成4段插入数据，避免数据量过大
+            long count = 0;
+            long lastCount = count;
+            double time = 4;
+            int size = (int)Math.Ceiling(datas.Count / time);
             foreach (var data in datas)
             {
                 sql += string.Format("INSERT INTO " +
@@ -69,17 +78,26 @@ namespace CZ.CEEG.SheduleTask.GetClockInData
                     "VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}');\n",
                     data.clockId, data.position.Replace("'", "''"), data.day, data.time, TimeStampToDateTime(data.time).ToString(),
                     data.openId, data.positionResult, data.userName, data.department, data.remark);
+                count++;
+                if (count % size == 0 || count == datas.Count)
+                {
+                    // 将本月数据插入
+                    long para = count / size;
+                    try
+                    {
+                        DBUtils.Execute(context, sql);
+                        Log(context, "info", string.Format("插入{0}至{1}的第{2}段数据：{3}条。",
+                            fromDt, toDt, para, count - lastCount));
+                    }
+                    catch (Exception e)
+                    {
+                        Log(context, "error", "签到数据插入出错：" + e.Message);
+                    }
+                    sql = "";
+                    lastCount = count;
+                }
             }
-            
-            try
-            {
-                DBUtils.Execute(context, sql);
-                Log(context, "info", string.Format("插入{0}至{1}的数据：{2}条。", fromDt, toDt, datas.Count));
-            }
-            catch (Exception e)
-            {
-                Log(context, "error", "签到数据插入出错：" + e.Message);
-            }
+
         }
 
         
