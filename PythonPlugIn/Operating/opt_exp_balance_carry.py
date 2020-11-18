@@ -17,7 +17,7 @@ from System import DateTime
 # 订单明细当前点击行
 currEntryRow = 0
 def EntityRowClick(e):
-	if e.Key == "FEntry".upper():
+	if e.Key == "FEntity".upper():
 		global currEntryRow
 		currEntryRow = e.Row
 

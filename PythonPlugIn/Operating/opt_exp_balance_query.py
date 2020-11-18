@@ -24,7 +24,7 @@ def AfterBindData(e):
 # 订单明细当前点击行
 currEntryRow = 0
 def EntityRowClick(e):
-	if e.Key == "FEntry".upper():
+	if e.Key == "FEntity".upper():
 		global currEntryRow
 		currEntryRow = e.Row
 
@@ -64,7 +64,9 @@ def OpenForm(formid):
 def QueryBalance():
 	year = this.Model.GetValue("FYear")
 	month = this.Model.GetValue("FMonth")
-	sql = "exec proc_czly_QueryExpBalance @FYear={}, @FMonth={}".format(year, month)
+	FSellerNo = this.Model.GetValue("FQSellerId")
+	FSellerNo = "" if FSellerNo is None else str(FSellerNo["Number"])
+	sql = "exec proc_czly_QueryExpBalance @FYear={}, @FMonth={}, @FSellerNo='{}'".format(year, month, FSellerNo)
 	objs = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 	this.Model.DeleteEntryData("FEntity")
 	if objs.Count <= 0:
