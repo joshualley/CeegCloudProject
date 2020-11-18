@@ -43,7 +43,7 @@ def QuerySettle():
 	sql = '''
 	SELECT s.FBillNo, se.*
 FROM ora_OptExp_SettleEntry se
-INNER JOIN ora_OptExp_Settle s ON se.FID=se.FID
+INNER JOIN ora_OptExp_Settle s ON s.FID=se.FID AND s.FDOCUMENTSTATUS='C'
 INNER JOIN V_BD_SALESMAN sm ON se.FSellerID=sm.FID 
 WHERE YEAR(FDate)='{}' AND MONTH(FDATE)='{}' 
 AND sm.FNumber='{}'

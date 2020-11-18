@@ -43,7 +43,7 @@ def QueryAccount():
 	sql = '''
 	SELECT a.FBILLNO, ae.* 
 FROM ora_t_AccountEntry ae
-INNER JOIN ora_t_Account a ON ae.FID=a.FID
+INNER JOIN ora_t_Account a ON ae.FID=a.FID AND a.FDOCUMENTSTATUS='C'
 INNER JOIN T_HR_EMPINFO e ON e.FID=ae.FSellerEmpID
 INNER JOIN V_BD_SALESMAN sm ON e.FSTAFFID=sm.FSTAFFID
 WHERE YEAR(a.FDate)='{}' AND MONTH(a.FDate)='{}'
