@@ -144,10 +144,11 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             {
                 return;
             }
-            //this.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+            string FIsOldSysOrder = "";
+            this.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
             for (int i = 0; i < objs.Count; i++)
             {
-                this.Model.CreateNewEntryRow("FEntity");
+                //this.Model.CreateNewEntryRow("FEntity");
                 this.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
                 string[] FStrDirectors = objs[i]["FDirectors"].ToString().Split(',');
@@ -184,6 +185,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.Model.SetValue("FIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
                 this.Model.SetValue("FIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
                 this.Model.SetValue("FRemarks", objs[i]["FRemark"].ToString(), i);
+                FIsOldSysOrder = objs[i]["FOrderNo"].ToString().StartsWith("XSDD") ? "否" : "是";
+                this.Model.SetValue("FIsOldSysOrder", FIsOldSysOrder, i);
             }
             this.View.UpdateView("FEntity");
         }
