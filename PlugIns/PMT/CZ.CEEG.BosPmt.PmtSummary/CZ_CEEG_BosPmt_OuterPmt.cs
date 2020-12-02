@@ -81,6 +81,7 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 return;
             }
             this.View.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+            string FIsOldSysOrder = "";
             for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
@@ -97,6 +98,8 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 //this.View.Model.SetValue("FOptExpense", objs[i]["FOptExpense"].ToString(), i);
                 //this.View.Model.SetValue("FInterestPenalty", objs[i]["FInterestPenalty"].ToString(), i);
                 this.View.Model.SetValue("FRemark", objs[i]["FRemark"].ToString(), i);
+                FIsOldSysOrder = objs[i]["FOrderNo"].ToString().StartsWith("XSDD") ? "否" : "是";
+                this.View.Model.SetValue("FIsOldSysOrder", FIsOldSysOrder, i);
             }
             this.View.UpdateView("FEntity");
         }
