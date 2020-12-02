@@ -63,8 +63,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_SheduleTask_EmpWkDt.cs" />
+    <Compile Include="CZ_CEEG_SheduleTask_SignInSync.cs" />
     <Compile Include="CZ_CEEG_SheduleTask_GetClockInData.cs" />
+    <Compile Include="Models\AccToken.cs" />
+    <Compile Include="Models\AccTokenInfo.cs" />
+    <Compile Include="Models\ApproveResult.cs" />
+    <Compile Include="Models\ClockInData.cs" />
+    <Compile Include="Models\ClockInResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\SignInSyncUtils.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
