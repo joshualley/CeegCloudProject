@@ -196,10 +196,11 @@ namespace CZ.CEEG.SheduleTask.GetClockInData.Utils
 
             string sql = "";
             // 分成4段插入数据，避免数据量过大
-            long count = 0;
-            long lastCount = count;
-            double time = 4;
-            int size = (int)Math.Ceiling(datas.Count / time);
+            double count = 0;
+            double lastCount = count;
+            //double time = 4;
+            //int size = (int)Math.Ceiling(datas.Count / time);
+            int size = 5000;
             foreach (var data in datas)
             {
                 sql += string.Format("INSERT INTO " +
@@ -211,11 +212,11 @@ namespace CZ.CEEG.SheduleTask.GetClockInData.Utils
                 if (count % size == 0 || count == datas.Count)
                 {
                     // 将本月数据插入
-                    long para = count / size;
+                    int para = (int)Math.Ceiling(count / size);
                     try
                     {
                         DBUtils.Execute(ctx, sql);
-                        Log("info", string.Format("插入{0}至{1}的第{2}段数据：{3}条。",
+                        Log("info", string.Format("插入{0}至{1}时间段内的第{2}段签到数据：{3}条。",
                             fromDt, toDt, para, count - lastCount));
                     }
                     catch (Exception e)
@@ -261,10 +262,10 @@ namespace CZ.CEEG.SheduleTask.GetClockInData.Utils
 
             string sql = "";
             // 分成4段插入数据，避免数据量过大
-            long count = 0;
-            long lastCount = count;
-            double time = 4;
-            int size = (int)Math.Ceiling(datas.Count / time);
+            double count = 0;
+            double lastCount = count;
+            //double time = 4;
+            int size = 5000;
             foreach (var data in datas)
             {
                 sql += string.Format("INSERT INTO " +
@@ -276,11 +277,11 @@ namespace CZ.CEEG.SheduleTask.GetClockInData.Utils
                 if (count % size == 0 || count == datas.Count)
                 {
                     // 将本月数据插入
-                    long para = count / size;
+                    int para = (int)Math.Ceiling(count / size);
                     try
                     {
                         DBUtils.Execute(ctx, sql);
-                        msg = string.Format("[手动同步]插入{0}至{1}的第{2}段数据：{3}条。",
+                        msg = string.Format("[手动同步]插入{0}至{1}时间段内的第{2}段签到数据：{3}条。",
                             fromDt, toDt, para, count - lastCount);
                         Log("info", msg);
                         cbFunc(msg);

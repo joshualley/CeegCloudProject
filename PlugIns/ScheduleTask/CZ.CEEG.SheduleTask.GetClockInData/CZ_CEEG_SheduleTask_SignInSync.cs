@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace CZ.CEEG.SheduleTask.SignInSync
 {
@@ -39,25 +40,31 @@ namespace CZ.CEEG.SheduleTask.SignInSync
                 case "FSYNCBTN": //FSyncBtn
                     if (mBtnLock)
                     {
+                        this.View.ShowMessage("[数据获取中...]此操作比较耗时，请勿频繁操作！");
                         return;
                     }
-                    this.View.ShowMessage("确定进行数据的同步吗？", MessageBoxOptions.YesNo, (result) =>
+                    this.View.ShowMessage("确定进行数据的获取吗？\n提醒：此过程可能较为耗时，需要耐心等待！", MessageBoxOptions.YesNo, (result) =>
                     {
                         if(result == MessageBoxResult.Yes)
                         {
                             mBtnLock = true;
                             string from = this.Model.GetValue("FFromDt").ToString();
                             string to = this.Model.GetValue("FToDt").ToString();
-                            if (DateTime.Parse(to).CompareTo(DateTime.Parse(from)) >= 0)
+                            if (DateTime.Parse(to).CompareTo(DateTime.Parse(from)) <= 0)
                             {
-                                this.View.ShowMessage("截止时间需要大于结束时间！");
+                                this.View.ShowMessage("截止时间需要大于开始时间！");
+                                return;
                             }
+                            string FLog = "";
+                            this.Model.SetValue("FLog", FLog);
                             SignInSyncUtils req = new SignInSyncUtils(this.Context);
-                            this.View.ShowMessage("此操作比较耗时，请勿频繁操作！");
+                            //var that = this;
                             req.InsertDataWithinDate(from, to, (msg) => {
-                                this.View.ShowMessage(msg);
+                                FLog += msg + "\n";
                             });
+                            this.Model.SetValue("FLog", FLog);
                             mBtnLock = false;
+                            this.View.ShowMessage("数据获取完成");
                         }
                     });
                     
