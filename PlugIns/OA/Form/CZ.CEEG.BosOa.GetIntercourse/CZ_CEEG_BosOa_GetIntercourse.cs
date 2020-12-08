@@ -226,7 +226,7 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");
             _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
             _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " ");
+            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " and v.FDOCUMENTSTATUS = 'C' ");
             //_sb.Append("union all select 888 FGOBAmt ");  //测试用行
             _sb.Append(")t ");
             string _sqlGetFOBAmt = _sb.ToString();
