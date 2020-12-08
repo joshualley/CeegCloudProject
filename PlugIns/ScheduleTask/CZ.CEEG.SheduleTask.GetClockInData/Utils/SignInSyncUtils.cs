@@ -241,7 +241,7 @@ namespace CZ.CEEG.SheduleTask.GetClockInData.Utils
             string msg = "";
             if (datas.Count <= 0)
             {
-                msg = "[手动同步]未获取到签到数据！";
+                msg = "[手动同步]未获取到签到数据，目前可能处于高峰期，请于其他时段再次尝试！";
                 Log("info", msg);
                 cbFunc(msg);
                 return;
