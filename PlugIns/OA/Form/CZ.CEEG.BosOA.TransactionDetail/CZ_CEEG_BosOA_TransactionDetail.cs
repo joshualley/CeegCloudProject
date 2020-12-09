@@ -135,10 +135,13 @@ namespace CZ.CEEG.BosOA.TransactionDetail
             #region step 02:获取往来余额
             StringBuilder _sb = new StringBuilder();
 
+            //T_GL_BALANCE 为往来余额
+            //T_GL_VOUCHER 为凭证
+
             switch (_fbo.ToString())
             {
                 case "BD_Empinfo": //员工
-
+          
                     _sb.Append("/*dialect*/ ");
                     _sb.Append("select i.FORGID,ab.FBookID,sy.FValue FCBYear,sp.FValue FCBPeriod, ");
                     _sb.Append("convert(datetime,CONVERT(varchar,sy.FValue)+'-'+CONVERT(varchar,sp.FValue)+'-01')FBegDate ");
@@ -152,10 +155,10 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " union all ");
                     _sb.Append("select ve.FDC*ve.FAmount FGOBAmt,aco.FOrgID FOrgID,SUBSTRING(CONVERT(varchar(100), v.FDATE, 120  ),1,10) Date,ve.fexplanation,'R' mType from(" + _ObjMstIDSch + ")o1 ");
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
-                    _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and FPOSTDATE is not null and v.FInvalid=0 ");
+                    _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
                     _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " and v.FDOCUMENTSTATUS = 'C' ");
+                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " and v.FDOCUMENTSTATUS = 'C' order by mType,Date ");
 
                     break;
                 default:    //供应商或者客户
@@ -246,7 +249,8 @@ namespace CZ.CEEG.BosOA.TransactionDetail
 
                 if (i == 0)
                 {
-                    //第一行的金额为余额，减去所有记账，得到初始金额
+                    //数据库结果按公司分组排序后的第一行（类型为B的）金额为余额，减去所有记账，就可以得到初始金额  
+                    //在计算往来总额时，并非把数据库记录做总和，而是把数据库结果第一行金额累计即可（即所有各个公司往来余额的总和）
                     money = (new Decimal(Convert.ToDouble(GetObjValue(dList[i], "FGOBAmt"))) - new Decimal(dList.Where(d=>d["mType"].ToString().Equals("R")).Sum(d => Convert.ToDouble(d["FGOBAmt"])))).ToString();
                 }
 
