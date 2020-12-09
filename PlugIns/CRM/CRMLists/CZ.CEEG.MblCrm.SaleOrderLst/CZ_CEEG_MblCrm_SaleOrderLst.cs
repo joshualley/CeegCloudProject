@@ -3,6 +3,7 @@ using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.Core.List;
 using Kingdee.BOS.Core.List.PlugIn.Args;
 using Kingdee.BOS.Mobile.PlugIn;
+using Kingdee.BOS.ServiceHelper;
 using Kingdee.BOS.Util;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,17 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
             //e.FilterString = _filter;
             e.AppendQueryOrderby(" FCreateDate DESC");
             e.CustomFilter["FSelectAllOrg"] = true;
+        }
+
+        public override void AfterCreateSqlBuilderParameter(SqlBuilderParameterArgs e)
+        {
+            base.AfterCreateSqlBuilderParameter(e);
+            e.sqlBuilderParameter.IsIsolationOrg = true;
+
+            var orgs = PermissionServiceHelper.GetUserOrg(this.Context);
+            var list = new List<long>();
+            orgs.ForEach(org => list.Add(org.Id));
+            e.sqlBuilderParameter.IsolationOrgList = list;
         }
 
         private string Act_SetCustFilter()
