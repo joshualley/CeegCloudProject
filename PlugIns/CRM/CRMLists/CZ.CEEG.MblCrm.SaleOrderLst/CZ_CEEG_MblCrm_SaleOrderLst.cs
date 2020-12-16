@@ -19,10 +19,15 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
     {
         public override void PrepareFilterParameter(FilterArgs e)
         {
-            string _filter = Act_SetCustFilter();
-            e.FilterString = _filter;
+            var filter = Act_SetCustFilter();
+            if (this.Context.UserId.ToString() == "100560")
+            {
+                return;
+            }
+            //e.CustomFilter["FSelectAllOrg"] = true;
+            e.AppendQueryFilter(filter);
             e.AppendQueryOrderby(" FCreateDate DESC");
-            e.CustomFilter["FSelectAllOrg"] = true;
+            
         }
 
         public override void AfterCreateSqlBuilderParameter(SqlBuilderParameterArgs e)
@@ -34,42 +39,23 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
             var list = new List<long>();
             orgs.ForEach(org => list.Add(org.Id));
             e.sqlBuilderParameter.IsolationOrgList = list;
+            
         }
 
         private string Act_SetCustFilter()
         {
             string userId = this.Context.UserId.ToString();
-
             string sql = string.Format("EXEC proc_czly_GetSalesmanIdByUserId @FUserId='{0}'", userId);
 
             var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            var ids = new List<string>();
+            var ids = new List<long>();
             foreach(var obj in objs)
             {
-                ids.Add("'" + obj["FSalesmanId"].ToString() + "'");
+                ids.Add(Convert.ToInt64(obj["FSalesmanId"]));
             }
-            string ids_str = "-1";
-            if(ids.Count > 0)
-            {
-                ids_str = string.Join(",", ids);
-            }
+            string ids_str = ids.Count > 0 ? string.Join(",", ids) : "-1";
 
-            string _filter = " FSALERID in (" + ids_str + ")";
-
-            return _filter;
-        }
-
-        public override void OnInitialize(InitializeEventArgs e)
-        {
-            base.OnInitialize(e);
-            
-        }
-
-        public override void BeforeF7Select(BeforeF7SelectEventArgs e)
-        {
-            base.BeforeF7Select(e);
-            //取消组织隔离
-            ((ListShowParameter)e.DynamicFormShowParameter).IsIsolationOrg = false;
+            return " FSALERID in (" + ids_str + ")";
         }
     }
 }
