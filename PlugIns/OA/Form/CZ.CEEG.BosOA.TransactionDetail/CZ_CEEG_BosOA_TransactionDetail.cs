@@ -158,7 +158,7 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
                     _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " and v.FDOCUMENTSTATUS = 'C' order by mType,Date ");
+                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " order by mType,Date ");
 
                     break;
                 default:    //供应商或者客户
@@ -179,7 +179,7 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
                     _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " and v.FDOCUMENTSTATUS = 'C' ");
+                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile);
 
                     break;
             }
