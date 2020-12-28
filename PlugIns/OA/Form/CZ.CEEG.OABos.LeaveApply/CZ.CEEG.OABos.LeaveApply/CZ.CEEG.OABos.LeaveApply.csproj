@@ -76,6 +76,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_OABos_AllLeaveSetting.cs" />
+    <Compile Include="CZ_CEEG_OABos_LeaveApplyList.cs" />
     <Compile Include="CZ_CEEG_OABos_LeaveApplyNew.cs" />
     <Compile Include="CZ_CEEG_OABos_LeaveApply.cs" />
     <Compile Include="LeaveType\Gender.cs" />
@@ -102,6 +104,9 @@
     <Compile Include="LeaveType\LeaveFactory.cs" />
     <Compile Include="LeaveType\LeaveTypeName.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="生成集体请假单.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
