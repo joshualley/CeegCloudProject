@@ -95,6 +95,9 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 this.View.Model.SetValue("FReceiverAmt", objs[i]["FTReceiverAmt"].ToString(), i);
                 this.View.Model.SetValue("FInvoiceAmt", objs[i]["FTInvoiceAmt"].ToString(), i);
                 this.View.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
+                this.Model.SetValue("FOuterPmtAll",
+                    decimal.Parse(objs[i]["FTDeliverAmt"].ToString()) -
+                    decimal.Parse(objs[i]["FTReceiverAmt"].ToString()), i);
                 //this.View.Model.SetValue("FOptExpense", objs[i]["FOptExpense"].ToString(), i);
                 //this.View.Model.SetValue("FInterestPenalty", objs[i]["FInterestPenalty"].ToString(), i);
                 this.View.Model.SetValue("FRemark", objs[i]["FRemark"].ToString(), i);
