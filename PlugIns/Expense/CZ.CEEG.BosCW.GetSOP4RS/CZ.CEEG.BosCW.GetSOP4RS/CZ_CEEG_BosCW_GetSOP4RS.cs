@@ -202,13 +202,13 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
                 //and FSaleOrgID='156140' and FCUSTID='340766' and FDocumentStatus='C' and FBillNo like('%%'); 
              
                 --技术处理 绕过部门ID的组织 通过FMASTERID 找对应的部门
-                select o.FID,o.FBillNO,o.FCustID,o.FSALEORGID into #b from T_SAL_ORDER o 
+                select o.FID,o.FBillNO,o.F_ORA_POORDERNO,o.FCustID,o.FSALEORGID into #b from T_SAL_ORDER o 
                 inner join T_BD_CUSTOMER c on o.FCUSTID=c.FCUSTID --and o.FSALEORGID=c.FUseOrgID 
                 inner join T_BD_CUSTOMER cm on c.FMASTERID=cm.FMASTERID 
                 where o.FDate between '2000-08-17' and '2020-08-17' and o.FSaleOrgID like('175325') and cm.FCUSTID like('494883') and o.FDocumentStatus='C' 
                 and FBillNo like('%6155%') 
              
-                select 0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,
+                select b.F_ORA_POORDERNO,0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,
                 bp.FRecAdvanceAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate FReceiptAmountFor,bp.FReMark,isnull(convert(varchar(10),bp.FMustDate,20),'null')FMustDate,
                 FRecAdvanceAmount-F_ora_SplitAmount FRemainAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor FRemainAmountFor, 
                 bf.FBillAllAmount,isnull(od.FOutAmt,0)FOutAmt,isnull(convert(varchar(10),od.FOutDate,20),'')FOutDate 
@@ -230,13 +230,13 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
             //_sb.Append("select FID,FBillNO,FCustID into #b from T_SAL_ORDER where FDate between '" + _FCdnBegDt + "' and '" + _FCdnEndDt + "' ");
             //_sb.Append("and FSaleOrgID='" + _FCdnSaleOrg + "' and FCUSTID='" + _FCdnCust + "' and FDocumentStatus='C' and FBillNo like('%" + _FCdnOrderNo + "%'); ");
 
-            _sb.Append("select o.FID,o.FBillNO,o.FCustID,o.FSALEORGID into #b from T_SAL_ORDER o ");
+            _sb.Append("select o.FID,o.FBillNO,o.F_ORA_POORDERNO,o.FCustID,o.FSALEORGID into #b from T_SAL_ORDER o ");
             _sb.Append("inner join T_BD_CUSTOMER c on o.FCUSTID=c.FCUSTID ");
             _sb.Append("inner join T_BD_CUSTOMER cm on c.FMASTERID=cm.FMASTERID ");
             _sb.Append("where o.FDate between '" + _FCdnBegDt + "' and '" + _FCdnEndDt + "' and o.FSaleOrgID like('" + _FCdnSaleOrg + "') and cm.FCUSTID like('" + _FCdnCust + "') and o.FDocumentStatus='C' ");
             _sb.Append("and FBillNo like('%" + _FCdnOrderNo + "%'); ");
 
-            _sb.Append("select 0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,");
+            _sb.Append("select b.F_ORA_POORDERNO,0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,");
             _sb.Append("bp.FRecAdvanceAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate FReceiptAmountFor,bp.FReMark,isnull(convert(varchar(10),bp.FMustDate,20),'null')FMustDate,");
             _sb.Append("FRecAdvanceAmount-F_ora_SplitAmount FRemainAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor FRemainAmountFor, ");
             _sb.Append("bf.FBillAllAmount,isnull(od.FOutAmt,0)FOutAmt,isnull(convert(varchar(10),od.FOutDate,20),'')FOutDate ");
@@ -270,6 +270,7 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
 
             //string _FChk = "";            //复选框 False
             string _FOrderNo = "";          //销售订单号
+            string _FPoorderNo = "";        //采购订单号
             string _FOrderInterID = "";     //销售订单内码
             string _FOrderPlanID = "";      //收款计划行ID
             string _FOrderPSeq = "";        //收款计划行号
@@ -294,6 +295,7 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
                 this.View.Model.CreateNewEntryRow("FEntity");   //新增一行
 
                 _FOrderNo = _objDT.Rows[i]["FBillNo"].ToString();
+                _FPoorderNo = _objDT.Rows[i]["F_ORA_POORDERNO"].ToString();
                 _FOrderInterID = _objDT.Rows[i]["FID"].ToString();
                 _FOrderPlanID = _objDT.Rows[i]["FEntryID"].ToString();
                 _FOrderPSeq = _objDT.Rows[i]["FSEQ"].ToString();
@@ -313,6 +315,7 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
                 _FOutDate = _objDT.Rows[i]["FOutDate"].ToString();
 
                 this.View.Model.SetValue("FOrderNo", _FOrderNo, i);
+                this.View.Model.SetValue("FPoorderNo", _FPoorderNo, i);
                 this.View.Model.SetValue("FOrderInterID", _FOrderInterID, i);
                 this.View.Model.SetValue("FOrderPlanID", _FOrderPlanID, i);
                 this.View.Model.SetValue("FOrderPSeq", _FOrderPSeq, i);
