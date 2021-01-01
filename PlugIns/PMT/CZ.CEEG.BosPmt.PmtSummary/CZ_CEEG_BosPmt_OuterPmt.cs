@@ -85,6 +85,8 @@ namespace CZ.CEEG.BosPmt.OuterPmt
             for (int i = 0; i < objs.Count; i++)
             {
                 this.View.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
+                this.View.Model.SetValue("FSignOrgID", objs[i]["FSignOrgID"].ToString(), i);
+                this.View.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
                 this.View.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.View.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
                 this.View.Model.SetValue("FOrderAmt", objs[i]["FTOrderAmt"].ToString(), i);

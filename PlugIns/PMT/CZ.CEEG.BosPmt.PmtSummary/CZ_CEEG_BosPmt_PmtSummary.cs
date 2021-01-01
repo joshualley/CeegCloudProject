@@ -159,6 +159,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 }
                 this.Model.SetValue("FDirectors", FDirectors, i);
                 this.Model.SetValue("FSaleOrgID", objs[i]["FSaleOrgID"].ToString(), i);
+                this.View.Model.SetValue("FSignOrgID", objs[i]["FSignOrgID"].ToString(), i);
                 this.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
                 this.Model.SetValue("FDeptID", objs[i]["FDeptID"].ToString(), i);
                 this.Model.SetValue("FOrgID", objs[i]["FOrgID"].ToString(), i);
