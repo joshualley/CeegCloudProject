@@ -91,7 +91,8 @@ namespace CZ.CEEG.BosPmt.OuterPmt
                 this.View.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
                 this.View.Model.SetValue("FOrderAmt", objs[i]["FTOrderAmt"].ToString(), i);
                 this.View.Model.SetValue("FPayWay", objs[i]["FPayWay"].ToString(), i);
-                this.View.Model.SetValue("FLaterDelvGoodsDt", objs[i]["FLaterDelvGoodsDt"].ToString(), i);
+                string dt = objs[i]["FLaterDelvGoodsDt"].ToString().Split(' ')[0] == "1900-01-01" ? "" : objs[i]["FLaterDelvGoodsDt"].ToString();
+                this.View.Model.SetValue("FLaterDelvGoodsDt", dt, i);
                 this.View.Model.SetValue("FTimeInterval", objs[i]["FIntervalDay"].ToString(), i);
                 this.View.Model.SetValue("FDeliverAmt", objs[i]["FTDeliverAmt"].ToString(), i);
                 this.View.Model.SetValue("FReceiverAmt", objs[i]["FTReceiverAmt"].ToString(), i);

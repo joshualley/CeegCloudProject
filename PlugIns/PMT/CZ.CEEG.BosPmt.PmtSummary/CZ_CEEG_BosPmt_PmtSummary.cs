@@ -166,7 +166,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.Model.SetValue("FCustID", objs[i]["FCustID"].ToString(), i);
                 this.Model.SetValue("FTOrderAmt", objs[i]["FTOrderAmt"].ToString(), i);
                 this.Model.SetValue("FPayWay", objs[i]["FPayWay"].ToString(), i);
-                this.Model.SetValue("FLaterDelvGoodsDt", objs[i]["FLaterDelvGoodsDt"].ToString(), i);
+                string dt = objs[i]["FLaterDelvGoodsDt"].ToString().Split(' ')[0] == "1900-01-01" ? "" : objs[i]["FLaterDelvGoodsDt"].ToString();
+                this.Model.SetValue("FLaterDelvGoodsDt", dt, i);
                 this.Model.SetValue("FTDeliverAmt", objs[i]["FTDeliverAmt"].ToString(), i);
                 this.Model.SetValue("FTReceiverAmt", objs[i]["FTReceiverAmt"].ToString(), i);
                 this.Model.SetValue("FTInvoiceAmt", objs[i]["FTInvoiceAmt"].ToString(), i);
