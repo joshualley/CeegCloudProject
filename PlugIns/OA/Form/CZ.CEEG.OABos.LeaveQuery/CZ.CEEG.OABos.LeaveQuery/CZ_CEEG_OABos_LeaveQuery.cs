@@ -94,7 +94,7 @@ namespace CZ.CEEG.OABos.LeaveQuery
         {
             var para = new BillShowParameter();
             para.FormId = "kbea624189d8e4d829b68340507eda196"; //请假申请的标识
-            para.OpenStyle.ShowType = ShowType.InContainer; //打开方式
+            para.OpenStyle.ShowType = ShowType.MainNewTabPage; //打开方式
             para.ParentPageId = this.View.PageId;
             para.PKey = FID;
             para.Status = OperationStatus.VIEW;
