@@ -207,13 +207,15 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
                 inner join T_BD_CUSTOMER cm on c.FMASTERID=cm.FMASTERID 
                 where o.FDate between '2000-08-17' and '2020-08-17' and o.FSaleOrgID like('175325') and cm.FCUSTID like('494883') and o.FDocumentStatus='C' 
                 and FBillNo like('%6155%') 
-             
+
                 select b.F_ORA_POORDERNO,0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,
                 bp.FRecAdvanceAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate FReceiptAmountFor,bp.FReMark,isnull(convert(varchar(10),bp.FMustDate,20),'null')FMustDate,
-                FRecAdvanceAmount-F_ora_SplitAmount FRemainAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor FRemainAmountFor, 
+                FRecAdvanceAmount-F_ora_SplitAmount-isnull(p.FReceiverAmt,0) FRemainAmount,
+                bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor-isnull(p.FReceiverAmt,0)*bf.FEXChangeRate FRemainAmountFor, 
                 bf.FBillAllAmount,isnull(od.FOutAmt,0)FOutAmt,isnull(convert(varchar(10),od.FOutDate,20),'')FOutDate 
                 from #b b 
                 inner join T_SAL_ORDERFIN bf on b.FID=bf.FID inner join T_SAL_ORDERPLAN bp on b.FID=bp.FID 
+                left join ora_Pmt_InitialPayment p on p.FOrderID=b.FID
                 left join(select b.FID,MAX(o.FDate)FOutDate,SUM(oef.FALLAMOUNT)FOutAmt 
                 from #b b 
                 inner join T_SAL_ORDERENTRY be on b.FID=be.FID inner join T_SAL_OUTSTOCKENTRY_R oer on be.FENTRYID=oer.FSOEntryId 
@@ -222,7 +224,7 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
                 group by b.FID )od on b.FID=od.FID 
                 where FRecAdvanceAmount>F_ora_SplitAmount 
                 order by b.FBillNO,bp.FSEQ 
-                --drop table #b
+                -- drop table #b
              */
             #endregion
             StringBuilder _sb = new StringBuilder();
@@ -238,9 +240,11 @@ namespace CZ.CEEG.BosCW.GetSOP4RS
 
             _sb.Append("select b.F_ORA_POORDERNO,0 FChk,b.FBillNo,b.FID,bp.FEntryID,bp.FSEQ,bp.FReceiveType,b.FCustID,bf.FSettleCurrId,bf.FEXChangeTypeID,bf.FEXChangeRate,");
             _sb.Append("bp.FRecAdvanceAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate FReceiptAmountFor,bp.FReMark,isnull(convert(varchar(10),bp.FMustDate,20),'null')FMustDate,");
-            _sb.Append("FRecAdvanceAmount-F_ora_SplitAmount FRemainAmount,bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor FRemainAmountFor, ");
+            _sb.Append("FRecAdvanceAmount-F_ora_SplitAmount-isnull(p.FReceiverAmt,0) FRemainAmount, ");
+            _sb.Append("bp.FRecAdvanceAmount*bf.FEXChangeRate-F_ora_SplitAmountFor-isnull(p.FReceiverAmt,0)*bf.FEXChangeRate FRemainAmountFor, ");
             _sb.Append("bf.FBillAllAmount,isnull(od.FOutAmt,0)FOutAmt,isnull(convert(varchar(10),od.FOutDate,20),'')FOutDate ");
             _sb.Append("from #b b inner join T_SAL_ORDERFIN bf on b.FID=bf.FID inner join T_SAL_ORDERPLAN bp on b.FID=bp.FID ");
+            _sb.Append("left join ora_Pmt_InitialPayment p on p.FOrderID=b.FID ");
             _sb.Append("left join(select b.FID,MAX(o.FDate)FOutDate,SUM(oef.FALLAMOUNT)FOutAmt ");
             _sb.Append("from #b b inner join T_SAL_ORDERENTRY be on b.FID=be.FID inner join T_SAL_OUTSTOCKENTRY_R oer on be.FENTRYID=oer.FSOEntryId ");
             _sb.Append("inner join T_SAL_OUTSTOCKENTRY oe on oer.FENTRYID=oe.FEntryID ");
