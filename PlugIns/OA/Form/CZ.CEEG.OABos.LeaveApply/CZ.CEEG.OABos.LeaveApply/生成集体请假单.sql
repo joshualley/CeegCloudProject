@@ -34,7 +34,7 @@ declare @Date datetime=GETDATE()
 declare @Year int=YEAR(@Date)
 
 declare @FID int=ident_current('Z_ora_t_LeaveHead')+1
-declare @max_num int=(select MAX(RIGHT(FBILLNO,5)) from ora_t_LeaveHead)
+declare @max_num int=(select MAX(RIGHT(FBILLNO,5))+1 from ora_t_LeaveHead)
 declare @FBILLNO varchar(30)='122'+RIGHT(@Year,2)+dbo.fun_BosRnd_addSpace(@max_num,'','',5)
 declare @FAPPLYID int=0
 declare @FORGID int=0
@@ -83,6 +83,12 @@ SELECT
 	@FID,FEntryID,FSEQ,@FLeaveType,@FBeginDt,@FBeginFrame,@FEndDt,@FEndFrame,@FDays,FName,FPost,FDept,@FBeginTime,@FEndTime
 FROM #temp
 DBCC CHECKIDENT (Z_ora_t_Leave,RESEED,@FEntryID)
+-- 刷新单据规则最大码
+update bc set bc.FNUMMAX=@max_num
+from T_BAS_BILLCODES bc
+inner join T_BAS_BILLCODERULE bcr on bcr.FRULEID=bc.FRULEID
+where bcr.FBILLFORMID='kbea624189d8e4d829b68340507eda196'
+and FBYVALUE='20{{{{{0}}}'
 
 end try
 begin catch
