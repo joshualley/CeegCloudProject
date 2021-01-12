@@ -39,7 +39,7 @@ namespace CZ.CEEG.BosTask.PfmReview
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
-            string orgId = CZ_GetBaseData("FOrgId", "Id");
+            /*string orgId = CZ_GetBaseData("FOrgId", "Id");
             var currdate = DateTime.Now;
             string date = "";
             if (currdate.Month <= 10)
@@ -57,7 +57,7 @@ namespace CZ.CEEG.BosTask.PfmReview
             {
                 date = string.Format("{0}-{1}-01", currdate.Year, currdate.Month - 1);
             }
-            this.View.Model.SetValue("FPeriod", date);
+            this.View.Model.SetValue("FPeriod", date);*/
         }
 
         public override void DataChanged(DataChangedEventArgs e)
