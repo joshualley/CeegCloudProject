@@ -384,13 +384,20 @@ namespace CZ.CEEG.WFTask.PersonalReport
                     //}
 
                     var entityL = dataEntity["FEntityL"] as DynamicObjectCollection;
+                    bool marked = false; 
                     foreach (var row in entityL)
                     {
                         if (row["FLSrcID"].ToString() != "0")
                         {
-                            if (row["FLDirectorGrade"].ToString() == "0")//|| row["FLDirectorIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
+                            if (row["FLDirectorGrade"].ToString() != "0")//|| row["FLDirectorIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
                             {
-                                ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
+                                marked = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!marked) {
+                        ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
                                         string.Empty,
                                         FID,
                                         dataEntity.DataEntityIndex,
@@ -398,9 +405,7 @@ namespace CZ.CEEG.WFTask.PersonalReport
                                         FID,
                                         "请对汇报人上月工作进行评分！",
                                         string.Empty);
-                                validateContext.AddError(null, ValidationErrorInfo);
-                            }
-                        }
+                        validateContext.AddError(null, ValidationErrorInfo);
                     }
 
                     if (!ValidatePreSum(dataEntity))
