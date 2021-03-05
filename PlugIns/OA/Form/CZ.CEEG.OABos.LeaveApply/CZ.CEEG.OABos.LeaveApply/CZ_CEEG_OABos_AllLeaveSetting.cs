@@ -7,6 +7,8 @@ using Kingdee.BOS.App.Data;
 using System.ComponentModel;
 using System;
 using Kingdee.BOS.Core.DynamicForm.PlugIn;
+using System.Text;
+using Kingdee.BOS.Orm.DataEntity;
 
 namespace CZ.CEEG.OABos.AllLeaveSetting
 {
@@ -14,13 +16,18 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
     [HotUpdate]
     public class CZ_CEEG_OABos_AllLeaveSetting : AbstractDynamicFormPlugIn
     {
+        /// <summary>
+        /// 生成的请假单的FID
+        /// </summary>
+        private string mLeaveFID = "-1";
+
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
         {
             base.AfterButtonClick(e);
             string key = e.Key.ToUpperInvariant();
             switch (key)
             {
-                case "FSUBMIT": // FSubmit 确认
+                case "FGENE": // FGene 生成
                     Act_ABC_GeneLeaveForm();
                     break;
             }
@@ -52,6 +59,64 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
             }
         }
 
+        public override void AfterBarItemClick(AfterBarItemClickEventArgs e)
+        {
+            base.AfterBarItemClick(e);
+            if (e.BarItemKey.EqualsIgnoreCase("ora_tbSubmit"))
+            {
+                if(mLeaveFID == "-1")
+                {
+                    this.View.ShowErrMessage("没有要提交的数据!");
+                    return;
+                }
+                StringBuilder sbSql = new StringBuilder();
+                sbSql.Append("/*dialect*/");
+                var entity = this.Model.DataObject["FEntity"] as DynamicObjectCollection;
+                if (entity.Count <= 0) return;
+
+                foreach (var row in entity)
+                {
+                    sbSql.Append($"update ora_t_Leave set FDAYNUM={row["FDayNum"]} where FEntryID={row["FEntryID"]};");
+                }
+                DBUtils.Execute(Context, sbSql.ToString());
+                
+                // 打开生成的请假单
+                var para = new BillShowParameter();
+                para.FormId = "kbea624189d8e4d829b68340507eda196";
+                para.OpenStyle.ShowType = ShowType.InContainer;
+                para.ParentPageId = this.View.PageId;
+                para.Status = OperationStatus.VIEW;
+                para.PKey = mLeaveFID;
+                this.View.ShowForm(para);
+            }
+        }
+
+
+        public override void BeforeClosed(BeforeClosedEventArgs e)
+        {
+            base.BeforeClosed(e);
+            if (mLeaveFID != "-1")
+            {
+                this.View.ShowWarnningMessage(
+                    "还有数据未提交，确认退出吗？",
+                    "还有数据未提交，确认退出吗？",
+                    MessageBoxOptions.YesNo, result =>
+                    {
+                        if(result == MessageBoxResult.Yes)
+                        {
+                            string sql = $"delete from ora_t_LeaveHead where FID={mLeaveFID};" +
+                                $"delete from ora_t_Leave where FID={mLeaveFID};";
+                            DBUtils.Execute(Context, sql);
+                            mLeaveFID = "-1";
+                        }
+                        else
+                        {
+                            e.Cancel = true;
+                        }
+                    });
+            }
+        }
+
         /// <summary>
         /// 请假天数计算，调用存储过程实现
         /// </summary>
@@ -79,6 +144,29 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
         /// </summary>
         private void Act_ABC_GeneLeaveForm()
         {
+            // 判读本单是否生成了请假单，但还未进行提交
+            if (mLeaveFID != "-1")
+            {
+                this.View.ShowWarnningMessage("已经生成了请假单，但还未提交，确定放弃上一次的生成，重新进行生成吗？",
+                    "已经生成了请假单，但还未提交，确定放弃上一次的生成，重新进行生成吗？", 
+                    MessageBoxOptions.YesNo, result =>
+                {
+                    if(result == MessageBoxResult.Yes)
+                    {
+                        string sql = $"delete from ora_t_LeaveHead where FID={mLeaveFID};" +
+                            $"delete from ora_t_Leave where FID={mLeaveFID};";
+                        DBUtils.Execute(Context, sql);
+                        mLeaveFID = "-1";
+                        GeneLeavForm();
+                    }
+                });
+            }
+            GeneLeavForm();
+        }
+
+
+        private void GeneLeavForm()
+        {
             // 请假类型
             string leaveType = this.Model.GetValue("FLeaveType") == null ? "" : this.Model.GetValue("FLeaveType").ToString();
             // 开始日期
@@ -93,7 +181,7 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
             string days = this.Model.GetValue("FDays").ToString();
             // 请假事由
             string remarks = this.Model.GetValue("FRemarks") == null ? "" : this.Model.GetValue("FRemarks").ToString();
-            if(leaveType.Equals("")
+            if (leaveType.Equals("")
                 || remarks.Equals("")
                 || beginDt.Equals("")
                 || endDt.Equals("")
@@ -103,7 +191,7 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
                 this.View.ShowErrMessage("所填信息不完整!");
                 return;
             }
-            if(Convert.ToDecimal(days) <= 0)
+            if (Convert.ToDecimal(days) <= 0)
             {
                 this.View.ShowErrMessage("请假天数必须大于0！");
                 return;
@@ -115,28 +203,33 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
 
             // 生成请假单
             string creatorId = Context.UserId.ToString();
-            string sql = "exec proc_czly_AllLeave " + 
+            string sql = "exec proc_czly_AllLeave " +
                 $"@FCreatorID='{creatorId}',@FleaveType='{leaveType}',@FBeginDt='{beginDt}',@FEndDt='{endDt}'," +
                 $"@FBeginFrame='{beginFrame}',@FEndFrame='{endFrame}',@FBeginTime='{beginTime}',@FEndTime='{endTime}'," +
                 $"@FRemarks='{remarks}',@FDays='{days}'";
-            //this.View.ShowMessage(sql);
-            //return;
+
             var objs = DBUtils.ExecuteDynamicObject(Context, sql);
-            if(objs.Count <= 0)
+            mLeaveFID = objs.Count > 0 ? objs[0]["FID"].ToString() : "-1";
+            if (objs.Count <= 0)
             {
+                this.View.ShowErrMessage("生成失败！");
                 return;
             }
-            // 打开生成的请假单
-            string fid = objs[0]["FID"].ToString();
-            var para = new BillShowParameter();
-            para.FormId = "kbea624189d8e4d829b68340507eda196";
-            para.OpenStyle.ShowType = ShowType.InContainer;
-            para.ParentPageId = this.View.PageId;
-            para.Status = OperationStatus.VIEW;
-            para.PKey = fid;
-
-            this.View.ShowForm(para);
+            // 创建单据体
+            this.Model.DeleteEntryData("FEntity");
+            sql = $"select FEntryId, FName, FDayNum from ora_t_Leave where FID={mLeaveFID}";
+            var items = DBUtils.ExecuteDynamicObject(Context, sql);
+            if (items.Count <= 0) return;
+            this.Model.BatchCreateNewEntryRow("FEntity", items.Count);
+            for (int i = 0; i < items.Count; i++)
+            {
+                this.Model.SetValue("FEntryID", items[i]["FEntryId"]);
+                this.Model.SetValue("FName", items[i]["FName"]);
+                this.Model.SetValue("FDayNum", items[i]["FDayNum"]);
+            }
+            this.View.UpdateView("FEntity");
         }
+
 
         
     }
