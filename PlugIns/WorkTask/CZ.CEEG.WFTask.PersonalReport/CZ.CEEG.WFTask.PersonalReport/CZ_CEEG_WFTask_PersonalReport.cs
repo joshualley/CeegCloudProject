@@ -384,28 +384,24 @@ namespace CZ.CEEG.WFTask.PersonalReport
                     //}
 
                     var entityL = dataEntity["FEntityL"] as DynamicObjectCollection;
-                    bool marked = false; 
-                    foreach (var row in entityL)
+                    if (entityL.Count > 0)
                     {
-                        if (row["FLSrcID"].ToString() != "0")
+                        // 上月计划表体存在时，发现有一行评分不为0时，则允许审核通过
+                        var target = entityL
+                            .Where(item => item["FLSrcID"].ToString() != "0" && item["FLDirectorGrade"].ToString() != "0")
+                            .ToArray();
+                        if (target.Length <= 0)
                         {
-                            if (row["FLDirectorGrade"].ToString() != "0")//|| row["FLDirectorIdea"].ToString().IsNullOrEmptyOrWhiteSpace())
-                            {
-                                marked = true;
-                                break;
-                            }
+                            ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
+                                            string.Empty,
+                                            FID,
+                                            dataEntity.DataEntityIndex,
+                                            dataEntity.RowIndex,
+                                            FID,
+                                            "请对汇报人上月工作进行评分！",
+                                            string.Empty);
+                            validateContext.AddError(null, ValidationErrorInfo);
                         }
-                    }
-                    if (!marked) {
-                        ValidationErrorInfo ValidationErrorInfo = new ValidationErrorInfo(
-                                        string.Empty,
-                                        FID,
-                                        dataEntity.DataEntityIndex,
-                                        dataEntity.RowIndex,
-                                        FID,
-                                        "请对汇报人上月工作进行评分！",
-                                        string.Empty);
-                        validateContext.AddError(null, ValidationErrorInfo);
                     }
 
                     if (!ValidatePreSum(dataEntity))
