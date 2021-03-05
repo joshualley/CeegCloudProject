@@ -58,6 +58,11 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public abstract string GetLeftLeaveMessage();
 
+        public virtual ReportData GetReportData()
+        {
+            return null;
+        }
+
         public virtual bool ValidateLeave(ref string msg)
         {
             double leftDays = mYearAllowDays - getAlreadyLeaveDays();

@@ -20,5 +20,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
         /// <param name="msg"></param>
         /// <returns></returns>
         bool ValidateLeave(ref string msg);
+
+        ReportData GetReportData();
     }
 }

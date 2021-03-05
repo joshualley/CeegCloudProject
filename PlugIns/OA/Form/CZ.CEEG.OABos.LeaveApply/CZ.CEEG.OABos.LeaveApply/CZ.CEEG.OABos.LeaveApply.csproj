@@ -76,6 +76,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CZ_CEEG_OABos_LeaveQueryNew.cs" />
     <Compile Include="CZ_CEEG_OABos_AllLeaveSetting.cs" />
     <Compile Include="CZ_CEEG_OABos_LeaveApplyList.cs" />
     <Compile Include="CZ_CEEG_OABos_LeaveApplyNew.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="LeaveType\Imp\SpecialHome.cs" />
     <Compile Include="LeaveType\LeaveFactory.cs" />
     <Compile Include="LeaveType\LeaveTypeName.cs" />
+    <Compile Include="LeaveType\ReportData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

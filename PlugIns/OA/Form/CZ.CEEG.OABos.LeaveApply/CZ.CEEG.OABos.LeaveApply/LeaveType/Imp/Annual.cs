@@ -157,5 +157,24 @@ FROM T_HR_EMPINFO WHERE FID='{0}'", mLeaver);
             return true;
         }
 
+        public override ReportData GetReportData()
+        {
+            Home home = new Home(mContext, mLeaver, 0);
+            double homeLeaveDays = home.getAlreadyLeaveDays();
+            double carryDays = getLastYearCarryOverDays();
+            double leaveDays = getAlreadyLeaveDays();
+            return new ReportData
+            {
+                Year = 0,
+                LeaveType = (int)mLeaveType,
+                Name = mLeaver,
+                AllowDays = mYearAllowDays,
+                CurrDays = mOnceAllowDays,
+                LastYearLeft = carryDays,
+                LeftDays = leaveDays + homeLeaveDays,
+                SurplusDays = mYearAllowDays + carryDays - leaveDays - homeLeaveDays,
+            };
+        }
+
     }
 }
