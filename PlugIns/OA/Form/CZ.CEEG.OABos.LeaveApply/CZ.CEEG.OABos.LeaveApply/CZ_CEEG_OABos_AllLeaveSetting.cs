@@ -79,7 +79,7 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
                     sbSql.Append($"update ora_t_Leave set FDAYNUM={row["FDayNum"]} where FEntryID={row["FEntryID"]};");
                 }
                 DBUtils.Execute(Context, sbSql.ToString());
-                
+                mLeaveFID = "-1";
                 // 打开生成的请假单
                 var para = new BillShowParameter();
                 para.FormId = "kbea624189d8e4d829b68340507eda196";
@@ -97,6 +97,7 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
             base.BeforeClosed(e);
             if (mLeaveFID != "-1")
             {
+                e.Cancel = true;
                 this.View.ShowWarnningMessage(
                     "还有数据未提交，确认退出吗？",
                     "还有数据未提交，确认退出吗？",
@@ -108,10 +109,7 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
                                 $"delete from ora_t_Leave where FID={mLeaveFID};";
                             DBUtils.Execute(Context, sql);
                             mLeaveFID = "-1";
-                        }
-                        else
-                        {
-                            e.Cancel = true;
+                            this.View.Close();
                         }
                     });
             }
@@ -223,9 +221,9 @@ namespace CZ.CEEG.OABos.AllLeaveSetting
             this.Model.BatchCreateNewEntryRow("FEntity", items.Count);
             for (int i = 0; i < items.Count; i++)
             {
-                this.Model.SetValue("FEntryID", items[i]["FEntryId"]);
-                this.Model.SetValue("FName", items[i]["FName"]);
-                this.Model.SetValue("FDayNum", items[i]["FDayNum"]);
+                this.Model.SetValue("FEntryID", items[i]["FEntryId"], i);
+                this.Model.SetValue("FName", items[i]["FName"], i);
+                this.Model.SetValue("FDayNum", items[i]["FDayNum"], i);
             }
             this.View.UpdateView("FEntity");
         }
