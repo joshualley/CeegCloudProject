@@ -56,9 +56,7 @@ select
 	ROW_NUMBER() over(order by e.FID) FSEQ, 0 as FEntryID,
 	e.FID FName, es.FDeptID FDept, es.FPostID FPost
 into #temp
-from T_SEC_USER u
-inner join V_bd_ContactObject c on u.FLinkObject=c.FID
-inner join T_HR_EMPINFO e on c.FNumber=e.FNumber
+from T_HR_EMPINFO e 
 inner join T_BD_STAFFTEMP es on e.FID=es.FID and es.FIsFirstPost='1'  
 inner join T_BD_STAFF s on es.FSTAFFID=s.FSTAFFID and s.FDOCUMENTSTATUS='C' and s.FFORBIDSTATUS='A'
 
