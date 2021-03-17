@@ -137,7 +137,10 @@ def AlterCustAndSalerByOrg():
 		FSalerId = srcBill[0]["FSalerID"]
 		FCustId = srcBill[0]["FCustID"]
 
-	if FSalerId == 0 and FCustId == 0:
+	if FSalerId == 0 or FCustId == 0:
+		this.Model.SetValue("FSalerId", FSalerId)
+		this.Model.SetValue("FCustId", FCustId)
+		this.View.ShowErrMessage("销售员或客户不能为空值！")
 		return
 
 	# 获取客户内码
