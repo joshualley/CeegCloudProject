@@ -40,26 +40,30 @@ namespace CZ.CEEG.OABos.BaseDLL
         /// <param name="e"></param>
         private void FilterStaffByOrganization(BeforeF7SelectEventArgs e)
         {
-            string filter = "FID in (";
             string orgId = this.View.Model.DataObject[GetApplySign()["FOrgId"]] == null ? "0" :
                 (this.View.Model.DataObject[GetApplySign()["FOrgId"]] as DynamicObject)["Id"].ToString();
-            if(orgId == "0")
+            if(orgId == "0") return;
+            string orgName = this.Context.CurrentOrganizationInfo.Name;
+            string sql = "";
+            if (orgName.Equals("开曼集团") || orgName.Equals("中电电气江苏光伏有限公司") || orgName.Equals("华思"))
             {
-                return;
+                sql = string.Format(@"
+SELECT FID FROM T_BD_STAFFTEMP st
+INNER JOIN T_BD_STAFF s on st.FSTAFFID=s.FSTAFFID and s.FDOCUMENTSTATUS='C' and s.FFORBIDSTATUS='A'
+WHERE st.FISFIRSTPOST='1' AND st.FWORKORGID='{0}'", orgId);
+            } 
+            else
+            {
+                sql = string.Format(@"/*dialect*/
+SELECT DISTINCT FID FROM T_BD_STAFFTEMP st
+INNER JOIN T_BD_STAFF s on st.FSTAFFID=s.FSTAFFID and s.FDOCUMENTSTATUS='C' and s.FFORBIDSTATUS='A'
+INNER JOIN T_BD_Department d on d.FDeptId=[dbo].[fun_czty_GetWorkDeptID](st.FDeptId)
+WHERE FISFIRSTPOST='1' AND d.FUseOrgId='{0}'", orgId);
             }
-            string sql = string.Format("SELECT FID FROM T_BD_STAFFTEMP WHERE FISFIRSTPOST='1' AND FWORKORGID='{0}'", orgId);
+            
             var objs = CZDB_GetData(sql);
-
-            for (int i = 0; i < objs.Count; i++)
-            {
-                filter += "'" + objs[i]["FID"].ToString() + "'";
-                if (i < objs.Count - 1) filter += ",";
-            }
-            if(objs.Count <= 0)
-            {
-                filter += "'0'";
-            }
-            filter += ")";
+            string filter = objs.Count <= 0 ? "0" : string.Join(",", objs.Select(i => i["FID"].ToString()).ToArray());
+            filter = $"FID in ({filter})";
             e.ListFilterParameter.Filter = filter;
         }
 
