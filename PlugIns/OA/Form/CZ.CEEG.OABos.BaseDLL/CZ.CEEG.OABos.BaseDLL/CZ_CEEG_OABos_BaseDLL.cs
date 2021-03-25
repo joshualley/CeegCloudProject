@@ -34,6 +34,13 @@ namespace CZ.CEEG.OABos.BaseDLL
         private bool isFirst = true;
 
         #region 通用业务功能
+
+        private bool IsKaiMan()
+        {
+            string orgName = this.Context.CurrentOrganizationInfo.Name;
+            return orgName.Equals("开曼集团") || orgName.Equals("中电电气江苏光伏有限公司") || orgName.Equals("华思");
+        }
+
         /// <summary>
         /// 根据表单选择的组织过滤员工
         /// </summary>
@@ -43,9 +50,8 @@ namespace CZ.CEEG.OABos.BaseDLL
             string orgId = this.View.Model.DataObject[GetApplySign()["FOrgId"]] == null ? "0" :
                 (this.View.Model.DataObject[GetApplySign()["FOrgId"]] as DynamicObject)["Id"].ToString();
             if(orgId == "0") return;
-            string orgName = this.Context.CurrentOrganizationInfo.Name;
             string sql = "";
-            if (orgName.Equals("开曼集团") || orgName.Equals("中电电气江苏光伏有限公司") || orgName.Equals("华思"))
+            if (IsKaiMan())
             {
                 sql = string.Format(@"
 SELECT FID FROM T_BD_STAFFTEMP st
@@ -180,16 +186,8 @@ WHERE FISFIRSTPOST='1' AND d.FUseOrgId='{0}'", orgId);
                     this.View.Model.SetValue(_Names["FMobile"], _FMobile);
                     this.View.Model.SetValue("FPostNameSup", _FSuperiorPost);
                     SetHrFields(obj[0]);
-                    //变压器下的组织，设置单位总经理
                     this.View.Model.SetValue("FManager", _FGManager);
-                    //string TransformerOrgCode = "175325.281530.281529.175322.175323.175324.156139.156140.156141.156143";
-                    ////如果是变压器下的组织，设置单位总经理
-                    //if (TransformerOrgCode.Contains(orgId))
-                    //{
-                        
-                    //}
                 }
-
             }
         }
 
@@ -236,12 +234,11 @@ WHERE FISFIRSTPOST='1' AND d.FUseOrgId='{0}'", orgId);
                     }
                     this.View.Model.SetValue("F_ora_Sex", objs[0]["F_HR_SEX"].ToString());//性别
                     this.View.Model.SetValue("FEdubg", objs[0]["FHighestEduId"].ToString());//学历
+                    this.View.Model.SetValue("F_ora_Level", obj["FRankID"].ToString());//职级
                     if (DateTime.Parse(objs[0]["F_HR_BornDate"].ToString()).Year > 1900)
                     {
                         this.View.Model.SetValue("F_ora_Birthday", objs[0]["F_HR_BornDate"].ToString());//生日
                     }
-                    this.View.Model.SetValue("F_ora_GraduateSchool", objs[0]["FGraduateSchool"].ToString());//毕业院校
-                    this.View.Model.SetValue("F_ora_Master", objs[0]["FMajor"].ToString());//专业
                     if (DateTime.Parse(objs[0]["F_HR_BobDate"].ToString()).Year > 1900)
                     {
                         this.View.Model.SetValue("F_ora_InDate", objs[0]["F_HR_BobDate"].ToString());//入职日期
@@ -250,26 +247,30 @@ WHERE FISFIRSTPOST='1' AND d.FUseOrgId='{0}'", orgId);
                     {
                         this.View.Model.SetValue("F_ora_SocialWorkDay", objs[0]["FJoinDate"].ToString());//参加工作日期
                     }
-                    if(DateTime.Parse(objs[0]["FHTDateStart"].ToString()).Year > 1900)
-                    {
-                        this.View.Model.SetValue("FStartDate", objs[0]["FHTDateStart"].ToString());//合同开始
-                    }
-                    if (DateTime.Parse(objs[0]["FHTDateEnd"].ToString()).Year > 1900)
-                    {
-                        this.View.Model.SetValue("FEndDate", objs[0]["FHTDateEnd"].ToString());//合同结束
-                    }
-                    this.View.Model.SetValue("F_ora_Workplace", obj["FWorkAddress"].ToString());//工作地点
-                    this.View.Model.SetValue("F_ora_Level", obj["FRankID"].ToString());//职级
-                    this.View.Model.SetValue("F_ora_ContractType", obj["FContractType"].ToString());//合同类型
                     sql = string.Format(@"select FID from T_BD_STAFFTEMP es
 inner join T_BD_STAFF s on es.FSTAFFID=s.FSTAFFID and s.FDOCUMENTSTATUS='C' and s.FFORBIDSTATUS='A'
 where es.FPostID='{0}' and FIsFirstPost='1' ", obj["FSuperiorPost"].ToString());
                     objs = CZDB_GetData(sql);
-                    if(objs.Count > 0)
+                    if (objs.Count > 0)
                     {
                         this.View.Model.SetValue("F_ora_Leader", objs[0]["FID"].ToString());//直接领导
                     }
-                    
+
+                    if (!IsKaiMan())
+                    {
+                        if (DateTime.Parse(objs[0]["FHTDateStart"].ToString()).Year > 1900)
+                        {
+                            this.View.Model.SetValue("FStartDate", objs[0]["FHTDateStart"].ToString());//合同开始
+                        }
+                        if (DateTime.Parse(objs[0]["FHTDateEnd"].ToString()).Year > 1900)
+                        {
+                            this.View.Model.SetValue("FEndDate", objs[0]["FHTDateEnd"].ToString());//合同结束
+                        }
+                        this.View.Model.SetValue("F_ora_GraduateSchool", objs[0]["FGraduateSchool"].ToString());//毕业院校
+                        this.View.Model.SetValue("F_ora_Master", objs[0]["FMajor"].ToString());//专业
+                        this.View.Model.SetValue("F_ora_Workplace", obj["FWorkAddress"].ToString());//工作地点
+                        this.View.Model.SetValue("F_ora_ContractType", obj["FContractType"].ToString());//合同类型
+                    }
                     break;
                 case "ora_Work": //转正
                     sql = string.Format(@"SELECT * FROM ( SELECT * FROM T_HR_EMPINFO WHERE FID='{0}') e 
@@ -288,14 +289,17 @@ where es.FPostID='{0}' and FIsFirstPost='1' ", obj["FSuperiorPost"].ToString());
                     {
                         this.View.Model.SetValue("F_ora_fromDate", objs[0]["F_HR_BobDate"].ToString());//入职日期
                     }
-                    this.View.Model.SetValue("FProbation", objs[0]["FProbation"].ToString());//试用期
-                    if (DateTime.Parse(objs[0]["F_ora_toDate"].ToString()).Year > 1900)
+                    if (!IsKaiMan())
                     {
-                        this.View.Model.SetValue("F_ora_toDate", objs[0]["F_ora_toDate"].ToString());//转正日期
+                        this.View.Model.SetValue("FProbation", objs[0]["FProbation"].ToString());//试用期
+                        if (DateTime.Parse(objs[0]["F_ora_toDate"].ToString()).Year > 1900)
+                        {
+                            this.View.Model.SetValue("F_ora_toDate", objs[0]["F_ora_toDate"].ToString());//转正日期
+                        }
+                        this.View.Model.SetValue("F_ora_School", objs[0]["FGraduateSchool"].ToString());//毕业院校
+                        this.View.Model.SetValue("F_ora_Subject", objs[0]["FMajor"].ToString());//所学专业
+                        this.View.Model.SetValue("F_ora_Number", objs[0]["FStaffNumber"].ToString());//工号
                     }
-                    this.View.Model.SetValue("F_ora_School", objs[0]["FGraduateSchool"].ToString());//毕业院校
-                    this.View.Model.SetValue("F_ora_Subject", objs[0]["FMajor"].ToString());//所学专业
-                    this.View.Model.SetValue("F_ora_Number", objs[0]["FStaffNumber"].ToString());//工号
                     break;
             }
         }
