@@ -35,7 +35,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
         /// <returns></returns>
         private int getLeaveTime()
         {
-            int year = DateTime.Now.Year - 1;
+            int year = DateTime.Now.Year;
             string sql = string.Format("SELECT COUNT(*) times FROM ora_t_Leave le " +
                 "INNER JOIN ora_t_LeaveHead lh ON le.FID=lh.FID AND FIsOrigin=0 AND FDocumentStatus='C' " +
                 "WHERE FName='{0}' AND FLeaveType='{1}' AND YEAR(FStartDate)='{2}' AND FName='{3}' ",
@@ -59,7 +59,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
         {
             if (!IsSaleman())
             {
-                msg += string.Format("{0}的{1}提交失败, 原因：该员工销售员身份，请选择“探亲假”！\n", getLeaver(), getLeaveName());
+                msg += string.Format("{0}的{1}提交失败, 原因：该员工无销售员身份，请选择“探亲假”！\n", getLeaver(), getLeaveName());
                 return false;
             }
             if (getLeaveTime() + 1 > mAllowLeaveTime)
