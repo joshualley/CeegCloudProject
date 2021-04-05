@@ -24,6 +24,8 @@ def AfterBindData(e):
 	
 
 def DataChanged(e):
+	if str(this.View.ClientType) == "Mobile":
+		return
 	if e.Key == "FSaleOrderID":
 		setAmtInfo()
 
