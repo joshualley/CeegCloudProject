@@ -41,6 +41,13 @@ namespace CZ.CEEG.OABos.BaseDLL
             return orgName.Equals("开曼集团") || orgName.Equals("中电电气江苏光伏有限公司") || orgName.Equals("华思");
         }
 
+        private bool IsNotBYQ()
+        {
+            string sql = "select FName from T_ORG_ORGANIZATIONS_L where FLOCALEID=2052 and FORGID=1";
+            var orgname = DBUtils.ExecuteDynamicObject(Context, sql);
+            return !(orgname.Count > 0 && orgname[0]["FName"].ToString().Equals("变压器产业"));
+        }
+
         /// <summary>
         /// 根据表单选择的组织过滤员工
         /// </summary>
@@ -51,7 +58,7 @@ namespace CZ.CEEG.OABos.BaseDLL
                 (this.View.Model.DataObject[GetApplySign()["FOrgId"]] as DynamicObject)["Id"].ToString();
             if(orgId == "0") return;
             string sql = "";
-            if (IsKaiMan())
+            if (IsNotBYQ())
             {
                 sql = string.Format(@"
 SELECT FID FROM T_BD_STAFFTEMP st
