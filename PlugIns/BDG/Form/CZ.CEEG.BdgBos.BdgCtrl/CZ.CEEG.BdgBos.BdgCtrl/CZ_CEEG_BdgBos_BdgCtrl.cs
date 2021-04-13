@@ -230,7 +230,23 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "FExpectCost1");
                     dict.Add("FReCost", "FCommitAmount");
                     break;
-                case "kaa55d0cac0c5447bbc6700cfbdf0b11e"://对公费用立项
+                case "k0c30c431418e4cf4a60d241a18cb241c"://出差申请
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FTPreCost", "F_ora_Amount");
+                    dict.Add("FTReCost", "FActualAmount");
+                    dict.Add("FCostPrj", "FCostType");
+                    dict.Add("FPreCost", "FExpectCost");
+                    dict.Add("FReCost", "FActualCost");
+                    break;
+                case "k1ae2591790044d95b9966ad0dff1d987"://招待费用申请
+                    dict.Add("FBraOffice", "F_ora_OrgId");
+                    dict.Add("FTPreCost", "F_ora_Amount");
+                    dict.Add("FTReCost", "FACTUALCOST");
+                    dict.Add("FCostPrj", "FCostType");
+                    dict.Add("FPreCost", "F_ora_Amount");
+                    dict.Add("FReCost", "FACTUALCOST");
+                    break;
+                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
                     dict.Add("FBraOffice", "FOrgId");
                     dict.Add("FTPreCost", "FExpectCost1");
                     dict.Add("FTReCost", "FCommitAmount");
@@ -246,14 +262,15 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "FRealAmount");
                     dict.Add("FReCost", "FCheckAmount");
                     break;
-                case "k0c30c431418e4cf4a60d241a18cb241c"://出差申请
+                case "kaa55d0cac0c5447bbc6700cfbdf0b11e"://对公费用立项
                     dict.Add("FBraOffice", "FOrgId");
-                    dict.Add("FTPreCost", "F_ora_Amount");
-                    dict.Add("FTReCost", "FActualAmount");
-                    dict.Add("FCostPrj", "FCostType");
-                    dict.Add("FPreCost", "FExpectCost");
-                    dict.Add("FReCost", "FActualCost");
+                    dict.Add("FTPreCost", "FExpectCost1");
+                    dict.Add("FTReCost", "FCommitAmount");
+                    dict.Add("FCostPrj", "FCostType1");
+                    dict.Add("FPreCost", "FExpectCost1");
+                    dict.Add("FReCost", "FCommitAmount");
                     break;
+                // 未使用部分
                 case "k6575db4ed77c449f88dd20cceef75a73"://出差报销
                     dict.Add("FBraOffice", "FOrgId");
                     dict.Add("FTPreCost", "FTotalAmount");
@@ -278,22 +295,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "FAmount");
                     dict.Add("FReCost", "FCheckAmount");
                     break;
-                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
-                    dict.Add("FBraOffice", "FOrgId");
-                    dict.Add("FTPreCost", "FExpectCost1");
-                    dict.Add("FTReCost", "FCommitAmount");
-                    dict.Add("FCostPrj", "FCostType1");
-                    dict.Add("FPreCost", "FExpectCost1");
-                    dict.Add("FReCost", "FCommitAmount");
-                    break;
-                case "k1ae2591790044d95b9966ad0dff1d987"://招待费用申请
-                    dict.Add("FBraOffice", "F_ora_OrgId");
-                    dict.Add("FTPreCost", "F_ora_Amount");
-                    dict.Add("FTReCost", "FACTUALCOST");
-                    dict.Add("FCostPrj", "FCostType");
-                    dict.Add("FPreCost", "F_ora_Amount");
-                    dict.Add("FReCost", "FACTUALCOST");
-                    break;
+                
                 case "kdcdde6ac18cb4d419a6924b49a593460"://招待费用报销
                     dict.Add("FBraOffice", "F_ora_OrgId");
                     dict.Add("FTPreCost", "FTotalAmount");
@@ -302,7 +304,6 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "F_ora_Money");
                     dict.Add("FReCost", "FCheckAmount");
                     break;
-
             }
             return dict;
         }

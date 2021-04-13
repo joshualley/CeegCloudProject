@@ -123,7 +123,7 @@ namespace CZ.CEEG.CptBos.CptCtrl
         private bool IsUsingBdgSys()
         {
             string sql = "EXEC proc_cz_ly_IsUsingBdgSys";
-            return CZDB_GetData(sql)[0]["FSwitch"].ToString() == "1" ? true : false;
+            return CZDB_GetData(sql)[0]["FSwitch"].ToString() == "1";
         }
         /// <summary>
         /// 获取当前单据FID

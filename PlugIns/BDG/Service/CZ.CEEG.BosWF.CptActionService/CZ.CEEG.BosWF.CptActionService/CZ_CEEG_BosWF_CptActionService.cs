@@ -38,20 +38,12 @@ namespace CZ.CEEG.BosWF.CptActionService
             }
         }
 
-
-        public override void EndOperationTransaction(EndOperationTransactionArgs e)
-        {
-            base.EndOperationTransaction(e);
-        }
-
         #endregion
 
         #region 功能函数
         private void InsertFlow(BeginOperationTransactionArgs e)
         {
             string FBraOffice = "0";
-            //string FYear = "0";
-            //string FMonth = "0";
             string FDSrcType = "";
             string FDSrcAction = "";
             string FDSrcBillID = CZ_GetFormType();
@@ -76,19 +68,20 @@ namespace CZ.CEEG.BosWF.CptActionService
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
                     var objs = DB_GetFormData(FDSrcFID);
+                    var trans = Transform();
                     foreach (var obj in objs)
                     {
                         string DocumentStatus = d["DocumentStatus"].ToString();
 
                         FDSrcType = "付款";
-                        FBraOffice = obj["FPAYORGID"].ToString(); //付款组织
-                        FDSrcEntryID = obj["FEntryID"].ToString(); 
-                        FDSrcSEQ = obj["FSeq"].ToString();
-                        FDCostPrj = obj["FCOSTID"].ToString(); //费用项目
-                        FDCptType = obj["FSETTLETYPEID"].ToString(); //结算方式
-                        FPreCost = obj["FPAYTOTALAMOUNTFOR"].ToString(); //应付金额
-                        FReCost = obj["FREALPAYAMOUNTFOR_D"].ToString(); //实付金额
-                        FNote = "";
+                        FBraOffice = obj[trans["FBraOffice"]].ToString(); //付款组织
+                        FDSrcEntryID = obj[trans["FDSrcEntryID"]].ToString();
+                        FDSrcSEQ = obj[trans["FDSrcSEQ"]].ToString();
+                        FDCostPrj = obj[trans["FDCostPrj"]].ToString(); //费用项目
+                        FDCptType = obj[trans["FDCptType"]].ToString(); //结算方式
+                        FPreCost = obj[trans["FPreCost"]].ToString(); //应付金额
+                        FReCost = obj[trans["FReCost"]].ToString(); //实付金额
+                        FNote = trans["FNote"];
                         if (DocumentStatus == "B") //审核中进行反审核
                         {
                             FReCost = FPreCost;
@@ -111,17 +104,18 @@ namespace CZ.CEEG.BosWF.CptActionService
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
                     var objs = DB_GetFormData(FDSrcFID);
+                    var trans = Transform();
                     foreach (var obj in objs)
                     {
                         FDSrcType = "付款";
-                        FBraOffice = obj["FPAYORGID"].ToString(); //付款组织
-                        FDSrcEntryID = obj["FEntryID"].ToString();
-                        FDSrcSEQ = obj["FSeq"].ToString();
-                        FDCostPrj = obj["FCOSTID"].ToString(); //费用项目
-                        FDCptType = obj["FSETTLETYPEID"].ToString(); //结算方式
-                        FPreCost = obj["FPAYTOTALAMOUNTFOR"].ToString(); //应付金额
-                        FReCost = obj["FREALPAYAMOUNTFOR_D"].ToString(); //实付金额
-                        FNote = "";
+                        FBraOffice = obj[trans["FBraOffice"]].ToString(); //付款组织
+                        FDSrcEntryID = obj[trans["FDSrcEntryID"]].ToString();
+                        FDSrcSEQ = obj[trans["FDSrcSEQ"]].ToString();
+                        FDCostPrj = obj[trans["FDCostPrj"]].ToString(); //费用项目
+                        FDCptType = obj[trans["FDCptType"]].ToString(); //结算方式
+                        FPreCost = obj[trans["FPreCost"]].ToString(); //应付金额
+                        FReCost = obj[trans["FReCost"]].ToString(); //实付金额
+                        FNote = trans["FNote"];
                         sql += String.Format(@"exec proc_czly_InsertCapitalFlowS
 	                             @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
 	                             @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',@FDCptType='{8}',
@@ -134,9 +128,50 @@ namespace CZ.CEEG.BosWF.CptActionService
             }
             CZDB_GetData(sql);
         }
+
+        private Dictionary<string, string> Transform()
+        {
+            string formId = CZ_GetFormType();
+            var dict = new Dictionary<string, string>();
+            switch (formId)
+            {
+                case "k0c6b452fa8154c4f8e8e5f55f96bcfac": //个人资金借支
+                    dict.Add("FNote", "个人资金借支");
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FDSrcEntryID", "FEntryID");
+                    dict.Add("FDSrcSEQ", "FSeq");
+                    dict.Add("FDCostPrj", "FCostType");
+                    dict.Add("FDCptType", "FPayType");
+                    dict.Add("FPreCost", "FAmount");
+                    dict.Add("FReCost", "FStatusAmount");
+                    break;
+                case "k191b3057af6c4252bcea813ff644cd3a": //对公资金申请
+                    dict.Add("FNote", "对公资金申请");
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FDSrcEntryID", "FEntryID");
+                    dict.Add("FDSrcSEQ", "FSeq");
+                    dict.Add("FDCostPrj", "FCostItem");
+                    dict.Add("FDCptType", "FPayWay");
+                    dict.Add("FPreCost", "FPreCost");
+                    dict.Add("FReCost", "FRealMoney");
+                    break;
+            }
+            return dict;
+        }
+
         private DynamicObjectCollection DB_GetFormData(string FID)
         {
-            string sql = "select * from T_AP_PAYBILLENTRY where FID='" + FID + "'";
+            string formId = CZ_GetFormType();
+            string sql = "";
+            switch (formId)
+            {
+                case "k0c6b452fa8154c4f8e8e5f55f96bcfac": //个人资金借支
+                    sql = "select * from ora_t_PersonMoney where FID='" + FID + "'";
+                    break;
+                case "k191b3057af6c4252bcea813ff644cd3a": //对公资金申请
+                    sql = "select * from ora_t_Cust100011 where FID='" + FID + "'";
+                    break;
+            }
             return CZDB_GetData(sql);
         }
         #endregion

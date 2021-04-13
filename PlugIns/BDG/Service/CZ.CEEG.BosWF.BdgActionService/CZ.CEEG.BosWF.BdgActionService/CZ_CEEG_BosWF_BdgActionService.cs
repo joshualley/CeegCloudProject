@@ -39,10 +39,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
             }
         }
 
-        public override void EndOperationTransaction(EndOperationTransactionArgs e)
-        {
-            base.EndOperationTransaction(e);
-        }
         #endregion
 
         #region Actions
@@ -50,8 +46,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
         private void InsertFlow(BeginOperationTransactionArgs e)
         {
             string FBraOffice = "0";
-            //string FYear = "0";
-            //string FMonth = "0";
             string FDSrcType = "";
             string FDSrcAction = "";
             string FDSrcBillID = CZ_GetFormType();
@@ -129,14 +123,14 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         FDSrcSEQ = Trans["FDSrcSEQ"];
                         FDCostPrj = Trans["FDCostPrj"];
                         FPreCost = Trans["FPreCost"];
-                        if (FDSrcType == "立项")
-                        {
-                            FReCost = Trans["FPreCost"];
-                        }
-                        else if (FDSrcType == "报销")
-                        {
-                            FReCost = Trans["FReCost"];
-                        }
+                        //if (FDSrcType == "立项")
+                        //{
+                        //    FReCost = Trans["FPreCost"];
+                        //}
+                        //else if (FDSrcType == "报销")
+                        //{
+                        //    FReCost = Trans["FReCost"];
+                        //}
                         FReCost = Trans["FReCost"];
                         FNote = Trans["FNote"];
                         sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
@@ -167,25 +161,15 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     dict.Add("FReCost", obj["FCommitAmount"].ToString());
                     dict.Add("FNote", "费用立项 ");
                     break;
-                case "kaa55d0cac0c5447bbc6700cfbdf0b11e"://对公费用立项
+                case "k1ae2591790044d95b9966ad0dff1d987"://招待费用申请
                     dict.Add("FDSrcType", "立项");
-                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FBraOffice", obj["F_ora_OrgId"].ToString());
                     dict.Add("FDSrcEntryID", "0");
                     dict.Add("FDSrcSEQ", "0");
-                    dict.Add("FDCostPrj", obj["FCostType1"].ToString());
-                    dict.Add("FPreCost", obj["FExpectCost1"].ToString());
-                    dict.Add("FReCost", obj["FCommitAmount"].ToString());
-                    dict.Add("FNote", "对公费用立项 ");
-                    break;
-                case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
-                    dict.Add("FDSrcType", "报销");
-                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
-                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
                     dict.Add("FDCostPrj", obj["FCostType"].ToString());
-                    dict.Add("FPreCost", obj["FAmount"].ToString());
-                    dict.Add("FReCost", obj["FCheckAmount"].ToString()); //财务复核金额
-                    dict.Add("FNote", "对公费用报销 ");
+                    dict.Add("FPreCost", obj["F_ora_Amount"].ToString());
+                    dict.Add("FReCost", obj["FACTUALCOST"].ToString());
+                    dict.Add("FNote", "招待费用申请 ");
                     break;
                 case "k0c30c431418e4cf4a60d241a18cb241c"://出差申请
                     dict.Add("FDSrcType", "立项");
@@ -196,6 +180,31 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     dict.Add("FPreCost", obj["FExpectCost"].ToString());
                     dict.Add("FReCost", obj["FActualCost"].ToString());
                     dict.Add("FNote", "出差申请 ");
+                    break;
+                case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
+                    break;
+                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
+                    break;
+                // 不用
+                case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
+                    dict.Add("FDSrcType", "报销");
+                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
+                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
+                    dict.Add("FDCostPrj", obj["FCostType"].ToString());
+                    dict.Add("FPreCost", obj["FAmount"].ToString());
+                    dict.Add("FReCost", obj["FCheckAmount"].ToString()); //财务复核金额
+                    dict.Add("FNote", "对公费用报销 ");
+                    break;
+                case "kaa55d0cac0c5447bbc6700cfbdf0b11e"://对公费用立项
+                    dict.Add("FDSrcType", "立项");
+                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcSEQ", "0");
+                    dict.Add("FDCostPrj", obj["FCostType1"].ToString());
+                    dict.Add("FPreCost", obj["FExpectCost1"].ToString());
+                    dict.Add("FReCost", obj["FCommitAmount"].ToString());
+                    dict.Add("FNote", "对公费用立项 ");
                     break;
                 case "k6575db4ed77c449f88dd20cceef75a73"://出差报销
                     dict.Add("FDSrcType", "报销");
@@ -227,16 +236,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     dict.Add("FReCost", obj["FCheckAmount"].ToString()); //财务复核金额
                     dict.Add("FNote", "个人费用报销 ");
                     break;
-                case "k1ae2591790044d95b9966ad0dff1d987"://招待费用申请
-                    dict.Add("FDSrcType", "立项");
-                    dict.Add("FBraOffice", obj["F_ora_OrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
-                    dict.Add("FDSrcSEQ", "0");
-                    dict.Add("FDCostPrj", obj["FCostType"].ToString());
-                    dict.Add("FPreCost", obj["F_ora_Amount"].ToString());
-                    dict.Add("FReCost", obj["FACTUALCOST"].ToString());
-                    dict.Add("FNote", "招待费用申请 ");
-                    break;
                 case "kdcdde6ac18cb4d419a6924b49a593460"://招待费用报销
                     dict.Add("FDSrcType", "报销");
                     dict.Add("FBraOffice", obj["F_ora_OrgId"].ToString());
@@ -246,10 +245,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     dict.Add("FPreCost", obj["F_ora_Money"].ToString());
                     dict.Add("FReCost", obj["FCheckAmount"].ToString()); //财务复核金额
                     dict.Add("FNote", "招待费用报销 ");
-                    break;
-                case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
-                    break;
-                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
                     break;
             }
             return dict;
