@@ -20,7 +20,6 @@ using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Util;
 
 
-
 namespace CZ.CEEG.BdgBos.BdgCtrl
 {
     [Description("预算占用控制")]
@@ -31,7 +30,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
-            if (this.View.Context.ClientType.ToString() != "Mobile" && IsUsingBdgSys())
+            if (IsUsingBdgSys())
             {
                 var FieldName = Transform();
                 if (e.Field.Key == FieldName["FCostPrj"])
