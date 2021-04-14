@@ -282,8 +282,8 @@ namespace CZ.CEEG.MblCrm.SaleContact
         /// </summary>
         private bool IsMainBodyRptPrice(int i)
         {
-            string _FBMtlItem = this.View.BillModel.GetValue("FBMtlItem", i) == null ? "" : (this.View.BillModel.GetValue("FBMtlItem", i) as DynamicObject)["Id"].ToString();
-            if (_FBMtlItem == "123328")
+            string _FBMtlItem = this.View.BillModel.GetValue("FBMtlItem", i) == null ? "" : (this.View.BillModel.GetValue("FBMtlItem", i) as DynamicObject)["Name"].ToString();
+            if (_FBMtlItem == "本体")
                 return true;
 
             return false;
