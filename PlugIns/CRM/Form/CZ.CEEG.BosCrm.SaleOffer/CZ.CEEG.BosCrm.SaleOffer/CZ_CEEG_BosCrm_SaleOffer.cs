@@ -52,7 +52,8 @@ namespace CZ.CEEG.BosCrm.SaleOffer
         /// <summary>
         /// CRM组件（附件）-主体=123328
         /// </summary>
-        string Val_FMtlItem_Base = "123328";
+        public string Val_FMtlItem_Base { get; set; } = "本体";
+        //public string Val_FMtlItem_Base { get; set; } = "123328";
         /// <summary>
         /// 锁定引发变更，当一个流程在执行时，排除其他值更新事件
         /// </summary>
@@ -1260,7 +1261,8 @@ namespace CZ.CEEG.BosCrm.SaleOffer
             _sb.Append("beb.FBQty FMQty,beb.FBUnit FMUnit,beb.FBPrice FMPrice,beb.FBAmt FMAmt,beb.FBGpAmtB FMGpAmtB,beb.FBCostRate FMCostRate,");
             _sb.Append("beb.FBCost FMCost,beb.FBGPRate FMGPRate,beb.FBGP FMGP,beb.FBGpAmt FMGpAmt,beb.FBGpAmtLc FMGpAmtLc ");
             _sb.Append("from(select * from ora_CRM_BPRnd where FID='" + _FBPRndID + "')b ");
-            _sb.Append("inner join ora_CRM_BPRndEntry be on b.FID=be.FID and be.FMTLITEM=" + Val_FMtlItem_Base + " ");
+            _sb.Append("inner join ora_CRM_BPRndEntry be on b.FID=be.FID ");
+            _sb.Append("inner join ora_CrmBD_MtlItem_L mil on mil.FID=be.FMTLITEM and mil.FName='" + Val_FMtlItem_Base + "' ");
             _sb.Append("inner join ora_CRM_BPRndEntryB beb on b.FID=beb.FID");
             return _sb.ToString();
         }

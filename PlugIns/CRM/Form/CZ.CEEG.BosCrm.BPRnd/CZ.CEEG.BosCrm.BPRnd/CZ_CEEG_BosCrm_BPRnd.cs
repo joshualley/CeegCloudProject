@@ -33,7 +33,8 @@ namespace CZ.CEEG.BosCrm.BPRnd
         /// <summary>
         /// CRM组件（附件）-主体=123328
         /// </summary>
-        string Val_FMtlItem_Base = "123328";
+        public string Val_FMtlItem_Base { get; set; } = "本体";
+        //public string Val_FMtlItem_Base { get; set; } = "123328";
 
         string Val_OpenPrm = "";
 
@@ -453,7 +454,7 @@ namespace CZ.CEEG.BosCrm.BPRnd
             bool _isUpdateErr = true;
             for (int i = 0; i < _maxRow; i++)
             {
-                _rowFMtlItem = this.CZ_GetRowValue_DF("FMtlItem", "Id", i, "");
+                _rowFMtlItem = this.CZ_GetRowValue_DF("FMtlItem", "Name", i, "");
                 if (_rowFMtlItem == Val_FMtlItem_Base)
                 {
                     this.View.Model.SetValue("FBasePrice", _FBGpAmt, i);
