@@ -14,6 +14,7 @@ using Kingdee.BOS.Core.DynamicForm.PlugIn;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 using Kingdee.BOS.App.Data;
 using Kingdee.BOS.Util;
+using Kingdee.BOS;
 
 namespace CZ.CEEG.BosWF.BdgActionService
 {
@@ -21,6 +22,33 @@ namespace CZ.CEEG.BosWF.BdgActionService
     [HotUpdate]
     public class CZ_CEEG_BosWF_BdgActionService : AbstractOperationServicePlugIn
     {
+        private Dictionary<string, string[]> FormIdToTbNameMap { get; set; } = new Dictionary<string, string[]>()
+        {
+            //费用立项
+            { "ora_FYLX", new string[] { "ora_t_Cust100050", "" } },
+            //出差申请
+            { "k0c30c431418e4cf4a60d241a18cb241c", new string[] { "ora_t_TravelApply", "ora_t_TravelApplyEntry" } },
+            //招待费用申请
+            { "k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" }},
+            //个人资金借支
+            {"k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "" } },
+            //对公资金申请
+            { "k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "" } },
+
+            //对公费用立项
+            { "kaa55d0cac0c5447bbc6700cfbdf0b11e", new string[] { "ora_t_PublicApply", "" } },
+            //对公费用报销
+            { "k5c88e2dc1ac14349935d452e74e152c8", new string[] { "ora_t_PublicSubmit", "ora_t_PublicSubmitEntry" } },
+            //出差报销
+            { "k6575db4ed77c449f88dd20cceef75a73", new string[] { "ora_t_TravelSubmit", "ora_t_TravelSubmitEntry" } },
+            //个人费用立项
+            { "ke6d80dfd260e4ef88d75f69f4c7ef0a1", new string[] { "ora_t_PeronCostApplyHead", "" } },
+            //个人费用报销
+            { "k767a317ad28e40f1b25e95b92e218fea", new string[] { "ora_t_PersonalReimburse", "ora_t_PCostReimburse" } },
+            //招待费用报销
+            { "kdcdde6ac18cb4d419a6924b49a593460", new string[] { "ora_t_Server", "ora_t_Server_Entry" }},
+        };
+
 
         #region override
 
@@ -30,10 +58,10 @@ namespace CZ.CEEG.BosWF.BdgActionService
             e.FieldKeys.Add("DocumentStatus");
         }
 
-        public override void BeginOperationTransaction(BeginOperationTransactionArgs e)
+        public override void EndOperationTransaction(EndOperationTransactionArgs e)
         {
-            base.BeginOperationTransaction(e);
-            if(IsUsingBdgSys())
+            base.EndOperationTransaction(e);
+            if (IsUsingBdgSys())
             {
                 InsertFlow(e);
             }
@@ -42,8 +70,8 @@ namespace CZ.CEEG.BosWF.BdgActionService
         #endregion
 
         #region Actions
-        
-        private void InsertFlow(BeginOperationTransactionArgs e)
+
+        private void InsertFlow(EndOperationTransactionArgs e)
         {
             string FBraOffice = "0";
             string FDSrcType = "";
@@ -106,11 +134,16 @@ namespace CZ.CEEG.BosWF.BdgActionService
             }
             else if (opKey == "SUBMIT" || opKey == "CANCELASSIGN" || opKey == "AUDIT")
             {
+                
                 FDSrcAction = opKey == "SUBMIT" ? "提交" : (opKey == "CANCELASSIGN" ? "撤销" : "审核");
                 foreach (var d in e.DataEntitys)
                 {
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
+                    if (opKey == "SUBMIT" && d["DocumentStatus"].ToString() == "D")
+                    {
+                        throw new KDBusinessException("001", $"单据编号为：{FDSrcBNo}的单据为重新审核状态，请先提交后再进行操作！");
+                    }
                     var objs = DB_GetFormData(FDSrcFID);
                     foreach (var obj in objs)
                     {
@@ -143,7 +176,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     }
                 }
             }
-            CZDB_GetData(sql);
+            DBUtils.Execute(this.Context, sql);
         }
 
         private Dictionary<string, string> Transform(string FormId, DynamicObject obj)
@@ -153,7 +186,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
             {
                 case "ora_FYLX"://费用立项
                     dict.Add("FDSrcType", "立项");
-                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FBraOffice", obj["FUseOrgId"].ToString());
                     dict.Add("FDSrcEntryID", "0");
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostType1"].ToString());
@@ -174,16 +207,12 @@ namespace CZ.CEEG.BosWF.BdgActionService
                 case "k0c30c431418e4cf4a60d241a18cb241c"://出差申请
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["FOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
+                    dict.Add("FDSrcEntryID", obj["FEntryId"].ToString());
                     dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
                     dict.Add("FDCostPrj", obj["FCostType"].ToString());
                     dict.Add("FPreCost", obj["FExpectCost"].ToString());
                     dict.Add("FReCost", obj["FActualCost"].ToString());
                     dict.Add("FNote", "出差申请 ");
-                    break;
-                case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
-                    break;
-                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
                     break;
                 // 不用
                 case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
@@ -256,9 +285,12 @@ namespace CZ.CEEG.BosWF.BdgActionService
         /// <returns></returns>
         private DynamicObjectCollection DB_GetFormData(string FID)
         {
-            string[] tb = GetTbNameByFormId()[CZ_GetFormType()];
+            string formid = CZ_GetFormType();
+            //throw new KDBusinessException("001", $"单据的FormId: {formid}");
+            string[] tb = FormIdToTbNameMap[formid];
             string t_head = tb[0];
             string t_entry = tb[1];
+            //throw new KDBusinessException("001", $"单据头表名: {t_head}，单据体表名: {t_entry}");
             string sql = "";
             if (t_entry == "")
             {
@@ -270,74 +302,10 @@ namespace CZ.CEEG.BosWF.BdgActionService
                                     inner join {1} e on h.FID=e.FID
                                     where h.FID='{2}'", t_head, t_entry, FID);
             }
-            var objs = CZDB_GetData(sql);
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
             return objs;
         }
 
-        /// <summary>
-        /// 通过单据编号获取单据数据
-        /// </summary>
-        /// <param name="FBNo"></param>
-        /// <param name="FormId"></param>
-        /// <returns></returns>
-        private DynamicObject DB_GetFormDataByBNo(string FBNo, string FSeq, string FormId)
-        {
-            string[] tb = GetTbNameByFormId()[FormId];
-            string t_head = tb[0];
-            string t_entry = tb[1];
-            string sql = "";
-            if (t_entry == "")
-            {
-                sql = string.Format("select * from {0} where FBillNo='{1}'", t_head, FBNo);
-            }
-            else
-            {
-                sql = string.Format(@"select * from {0} h 
-                                    inner join {1} e on h.FID=e.FID
-                                    where h.FBillNo='{2}' and e.FSEQ='{3}'", t_head, t_entry, FBNo, FSeq);
-            }
-            var objs = CZDB_GetData(sql);
-            return objs[0];
-        }
-
-        /// <summary>
-        /// 根据formID获取表名
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, string[]> GetTbNameByFormId()
-        {
-            var dict = new Dictionary<string, string[]>();
-            //对公费用立项
-            dict.Add("kaa55d0cac0c5447bbc6700cfbdf0b11e", new string[] { "ora_t_PublicApply", "" });
-            //对公费用报销
-            dict.Add("k5c88e2dc1ac14349935d452e74e152c8", new string[] { "ora_t_PublicSubmit", "ora_t_PublicSubmitEntry" });
-            //对公资金申请
-            dict.Add("k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "" });
-            //出差申请
-            dict.Add("k0c30c431418e4cf4a60d241a18cb241c", new string[] { "ora_t_TravelApply", "ora_t_TravelApplyEntry" });
-            //出差报销
-            dict.Add("k6575db4ed77c449f88dd20cceef75a73", new string[] { "ora_t_TravelSubmit", "ora_t_TravelSubmitEntry" });
-            //个人费用立项
-            dict.Add("ke6d80dfd260e4ef88d75f69f4c7ef0a1", new string[] { "ora_t_PeronCostApplyHead", "" });
-            //个人费用报销
-            dict.Add("k767a317ad28e40f1b25e95b92e218fea", new string[] { "ora_t_PersonalReimburse", "ora_t_PCostReimburse" });
-            //个人资金借支
-            dict.Add("k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "" });
-            //招待费用申请
-            dict.Add("k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" });
-            //招待费用报销
-            dict.Add("kdcdde6ac18cb4d419a6924b49a593460", new string[] { "ora_t_Server", "ora_t_Server_Entry" });
-            //采购合同评审
-            dict.Add("k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" });
-            //销售合同评审
-            dict.Add("kdb6ae742543a4f6da09dfed7ba4e02dd", new string[] { "ora_t_SellContractHead", "ora_t_SellContractEntry" });
-
-            return dict;
-        }
-
-        #endregion
-
-        #region 获取FormID
         /// <summary>
         /// 是否使用预算系统
         /// </summary>
@@ -345,19 +313,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
         private bool IsUsingBdgSys()
         {
             string sql = "EXEC proc_cz_ly_IsUsingBdgSys";
-            return CZDB_GetData(sql)[0]["FSwitch"].ToString() == "1" ? true : false;
-        }
-
-
-        /// <summary>
-        /// 获取单据标识 FormType | FormID
-        /// </summary>
-        /// <param name="o">数据对象</param>
-        /// <param name="_Key">Key DF_Val:FFormID</param>
-        /// <returns></returns>
-        private string CZ_GetFormType(DynamicObject o, string _Key)
-        {
-            return o[_Key].ToString();
+            return DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FSwitch"].ToString() == "1";
         }
 
         /// <summary>
@@ -370,26 +326,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
             string[] _BI_DTONS_C = this.BusinessInfo.DTONS.Split('.');
             return _BI_DTONS_C[_BI_DTONS_C.Length - 1].ToString();
         }
-        #endregion
 
-        #region 数据库查询方法
-        /// <summary>
-        /// 基本方法 数据库查询
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetData(string _sql)
-        {
-            try
-            {
-                var obj = DBUtils.ExecuteDynamicObject(this.Context, _sql);
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
         #endregion
     }
 }

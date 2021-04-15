@@ -40,9 +40,20 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     var obj = GetBudgetBalance(FBraOffice, FCostPrj);
                     if (obj.Count > 0)
                     {
-                        string sql = "select FNAME from T_BD_EXPENSE_L where FEXPID='" + FCostPrj + "'";
-                        string FCostPrjName = CZDB_GetData(sql)[0]["FNAME"].ToString();
-                        string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1}元。", FCostPrjName, float.Parse(obj[0]["FEOccBal"].ToString()).ToString("f2"));
+                        string sql = $"select FNAME from T_BD_EXPENSE_L where FEXPID='{FCostPrj}'";
+                        var items = DBUtils.ExecuteDynamicObject(this.Context, sql);
+                        if (items.Count <= 0) return;
+                        string FCostPrjName = items[0]["FNAME"].ToString();
+                        string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1:f2}元。", FCostPrjName, float.Parse(obj[0]["FEOccBal"].ToString()));
+                        this.View.ShowMessage(msg);
+                    }
+                    else
+                    {
+                        string sql = $"select FNAME from T_BD_EXPENSE_L where FEXPID='{FCostPrj}'";
+                        var items = DBUtils.ExecuteDynamicObject(this.Context, sql);
+                        if (items.Count <= 0) return;
+                        string FCostPrjName = items[0]["FNAME"].ToString();
+                        string msg = string.Format("费用项目：{0}，本月预算不存在。", FCostPrjName);
                         this.View.ShowMessage(msg);
                     }
                 }
@@ -51,7 +62,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
 
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
-            if (this.View.Context.ClientType.ToString() != "Mobile" && IsUsingBdgSys())
+            if (IsUsingBdgSys())
             {
                 base.BeforeDoOperation(e);
                 string opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
@@ -69,25 +80,21 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
 
         private bool Check()
         {
-            string FormId = this.View.GetFormId();
             var fieldname = Transform();
             string FBraOffice = CZ_GetBaseData(fieldname["FBraOffice"], "Id");
             //查询预算余额
             var objs = GetBudgetBalance(FBraOffice);
             float FOccBal = 0; //预算占用余额
-            float FUseBal = 0; //使用余额
             if (objs.Count > 0)
             {
                 FOccBal = float.Parse(objs[0]["FOccBal"].ToString());
-                FUseBal = float.Parse(objs[0]["FUseBal"].ToString());
                 if (GetCtrlStrategy(FBraOffice) == 0) //如果总控
                 {
                     //获取单据中总预计金额
                     float FTPreCost = float.Parse(this.View.Model.GetValue(fieldname["FTPreCost"]).ToString());
-                    //float FTReCost = float.Parse(this.View.Model.GetValue(fieldname["FTReCost"]).ToString());
                     if(FOccBal < FTPreCost)
                     {
-                        string msg = string.Format("本月预算占用余额为：{0}元。\n金额不能超过本月预算余额！", FOccBal.ToString("f2"));
+                        string msg = string.Format("本月预算占用余额为：{0:f2}元。\n金额不能超过本月预算余额！", FOccBal);
                         this.View.ShowErrMessage(msg);
                         return true;
                     }
@@ -101,7 +108,6 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     float FReCost = 0;
 
                     Dictionary<string, float> preMap = new Dictionary<string, float>();
-                    //Dictionary<string, float> reMap = new Dictionary<string, float>();
                     
                     foreach (var data in datas)
                     {
@@ -123,16 +129,14 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                         //获取单一费用项目的预算余额
                         var objs1 = GetBudgetBalance(FBraOffice, d.Key);
                         FOccBal = float.Parse(objs1[0]["FEOccBal"].ToString()); //预算占用余额
-                        FUseBal = float.Parse(objs1[0]["FEUseBal"].ToString()); //使用余额
 
                         FCostPrj = d.Key;
                         FPreCost = d.Value;
-                        //FReCost = 
                         if (FOccBal < FPreCost)
                         {
                             string sql = "select FNAME from T_BD_EXPENSE_L where FEXPID='" + FCostPrj + "'";
-                            string FCostPrjName = CZDB_GetData(sql)[0]["FNAME"].ToString();
-                            string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1}元。\n金额不能超过本月预算余额！", FCostPrjName, FOccBal.ToString("f2"));
+                            string FCostPrjName = DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FNAME"].ToString();
+                            string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1:f2}元。\n金额不能超过本月预算余额！", FCostPrjName, FOccBal);
                             this.View.ShowErrMessage(msg);
                             return true;
                         }
@@ -331,7 +335,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                                 FBraOffice, FYear, FMonth, FCostPrj);
             }
             
-            var objs = CZDB_GetData(sql);
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
             return objs;
         }
 
@@ -347,7 +351,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                 return -1;
             }
             string sql = string.Format(@"exec proc_czly_GetPrjCtrl @FBraOffice='{0}'", FBraOffice);
-            var objs = CZDB_GetData(sql);
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
             return objs.Count > 0 ? int.Parse(objs[0]["FCtrl4Prj"].ToString()) : -1;
         }
@@ -361,21 +365,9 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
         private bool IsUsingBdgSys()
         {
             string sql = "EXEC proc_cz_ly_IsUsingBdgSys";
-            return CZDB_GetData(sql)[0]["FSwitch"].ToString() == "1" ? true : false;
+            return DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FSwitch"].ToString() == "1";
         }
-
-        /// <summary>
-        /// 获取当前单据FID
-        /// </summary>
-        /// <returns></returns>
-        public string CZ_GetFID()
-        {
-            return (this.View.Model.DataObject as DynamicObject)["Id"] == null ? "0" : (this.View.Model.DataObject as DynamicObject)["Id"].ToString();
-        }
-        public string CZ_GetValue(string sign)
-        {
-            return this.View.Model.GetValue(sign) == null ? "" : this.View.Model.GetValue(sign).ToString();
-        }
+        
         /// <summary>
         /// 获取基础资料
         /// </summary>
@@ -386,35 +378,9 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
         {
             return this.View.Model.DataObject[sign] == null ? "" : (this.View.Model.DataObject[sign] as DynamicObject)[property].ToString();
         }
-        /// <summary>
-        /// 获取一般字段
-        /// </summary>
-        /// <param name="sign">标识</param>
-        /// <returns></returns>
-        private string CZ_GetCommonField(string sign)
-        {
-            return this.View.Model.DataObject[sign] == null ? "" : this.View.Model.DataObject[sign].ToString();
-        }
+        
         #endregion
 
-        #region 数据库查询方法
-        /// <summary>
-        /// 基本方法 数据库查询
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetData(string _sql)
-        {
-            try
-            {
-                var obj = DBUtils.ExecuteDynamicObject(this.Context, _sql);
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
+        
     }
 }

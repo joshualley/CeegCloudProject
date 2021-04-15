@@ -108,7 +108,7 @@ where FEYear='{0}' and FEMonth='{1}' and FEBraOffice='{2}' and FECptType='{3}';"
             switch (formId)
             {
                 case "k0c6b452fa8154c4f8e8e5f55f96bcfac": //个人资金借支
-                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FBraOffice", "FPayOrgId"); // 付款公司名称
                     dict.Add("FDSrcEntryID", "FEntryID");
                     dict.Add("FDSrcSEQ", "FSeq");
                     dict.Add("FDCostPrj", "FCostType");
@@ -117,7 +117,7 @@ where FEYear='{0}' and FEMonth='{1}' and FEBraOffice='{2}' and FECptType='{3}';"
                     dict.Add("FReCost", "FStatusAmount");
                     break;
                 case "k191b3057af6c4252bcea813ff644cd3a": //对公资金申请
-                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FBraOffice", "FPayOrgId"); // 付款公司名称
                     dict.Add("FDSrcEntryID", "FEntryID");
                     dict.Add("FDSrcSEQ", "FSeq");
                     dict.Add("FDCostPrj", "FCostItem");
