@@ -54,6 +54,7 @@ namespace CZ.CEEG.CptBos.CptAdj
             base.BeforeDoOperation(e);
             switch (e.Operation.FormOperation.Operation.ToUpperInvariant())
             {
+                case "SAVE":
                 case "SUBMIT":
                     if (Check())
                     {
@@ -97,7 +98,7 @@ namespace CZ.CEEG.CptBos.CptAdj
                 {
                     FDSrcEntryID = FEntity[i]["Id"].ToString(); 
                     FDSrcSEQ = FEntity[i]["Seq"].ToString();
-                    FDCptType = FEntity[i]["FECptType"] == null ? "0" : FEntity[i]["FECptType"].ToString();
+                    FDCptType = (FEntity[i]["FECptType"] as DynamicObject)?["Id"].ToString() ?? "0";
                     FPreCost = FDirection == "1" ? FEntity[i]["FETransAmt"].ToString() : "-" + FEntity[i]["FETransAmt"].ToString();
                     
                     FNote = FEntity[i]["FEText"] == null ? "" : FEntity[i]["FEText"].ToString();
@@ -112,7 +113,7 @@ namespace CZ.CEEG.CptBos.CptAdj
                                             FDCptType, FPreCost, FNote);
                 }
                 sql += "update ora_BDG_CptTrans set FIsDoBG=1 where FID='" + FDSrcFID + "'";
-                CZDB_GetData(sql);
+                DBUtils.Execute(Context, sql);
                 this.View.ShowMessage("已更新资金！");
                 this.View.Refresh();
             }
@@ -128,10 +129,9 @@ namespace CZ.CEEG.CptBos.CptAdj
             string FBraOffice = CZ_GetBaseData("FBraOffice", "Id");
             foreach (var row in FEntity)
             {
-                string FCptType = row["FECptType"].ToString();
+                string FCptType = (row["FECptType"] as DynamicObject)?["Id"].ToString() ?? "0";
                 var obj = GetCapitalBalance(FBraOffice, FCptType);
-                string sql = string.Format("/*dialect*/select dbo.GetName('ENUM','{0}','结算方式类别') FName", FCptType);
-                string FCptTypeName = CZDB_GetData(sql)[0]["FName"].ToString();
+                string FCptTypeName = (row["FECptType"] as DynamicObject)?["Name"].ToString() ?? "";
                 if (obj.Count > 0)
                 {
                     float FEUseBal = float.Parse(obj[0]["FEUseBal"].ToString());  //资金使用余额
@@ -176,7 +176,7 @@ namespace CZ.CEEG.CptBos.CptAdj
                                 FBraOffice, FYear, FMonth, FCptType);
             }
 
-            var obj = CZDB_GetData(sql);
+            var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
             return obj;
         }
         #endregion
@@ -215,24 +215,5 @@ namespace CZ.CEEG.CptBos.CptAdj
         }
         #endregion
 
-        #region 数据库查询
-        /// <summary>
-        /// 基本方法 
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetData(string _sql)
-        {
-            try
-            {
-                var obj = DBUtils.ExecuteDynamicObject(this.Context, _sql);
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
     }
 }

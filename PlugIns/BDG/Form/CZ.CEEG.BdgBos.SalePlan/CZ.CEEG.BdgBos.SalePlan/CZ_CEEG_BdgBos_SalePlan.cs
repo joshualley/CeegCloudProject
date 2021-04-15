@@ -67,8 +67,8 @@ namespace CZ.CEEG.BdgBos.SalePlan
             base.AfterBindData(e);
             if (this.Context.ClientType.ToString() != "Mobile" && CZ_GetCommonField("DocumentStatus") == "Z")
             {
-                string year = DateTime.Now.Year.ToString();
-                this.View.Model.SetValue("FYear", year);
+                this.View.Model.SetValue("FYear", DateTime.Today.Year);
+                this.View.Model.SetValue("FBegMon", DateTime.Today.Month);
             }
         }
 
