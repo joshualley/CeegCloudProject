@@ -107,6 +107,10 @@ namespace CZ.CEEG.BosWF.CptActionService
                 {
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
+                    if(opKey == "AUDIT" && d["DocumentStatus"].ToString() == "D")
+                    {
+                        throw new KDBusinessException("001", $"单据编号为：{FDSrcBNo}单据为重新审核状态，请提交后再进行审核操作！");
+                    }
                     var objs = DB_GetFormData(FDSrcFID);
                     
                     foreach (var obj in objs)

@@ -58,9 +58,9 @@ namespace CZ.CEEG.BosWF.BdgActionService
             e.FieldKeys.Add("DocumentStatus");
         }
 
-        public override void EndOperationTransaction(EndOperationTransactionArgs e)
+        public override void BeginOperationTransaction(BeginOperationTransactionArgs e)
         {
-            base.EndOperationTransaction(e);
+            base.BeginOperationTransaction(e);
             if (IsUsingBdgSys())
             {
                 InsertFlow(e);
@@ -71,7 +71,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
 
         #region Actions
 
-        private void InsertFlow(EndOperationTransactionArgs e)
+        private void InsertFlow(BeginOperationTransactionArgs e)
         {
             string FBraOffice = "0";
             string FDSrcType = "";
@@ -140,7 +140,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
                 {
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
-                    if (opKey == "SUBMIT" && d["DocumentStatus"].ToString() == "D")
+                    if (opKey == "AUDIT" && d["DocumentStatus"].ToString() == "D")
                     {
                         throw new KDBusinessException("001", $"单据编号为：{FDSrcBNo}的单据为重新审核状态，请先提交后再进行操作！");
                     }
