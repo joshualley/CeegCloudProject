@@ -174,6 +174,10 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
             dict.Add("k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "" });
             //出差申请
             dict.Add("k0c30c431418e4cf4a60d241a18cb241c", new string[] { "ora_t_TravelApply", "ora_t_TravelApplyEntry" });
+            //非生产采购合同评审
+            dict.Add("kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" });
+            //生产采购合同评审
+            dict.Add("k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" });
             //出差报销
             dict.Add("k6575db4ed77c449f88dd20cceef75a73", new string[] { "ora_t_TravelSubmit", "ora_t_TravelSubmitEntry" });
             //个人费用立项
@@ -186,10 +190,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
             dict.Add("k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" });
             //招待费用报销
             dict.Add("kdcdde6ac18cb4d419a6924b49a593460", new string[] { "ora_t_Server", "ora_t_Server_Entry" });
-            //采购合同评审
-            dict.Add("k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" });
-            //销售合同评审
-            dict.Add("kdb6ae742543a4f6da09dfed7ba4e02dd", new string[] { "ora_t_SellContractHead", "ora_t_SellContractEntry" });
+            
 
             return dict;
         }
@@ -258,6 +259,23 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "FExpectCost1");
                     dict.Add("FReCost", "FCommitAmount");
                     break;
+                case "k3972241808034802b04c3d18d4107afd"://生产采购合同评审
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FTPreCost", "FIncludeTaxAmount");
+                    dict.Add("FTReCost", "FIncludeTaxAmount");
+                    dict.Add("FCostPrj", "FCostType");
+                    dict.Add("FPreCost", "FIncludeTaxAmountItem");
+                    dict.Add("FReCost", "FIncludeTaxAmountItem");
+                    break;
+                case "kbb14985fbec4445c846533837b2eea65"://非生产采购合同评审
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FTPreCost", "FPreAmt");
+                    dict.Add("FTReCost", "FRealAmt");
+                    dict.Add("FCostPrj", "FCostItem");
+                    dict.Add("FPreCost", "FPreAmt");
+                    dict.Add("FReCost", "FRealAmt");
+                    break;
+                // 不使用
                 case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
                     dict.Add("FBraOffice", "FOrgId");
                     dict.Add("FTPreCost", "FTotalAmount");

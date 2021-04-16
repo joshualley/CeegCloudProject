@@ -261,7 +261,7 @@ namespace CZ.CEEG.BdgBos.SalePlan
                             sql = string.Format("exec proc_czly_GeneFirstMon_BDG_CPT @FID_SalePlan='{0}', @FCreatorId='{1}'",
                                                  _FID, _FCreatorId);
                             CZDB_GetData(sql);
-                            this.View.ShowMessage("首月份预算明细单已生成，请");
+                            this.View.ShowMessage("首月份预算明细单已生成。");
                         }
                     }));
 
@@ -290,7 +290,7 @@ namespace CZ.CEEG.BdgBos.SalePlan
             var obj = CZDB_GetData(sql);
             if(obj.Count > 0)
             {
-                this.View.ShowMessage("此公司当前年度的销售计划已经存在!");
+                this.View.ShowMessage("此公司当前年度的预算计划已经存在!");
                 return true;
             }
             return false;
