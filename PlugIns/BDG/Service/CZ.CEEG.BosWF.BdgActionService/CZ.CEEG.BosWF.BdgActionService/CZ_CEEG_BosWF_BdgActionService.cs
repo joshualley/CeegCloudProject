@@ -34,7 +34,10 @@ namespace CZ.CEEG.BosWF.BdgActionService
             {"k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "" } },
             //对公资金申请
             { "k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "" } },
-
+            //非生产采购合同评审
+            { "kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" } },
+            //生产采购合同评审
+            { "k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" } },
             //对公费用立项
             { "kaa55d0cac0c5447bbc6700cfbdf0b11e", new string[] { "ora_t_PublicApply", "" } },
             //对公费用报销
@@ -213,6 +216,26 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     dict.Add("FPreCost", obj["FExpectCost"].ToString());
                     dict.Add("FReCost", obj["FActualCost"].ToString());
                     dict.Add("FNote", "出差申请 ");
+                    break;
+                case "k3972241808034802b04c3d18d4107afd"://生产采购合同评审
+                    dict.Add("FDSrcType", "立项");
+                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", obj["FEntryId"].ToString());
+                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
+                    dict.Add("FDCostPrj", obj["FCostType"].ToString());
+                    dict.Add("FPreCost", obj["FIncludeTaxAmountItem"].ToString());
+                    dict.Add("FReCost", obj["FIncludeTaxAmountItem"].ToString());
+                    dict.Add("FNote", "生产采购合同评审 ");
+                    break;
+                case "kbb14985fbec4445c846533837b2eea65"://非生产采购合同评审
+                    dict.Add("FDSrcType", "立项");
+                    dict.Add("FBraOffice", obj["FOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcSEQ", "0");
+                    dict.Add("FDCostPrj", obj["FCostItem"].ToString());
+                    dict.Add("FPreCost", obj["FPreAmt"].ToString());
+                    dict.Add("FReCost", obj["FRealAmt"].ToString());
+                    dict.Add("FNote", "非生产采购合同评审 ");
                     break;
                 // 不用
                 case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
