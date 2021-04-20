@@ -27,6 +27,36 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
     public class CZ_CEEG_BdgBos_BdgCtrl : AbstractBillPlugIn
     {
 
+        private Dictionary<string, string[]> FormIdToTbNameMap { get; set; } = new Dictionary<string, string[]>()
+        {
+            //费用立项
+            { "ora_FYLX", new string[] { "ora_t_Cust100050", "" } },
+            //出差申请
+            { "k0c30c431418e4cf4a60d241a18cb241c", new string[] { "ora_t_TravelApply", "ora_t_TravelApplyEntry" } },
+            //招待费用申请
+            { "k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" }},
+            //个人资金申请
+            {"k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "ora_t_PersonMoneyEntry" } },
+            //对公资金申请
+            { "k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "ora_t_PublicMoneyEntry" } },
+            //非生产采购合同评审
+            { "kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" } },
+            //生产采购合同评审
+            { "k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" } },
+            //对公费用立项
+            { "kaa55d0cac0c5447bbc6700cfbdf0b11e", new string[] { "ora_t_PublicApply", "" } },
+            //对公费用报销
+            { "k5c88e2dc1ac14349935d452e74e152c8", new string[] { "ora_t_PublicSubmit", "ora_t_PublicSubmitEntry" } },
+            //出差报销
+            { "k6575db4ed77c449f88dd20cceef75a73", new string[] { "ora_t_TravelSubmit", "ora_t_TravelSubmitEntry" } },
+            //个人费用立项
+            { "ke6d80dfd260e4ef88d75f69f4c7ef0a1", new string[] { "ora_t_PeronCostApplyHead", "" } },
+            //个人费用报销
+            { "k767a317ad28e40f1b25e95b92e218fea", new string[] { "ora_t_PersonalReimburse", "ora_t_PCostReimburse" } },
+            //招待费用报销
+            { "kdcdde6ac18cb4d419a6924b49a593460", new string[] { "ora_t_Server", "ora_t_Server_Entry" }},
+        };
+
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
@@ -157,43 +187,6 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
         }
 
         #region Functions
-        /// <summary>
-        /// 根据formID获取表名
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, string[]> GetTbNameByFormId()
-        {
-            var dict = new Dictionary<string, string[]>();
-            //费用立项
-            dict.Add("ora_FYLX", new string[] { "ora_t_Cust100050", "" });
-            //对公费用立项
-            dict.Add("kaa55d0cac0c5447bbc6700cfbdf0b11e", new string[] { "ora_t_PublicApply", "" });
-            //对公费用报销
-            dict.Add("k5c88e2dc1ac14349935d452e74e152c8", new string[] { "ora_t_PublicSubmit", "ora_t_PublicSubmitEntry" });
-            //对公资金申请
-            dict.Add("k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "" });
-            //出差申请
-            dict.Add("k0c30c431418e4cf4a60d241a18cb241c", new string[] { "ora_t_TravelApply", "ora_t_TravelApplyEntry" });
-            //非生产采购合同评审
-            dict.Add("kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" });
-            //生产采购合同评审
-            dict.Add("k3972241808034802b04c3d18d4107afd", new string[] { "ora_t_PCReview", "ora_t_PCReviewEntry" });
-            //出差报销
-            dict.Add("k6575db4ed77c449f88dd20cceef75a73", new string[] { "ora_t_TravelSubmit", "ora_t_TravelSubmitEntry" });
-            //个人费用立项
-            dict.Add("ke6d80dfd260e4ef88d75f69f4c7ef0a1", new string[] { "ora_t_PeronCostApplyHead", "" });
-            //个人费用报销
-            dict.Add("k767a317ad28e40f1b25e95b92e218fea", new string[] { "ora_t_PersonalReimburse", "ora_t_PCostReimburse" });
-            //个人资金借支
-            dict.Add("k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "" });
-            //招待费用申请
-            dict.Add("k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" });
-            //招待费用报销
-            dict.Add("kdcdde6ac18cb4d419a6924b49a593460", new string[] { "ora_t_Server", "ora_t_Server_Entry" });
-            
-
-            return dict;
-        }
 
         /// <summary>
         /// 获取表单数据
@@ -201,7 +194,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
         /// <returns></returns>
         public DynamicObjectCollection DB_GetFormDatas()
         {
-            string[] tb = GetTbNameByFormId()[this.View.GetFormId()];
+            string[] tb = FormIdToTbNameMap[this.View.GetFormId()];
             bool hasEntry = tb[1] == "" ? false : true;
             DynamicObjectCollection datas;
             if (hasEntry)
@@ -251,14 +244,6 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "F_ora_Amount");
                     dict.Add("FReCost", "FACTUALCOST");
                     break;
-                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金借支
-                    dict.Add("FBraOffice", "FOrgId");
-                    dict.Add("FTPreCost", "FExpectCost1");
-                    dict.Add("FTReCost", "FCommitAmount");
-                    dict.Add("FCostPrj", "FCostType1");
-                    dict.Add("FPreCost", "FExpectCost1");
-                    dict.Add("FReCost", "FCommitAmount");
-                    break;
                 case "k3972241808034802b04c3d18d4107afd"://生产采购合同评审
                     dict.Add("FBraOffice", "FOrgId");
                     dict.Add("FTPreCost", "FIncludeTaxAmount");
@@ -274,6 +259,22 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FCostPrj", "FCostItem");
                     dict.Add("FPreCost", "FPreAmt");
                     dict.Add("FReCost", "FRealAmt");
+                    break;
+                case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FTPreCost", "FPreCost");
+                    dict.Add("FTReCost", "FRealMoney");
+                    dict.Add("FCostPrj", "FCostItem");
+                    dict.Add("FPreCost", "FApplyAmt");
+                    dict.Add("FReCost", "FAllowAmt");
+                    break;
+                case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金申请
+                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FTPreCost", "FAmount");
+                    dict.Add("FTReCost", "FStatusAmount");
+                    dict.Add("FCostPrj", "FCostItem");
+                    dict.Add("FPreCost", "FApplyAmt");
+                    dict.Add("FReCost", "FAllowAmt");
                     break;
                 // 不使用
                 case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
