@@ -115,7 +115,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         FPreCost = Trans["FPreCost"];
                         if(FDSrcType == "立项")
                         {
-                            FReCost = Trans["FPreCost"];
+                            FReCost = Trans["FReCost"];
                         }
                         else if(FDSrcType == "资金")
                         {
@@ -169,7 +169,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         FPreCost = Trans["FPreCost"];
                         if (FDSrcType == "立项")
                         {
-                            FReCost = Trans["FPreCost"];
+                            FReCost = Trans["FReCost"];
                         }
                         else if (FDSrcType == "资金") // 资金要确认仅注册审核、反审核操作
                         {
@@ -194,8 +194,17 @@ namespace CZ.CEEG.BosWF.BdgActionService
                     }
                 }
             }
-            DBUtils.Execute(this.Context, sql);
-            DBUtils.Execute(this.Context, backSql);
+            if(!sql.Equals("")) 
+            {
+                sql = "/*dialect*/" + sql;
+                DBUtils.Execute(this.Context, sql);
+            }
+            if (!backSql.Equals("")) 
+            {
+                backSql = "/*dialect*/" + backSql;
+                DBUtils.Execute(this.Context, backSql);
+            }
+            
         }
 
         /// <summary>
