@@ -25,6 +25,13 @@ using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
 using Kingdee.BOS.JSON;
 using Kingdee.BOS.Core.DynamicForm;
 using System.Threading;
+using Kingdee.BOS.App;
+using Kingdee.BOS.Core.DynamicForm.Operation;
+using Kingdee.BOS.Core.Metadata.ConvertElement.ServiceArgs;
+using Kingdee.BOS.Core.List;
+using Kingdee.BOS.Orm;
+using Kingdee.BOS;
+using Kingdee.BOS.Mobile;
 //using Kingdee.BOS;
 //using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
 
@@ -63,7 +70,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 return;
             }
             string sql = string.Format("SELECT es.FID FROM T_BD_STAFFTEMP es INNER JOIN T_BD_DEPARTMENT d on es.FDEPTID=d.FDEPTID WHERE es.FISFIRSTPOST='1' AND d.FUSEORGID='{0}'", orgId);
-            var objs = CZDB_GetData(sql);
+            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
 
             for (int i = 0; i < objs.Count; i++)
             {
@@ -145,7 +152,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             var _Names = GetApplySign();
             string FApplyID = this.View.BillModel.DataObject[_Names["FEmpID"]] == null ? "0" : (this.View.BillModel.DataObject[_Names["FEmpID"]] as DynamicObject)["Id"].ToString();
             string sql = String.Format(@"exec proc_czty_GetLoginUser2Emp @FEmpID='{0}'", FApplyID);
-            var obj = CZDB_GetData(sql);
+            var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
             //string _FEmpID = "";
             string _FOrgID = "";
             string _FDeptID = "";
@@ -423,7 +430,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     Jump2Audit();
                 }
             }
-            
         }
         #endregion
 
@@ -498,6 +504,87 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 case "FNEWROW": //新增行
                     AddNewEntryRow();
                     break;
+                case "FPUSHBTN": //下推
+                    PushFormByFormId();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 根据单据唯一标识下推单据
+        /// </summary>
+        private void PushFormByFormId()
+        {
+            string status = this.View.BillModel.GetValue("FDocumentStatus").ToString();
+            if (status == "Z") return;
+            string formId = this.View.BillView.GetFormId();
+            string targetFormId = "k0c6b452fa8154c4f8e8e5f55f96bcfac"; // 个人资金
+            var rules = ConvertServiceHelper.GetConvertRules(this.View.Context, formId, targetFormId);
+            var rule = rules.FirstOrDefault(t => t.IsDefault);
+            string fid = this.View.BillModel.GetPKValue().ToString();
+
+            ListSelectedRow[] selectedRows;
+            if (formId == "k0c30c431418e4cf4a60d241a18cb241c") // 出差申请
+            {
+                int count = this.View.BillModel.GetEntryRowCount("FEntity");
+                selectedRows = new ListSelectedRow[count];
+                for (int i = 0; i < count; i++)
+                {
+                    string entryId = this.View.BillModel.GetEntryPKValue("FEntryID", i).ToString();
+                    selectedRows[i] = new ListSelectedRow(fid, entryId, i, formId);
+                }
+            }
+            else
+            {
+                ListSelectedRow row = new ListSelectedRow(fid, string.Empty, 0, formId);
+                selectedRows = new ListSelectedRow[] { row };
+            }
+            
+            // 调用下推服务，生成下游单据数据包
+            ConvertOperationResult operationResult = null;
+            //var custParams = new Dictionary<string, string>();
+            PushArgs pushArgs = new PushArgs(rule, selectedRows)
+            {
+                TargetBillTypeId = "",
+                TargetOrgId = 0,
+            };
+            try
+            {
+                //执行下推操作，并获取下推结果
+                operationResult = ConvertServiceHelper.Push(this.View.Context, pushArgs, OperateOption.Create());
+            }
+            catch (KDExceptionValidate ex)
+            {
+                this.View.ShowErrMessage(ex.Message, ex.ValidateString);
+            }
+            catch(Exception ex)
+            {
+                this.View.ShowErrMessage(ex.Message);
+            }
+
+            // 获取生成的目标单据数据包
+            DynamicObject[] objs = operationResult.TargetDataEntities.Select(p => p.DataEntity).ToArray();
+            // 读取目标单据元数据
+            var targetBillMeta = MetaDataServiceHelper.Load(this.View.Context, targetFormId) as FormMetadata;
+            OperateOption option = OperateOption.Create();
+            // 忽略全部需要交互性质的提示
+            option.SetIgnoreWarning(true);
+            // 暂存数据
+            var saveResult = BusinessDataServiceHelper.Draft(this.View.Context, targetBillMeta.BusinessInfo, objs, option);
+            string targetId = saveResult.SuccessDataEnity.Select(item => item["FID"].ToString()).Distinct().FirstOrDefault();
+
+            // 打开目标单据
+            if(targetId != null)
+            {
+                MobileShowParameter param = new MobileShowParameter();
+                param.Caption = "个人资金申请";
+                param.FormId = targetFormId;
+                param.PKey = targetId;
+                param.ParentPageId = this.View.PageId;
+                param.Status = OperationStatus.EDIT;
+                param.OpenStyle.ShowType = ShowType.Modal;
+
+                this.View.ShowForm(param);
             }
         }
 
@@ -674,25 +761,24 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         /// 选择前过滤数据
         /// </summary>
         /// <param name="e"></param>
-        public override void BeforeF7Select(BeforeF7SelectEventArgs e)
-        {
-            base.BeforeF7Select(e);
-            switch (e.FieldKey)
-            {
-                case "FApply":
-                    FilterStaffByOrganization(e);
-                    break;
-                case "FApplyID":
-                    FilterStaffByOrganization(e);
-                    break;
-                case "F_ora_Applicant":
-                    FilterStaffByOrganization(e);
-                    break;
-            }
-        }
+        //public override void BeforeF7Select(BeforeF7SelectEventArgs e)
+        //{
+        //    base.BeforeF7Select(e);
+        //    switch (e.FieldKey)
+        //    {
+        //        case "FApply":
+        //            FilterStaffByOrganization(e);
+        //            break;
+        //        case "FApplyID":
+        //            FilterStaffByOrganization(e);
+        //            break;
+        //        case "F_ora_Applicant":
+        //            FilterStaffByOrganization(e);
+        //            break;
+        //    }
+        //}
         #endregion
 
-        #region 公共方法 提供基本方法 用于调用
 
         /// <summary>
         /// 获取用户
@@ -704,108 +790,5 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             OQLFilter filter = OQLFilter.CreateHeadEntityFilter(string.Format("FUSERID={0}", userID));
             return BusinessDataServiceHelper.Load(this.View.Context, FormIdConst.SEC_User, null, filter).FirstOrDefault();
         }
-
-        /// <summary>
-        /// 查询传入日期 【年-月-日 上｜下午】 之间的工作日天数 最小天数单位 0.5
-        /// </summary>
-        /// <param name="_FOrgID">组织ID</param>
-        /// <param name="_FBegDt">查询日期 起 YYYY-MM-DD</param>
-        /// <param name="_FBegDtAP">查询日期 起 1=上午 2=下午</param>
-        /// <param name="_FEndDt">查询日期 止 YYYY-MM-DD</param>
-        /// <param name="_FEndDtAP">查询日期 止 1=上午 2=下午</param>
-        /// <returns></returns>
-        public string CZDB_GetLeaveWorkDaysAP(string _FOrgID,string _FBegDt,string _FBegDtAP,string _FEndDt,string _FEndDtAP)
-        {
-            DataTable dt;
-            string _LeaveWDDays = "0";
-            string _sql = "exec proc_czty_LeaveWorkDaysAP @FOrgID='" + _FOrgID + "',@FBD='" + _FBegDt + "',@FBD_AP='" + _FBegDtAP
-                + "',@FED='" + _FEndDt + "',@FED_AP='" + _FEndDtAP + "'";
-            try
-            {
-                dt = CZDB_SearchBase(_sql);
-                _LeaveWDDays = dt.Rows[0]["lwds"].ToString();
-                return _LeaveWDDays;
-            }
-            catch (Exception _ex)
-            {
-                return "0";
-                throw _ex;
-            }
-
-        }
-
-        /// <summary>
-        /// 输入用户ID 取得绑定职员ID proc_czty_GetLoginUser2Emp 
-        /// 如需取得FEmpID外字段的控制或输出，另建方法
-        /// </summary>
-        /// <param name="_userID"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetLoginUser2Emp(string _userID)
-        {
-            //FUserID	FEmpID	FEmpName	FDeptID	    FDeptName
-            //173439	113015	张报	    112498	    财务融资部
-            string sql = "exec proc_czty_GetLoginUser2Emp @FUserID=" + _userID;
-            var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            return obj;
-        }
-
-        /// <summary>
-        /// search 基本方法
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DataTable CZDB_SearchBase(string _sql)
-        {
-            DataTable dt;
-            try
-            {
-                dt = DBUtils.ExecuteDataSet(this.Context, _sql).Tables[0];
-                return dt;
-            }
-            catch (Exception _ex)
-            {
-                return null;
-                throw _ex;
-            }
-        }
-
-        /// <summary>
-        /// 基本方法 
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetData(string _sql)
-        {
-            try
-            {
-                var obj = DBUtils.ExecuteDynamicObject(this.Context, _sql);
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        /// <summary>
-        /// 获取中文金额输出
-        /// </summary>
-        /// <param name="dou"></param>
-        /// <returns></returns>
-        public static string CZ_GetRMBCN(double dou)
-        {
-            //using System.Text.RegularExpressions.Regex;
-            string s = dou.ToString("#L#E#D#C#K#E#D#C#J#E#D#C#I#E#D#C#H#E#D#C#G#E#D#C#F#E#D#C#.0B0A");
-            string d = System.Text.RegularExpressions.Regex.Replace(s, @"((?<=-|^)[^\-1-9]*)|((?'z'0)[0A-E]*((?=[1-9])|(?'-z'(?=[F-L\.]|$))))|((?'b'[F-L])(?'z'0)[0A-L]*((?=[1-9])|(?'-z'(?=[\.]|$))))", "${b}${z}");
-            string RMB = "负元空零壹贰叁肆伍陆柒捌玖空空空空空空空分角拾佰仟万亿兆京垓秭穰";
-            string r = System.Text.RegularExpressions.Regex.Replace(d, ".", m => RMB[m.Value[0] - '-'].ToString());
-            if (r.EndsWith("元"))
-                r = r + "整";
-
-            return r;
-        }
-
-        
-        #endregion
     }
 }

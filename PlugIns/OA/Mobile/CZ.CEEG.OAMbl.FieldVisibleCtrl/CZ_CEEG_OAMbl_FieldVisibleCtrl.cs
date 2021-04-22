@@ -31,16 +31,21 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
     public class CZ_CEEG_OAMbl_FieldVisibleCtrl : AbstractMobileBillPlugin
     {
 
-        #region Actions
         /// <summary>
         /// 根据流程显示隐藏按钮
         /// </summary>
         private void HideBtn()
         {
-            string _FDocumentStatus = this.CZ_GetValue("FDocumentStatus");
+            string _FDocumentStatus = this.View.BillModel.GetValue("FDocumentStatus").ToString();
 
             if (_FDocumentStatus == "Z" || _FDocumentStatus == "A")
             {
+                try
+                {
+                    var pushBtn = this.View.GetControl("FPushBtn");
+                    pushBtn.Visible = false;
+                }
+                catch (Exception) { }
                 var submitBtn = this.View.GetControl("FSubmitBtn");
                 var saveBtn = this.View.GetControl("FSaveBtn");
                 saveBtn.Visible = false;
@@ -48,16 +53,44 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
             }
             else if (_FDocumentStatus == "B")
             {
+                try
+                {
+                    var pushBtn = this.View.GetControl("FPushBtn");
+                    pushBtn.Visible = false;
+                }
+                catch (Exception) { }
                 var submitBtn = this.View.GetControl("FSubmitBtn");
                 var saveBtn = this.View.GetControl("FSaveBtn");
                 submitBtn.Visible = false;
                 saveBtn.SetCustomPropertyValue("width", 310);
-            }else if (_FDocumentStatus == "D")
+            }
+            else if (_FDocumentStatus == "C")
             {
+                var submitBtn = this.View.GetControl("FSubmitBtn");
+                var saveBtn = this.View.GetControl("FSaveBtn");
+                submitBtn.Visible = false;
+                saveBtn.Visible = false;
+                try
+                {
+                    var pushBtn = this.View.GetControl("FPushBtn");
+                    pushBtn.Visible = true;
+                    pushBtn.SetCustomPropertyValue("width", 310);
+                }
+                catch (Exception) { }
+               
+            }
+            else if (_FDocumentStatus == "D")
+            {
+                try
+                {
+                    var pushBtn = this.View.GetControl("FPushBtn");
+                    pushBtn.Visible = false;
+                }
+                catch (Exception) { }
                 string FID = this.View.BillModel.DataObject["Id"].ToString();
                 string procInstId = WorkflowChartServiceHelper.GetProcInstIdByBillInst(this.Context, this.View.GetFormId(), FID);
                 string sql = "select FSTATUS from t_WF_ProcInst where FPROCINSTID='" + procInstId + "'";
-                var data = CZDB_GetData(sql);
+                var data = DBUtils.ExecuteDynamicObject(this.Context, sql);
                 if (data.Count > 0 && data[0]["FSTATUS"].ToString() == "1")
                 {
                     var submitBtn = this.View.GetControl("FSubmitBtn");
@@ -75,70 +108,12 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
             }
 
         }
-        #endregion
 
-        #region overrides
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
             HideBtn();
         }
-
-        #endregion
-
-        #region 基本取数方法
-        /// <summary>
-        /// 获取当前单据FID
-        /// </summary>
-        /// <returns></returns>
-        public string CZ_GetFID()
-        {
-            return (this.View.BillModel.DataObject as DynamicObject)["Id"] == null ? "0" : (this.View.BillModel.DataObject as DynamicObject)["Id"].ToString();
-        }
-        public string CZ_GetValue(string sign)
-        {
-            return this.View.BillModel.GetValue(sign) == null ? "" : this.View.BillModel.GetValue(sign).ToString();
-        }
-        /// <summary>
-        /// 获取基础资料
-        /// </summary>
-        /// <param name="sign">标识</param>
-        /// <param name="property">属性</param>
-        /// <returns></returns>
-        private string CZ_GetBaseData(string sign, string property)
-        {
-            return this.View.BillModel.DataObject[sign] == null ? "" : (this.View.BillModel.DataObject[sign] as DynamicObject)[property].ToString();
-        }
-        /// <summary>
-        /// 获取一般字段
-        /// </summary>
-        /// <param name="sign">标识</param>
-        /// <returns></returns>
-        private string CZ_GetCommonField(string sign)
-        {
-            return this.View.BillModel.DataObject[sign] == null ? "" : this.View.BillModel.DataObject[sign].ToString();
-        }
-        #endregion
-
-        #region 数据库查询方法
-        /// <summary>
-        /// 基本方法 数据库查询
-        /// </summary>
-        /// <param name="_sql"></param>
-        /// <returns></returns>
-        public DynamicObjectCollection CZDB_GetData(string _sql)
-        {
-            try
-            {
-                var obj = DBUtils.ExecuteDynamicObject(this.Context, _sql);
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-        #endregion
 
     }
 }
