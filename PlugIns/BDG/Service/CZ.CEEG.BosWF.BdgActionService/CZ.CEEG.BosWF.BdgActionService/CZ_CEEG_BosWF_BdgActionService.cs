@@ -32,8 +32,12 @@ namespace CZ.CEEG.BosWF.BdgActionService
             { "k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" }},
             //个人资金申请
             {"k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "ora_t_PersonMoneyEntry" } },
+            //个人资金申请-新
+            {"ora_PersonMoney", new string[] { "ora_t_PersonMoney", "ora_t_PersonMoneyEntry" } },
             //对公资金申请
             { "k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "ora_t_PublicMoneyEntry" } },
+            //对公资金申请-新
+            { "ora_PublicMoney", new string[] { "ora_t_PublicMoney", "ora_t_PublicMoneyEntry" } },
             //非生产采购合同评审
             { "kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" } },
             //生产采购合同评审
@@ -53,8 +57,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
         };
 
 
-        #region override
-
         public override void OnPreparePropertys(PreparePropertysEventArgs e)
         {
             base.OnPreparePropertys(e);
@@ -69,8 +71,6 @@ namespace CZ.CEEG.BosWF.BdgActionService
                 InsertFlow(e);
             }
         }
-
-        #endregion
 
         #region Actions
 
@@ -94,71 +94,28 @@ namespace CZ.CEEG.BosWF.BdgActionService
             string sql = "";
             string backSql = "";
             Dictionary<string, string> Trans;
-            if (opKey == "UNAUDIT")
+            if (opKey == "SUBMIT" || opKey == "CANCELASSIGN" || opKey == "AUDIT" || opKey == "UNAUDIT")
             {
-                FDSrcAction = "反审核";
+                var map = new Dictionary<string, string>()
+                {
+                    { "SUBMIT", "提交" },
+                    { "CANCELASSIGN", "撤销" },
+                    { "AUDIT", "审核" },
+                    { "UNAUDIT", "反审核" },
+                };
+                FDSrcAction = map[opKey];
                 foreach (var d in e.DataEntitys)
                 {
                     FDSrcFID = d["Id"].ToString();
                     FDSrcBNo = d["BillNo"].ToString();
-                    var objs = DB_GetFormData(FDSrcFID);
-                    foreach (var obj in objs)
-                    {
-                        string DocumentStatus = d["DocumentStatus"].ToString();
-
-                        Trans = Transform(FDSrcBillID, obj);
-                        FDSrcType = Trans["FDSrcType"];
-                        FBraOffice = Trans["FBraOffice"];
-                        FDSrcEntryID = Trans["FDSrcEntryID"];
-                        FDSrcSEQ = Trans["FDSrcSEQ"];
-                        FDCostPrj = Trans["FDCostPrj"];
-                        FPreCost = Trans["FPreCost"];
-                        if(FDSrcType == "立项")
-                        {
-                            FReCost = Trans["FReCost"];
-                        }
-                        else if(FDSrcType == "资金")
-                        {
-                            // 资金在审核中反审核时跳过处理
-                            if (DocumentStatus == "B") continue;
-                            FReCost = Trans["FReCost"];
-                            // 撤回审核时对源单的反写
-                            decimal amt = Convert.ToDecimal(FPreCost) - Convert.ToDecimal(FReCost);
-                            if(amt != 0)
-                            {
-                                backSql += GeneBackWriteSQL(FDSrcBillID, FDSrcEntryID, amt);
-                            }
-                        }
-                        FNote = Trans["FNote"];
-                        if (DocumentStatus == "B") //审核中进行反审核
-                        {
-                            FReCost = Trans["FPreCost"];
-                        }
-                        sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
-	                             @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
-	                             @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
-	                             @FDCostPrj='{8}',@FPreCost='{9}',@FReCost='{10}',@FNote='{11}';
-                                ", FBraOffice, FDSrcType, FDSrcAction, FDSrcBillID,
-                                    FDSrcFID, FDSrcBNo, FDSrcEntryID, FDSrcSEQ,
-                                    FDCostPrj, FPreCost, FReCost, FNote);
-                    }
-                }
-            }
-            else if (opKey == "SUBMIT" || opKey == "CANCELASSIGN" || opKey == "AUDIT")
-            {
-                FDSrcAction = opKey == "SUBMIT" ? "提交" : (opKey == "CANCELASSIGN" ? "撤销" : "审核");
-                foreach (var d in e.DataEntitys)
-                {
-                    FDSrcFID = d["Id"].ToString();
-                    FDSrcBNo = d["BillNo"].ToString();
-                    if (opKey == "AUDIT" && d["DocumentStatus"].ToString() == "D")
+                    string DocumentStatus = d["DocumentStatus"].ToString();
+                    if (opKey == "AUDIT" && DocumentStatus == "D")
                     {
                         throw new KDBusinessException("001", $"单据编号为：{FDSrcBNo}的单据为重新审核状态，请先提交后再进行操作！");
                     }
                     var objs = DB_GetFormData(FDSrcFID);
                     foreach (var obj in objs)
                     {
-                        //string DocumentStatus = d["DocumentStatus"].ToString();
                         Trans = Transform(FDSrcBillID, obj);
 
                         FDSrcType = Trans["FDSrcType"];
@@ -167,23 +124,80 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         FDSrcSEQ = Trans["FDSrcSEQ"];
                         FDCostPrj = Trans["FDCostPrj"];
                         FPreCost = Trans["FPreCost"];
-                        if (FDSrcType == "立项")
+                        FReCost = Trans["FReCost"];
+                        FNote = Trans["FNote"];
+                        decimal amt = Convert.ToDecimal(FReCost) - Convert.ToDecimal(FPreCost);
+                        if (FDSrcType == "资金") // 资金要确认仅注册审核、反审核操作
                         {
-                            FReCost = Trans["FReCost"];
-                        }
-                        else if (FDSrcType == "资金") // 资金要确认仅注册审核、反审核操作
-                        {
-                            if(FDSrcAction != "审核") continue;
-                            FReCost = Trans["FReCost"];
-                            // 反写源单
-                            decimal amt = Convert.ToDecimal(FReCost) - Convert.ToDecimal(FPreCost);
-                            if(amt != 0) 
+                            string srcBillNo = obj["FSourceBillNo"].ToString();
+                            switch(FDSrcAction)
                             {
-                                backSql += GeneBackWriteSQL(FDSrcBillID, FDSrcEntryID, amt);
+                                case "提交":
+                                case "撤销":
+                                    // 判断源单单号是否存在，若存在，则跳过，不需要占用、撤回预算占用流水
+                                    if (!srcBillNo.IsNullOrEmptyOrWhiteSpace()) continue;
+                                    FDSrcType = "立项";
+                                    break;
+                                case "审核":
+                                    if (amt != 0) 
+                                    {
+                                        if(srcBillNo.IsNullOrEmptyOrWhiteSpace()) 
+                                        {
+                                            string srcType = "立项";
+                                            // 源单不存在时，增加一条立项审核的预算占用调整记录
+                                            sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
+                                                @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
+                                                @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
+                                                @FDCostPrj='{8}',@FPreCost='{9}',@FReCost='{10}',@FNote='{11}';
+                                                ", FBraOffice, srcType, FDSrcAction, FDSrcBillID,
+                                                    FDSrcFID, FDSrcBNo, FDSrcEntryID, FDSrcSEQ,
+                                                    FDCostPrj, FPreCost, amt, FNote);
+                                        }
+                                        else
+                                        {
+                                            // 源单存在时，反写源单
+                                            backSql += GeneBackWriteSQL(FDSrcBillID, FDSrcEntryID, amt);
+                                        }
+                                    }
+                                    break;
+                                case "反审核":
+                                    // 若源单不存在
+                                    if (srcBillNo.IsNullOrEmptyOrWhiteSpace())
+                                    {
+                                        // 增加一条立项审核的预算占用撤回记录
+                                        string realCost = FReCost;
+                                        if (DocumentStatus == "B") realCost = FPreCost;
+                                        string srcType = "立项";
+                                        sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
+                                                @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
+                                                @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
+                                                @FDCostPrj='{8}',@FPreCost='{9}',@FReCost='{10}',@FNote='{11}';
+                                                ", FBraOffice, srcType, FDSrcAction, FDSrcBillID,
+                                                    FDSrcFID, FDSrcBNo, FDSrcEntryID, FDSrcSEQ,
+                                                    FDCostPrj, FPreCost, realCost, FNote);
+                                    } 
+                                    // 若源单存在
+                                    else 
+                                    {
+                                        // 资金在审核中反审核时，则跳过处理
+                                        if (DocumentStatus == "B") continue;
+                                        // 撤回审核时对源单的反写
+                                        if(amt != 0) backSql += GeneBackWriteSQL(FDSrcBillID, FDSrcEntryID, amt);
+                                    }
+                                    
+                                    break;
                             }
                         }
-                        // FReCost = Trans["FReCost"];
-                        FNote = Trans["FNote"];
+                        //审核中进行反审核
+                        else if (FDSrcAction == "反审核" && DocumentStatus == "B") FReCost = Trans["FPreCost"];
+                        
+                        // 立项审核时如果金额没有变动，则不再进行预算占用调整
+                        if(FDSrcType == "立项" && FDSrcAction == "审核") 
+                        {
+                            if (amt == 0) continue;
+                            FReCost = amt.ToString();
+                        }
+                        
                         sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
 	                             @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
 	                             @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
@@ -191,12 +205,12 @@ namespace CZ.CEEG.BosWF.BdgActionService
                                 ", FBraOffice, FDSrcType, FDSrcAction, FDSrcBillID,
                                     FDSrcFID, FDSrcBNo, FDSrcEntryID, FDSrcSEQ,
                                     FDCostPrj, FPreCost, FReCost, FNote);
+                        
                     }
                 }
             }
-            if(!sql.Equals("")) 
+            if (!sql.Equals(""))
             {
-                sql = "/*dialect*/" + sql;
                 DBUtils.Execute(this.Context, sql);
             }
             if (!backSql.Equals("")) 
@@ -213,7 +227,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
         /// <param name="amt"></param>
         private string GeneBackWriteSQL(string formId, string entryId, decimal amt)
         {
-            if(formId == "k0c6b452fa8154c4f8e8e5f55f96bcfac") // 个人资金
+            if(formId == "ora_PersonMoney") // 个人资金
             {
                 string sql = $"select FSId, FSTableName from ora_t_PublicMoneyEntry_LK where FEntryId={entryId}";
                 var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
@@ -242,19 +256,34 @@ update ora_t_ServeFee set FSourceStatus=case when FAppliedMoney<FACTUALCOST then
                 }
                 return sql;
             }
-            else if(formId == "k191b3057af6c4252bcea813ff644cd3a") // 对公资金
+            else if(formId == "ora_PublicMoney") // 对公资金
             {
                 string sql = $"select FSId, FSTableName from ora_t_PublicMoneyEntry_LK where FEntryId={entryId}";
                 var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
                 if (item == null) return "";
                 sql = "";
-                if(item["FSTableName"].ToString().Equals("ora_t_PublicSubmitEntry")) // 对公费用报销
+                switch(item["FSTableName"].ToString())
                 {
-                    sql = string.Format(
+                    case "ora_t_PublicSubmitEntry": // 对公费用报销
+                        sql = string.Format(
 @"update ora_t_PublicSubmitEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
 update ora_t_PublicSubmitEntry set FBillStatus=case when FAppliedMoney<FRealAmount then 'A' else 'B' end where FEntryId={1};
 ", amt, entryId);
+                        break;
+                    case "ora_t_ContractReviewHead": // 非生产采购合同评审
+                        sql = string.Format(
+@"update ora_t_ContractReviewHead set FAppliedMoney=FAppliedMoney+{0} where FID={1};
+update ora_t_ContractReviewHead set FCloseStatus=case when FAppliedMoney<FRealAmt then 'A' else 'B' end where FID={1};
+", amt, entryId);
+                        break;
+                    case "ora_t_PCReviewEntry": // 生产采购合同评审
+                        sql = string.Format(
+@"update ora_t_PCReviewEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
+update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxAmountItem then 'A' else 'B' end where FEntryId={1};
+", amt, entryId);
+                        break;
                 }
+                
                 return sql;
             }
 
@@ -336,6 +365,26 @@ update ora_t_PublicSubmitEntry set FBillStatus=case when FAppliedMoney<FRealAmou
                     dict.Add("FReCost", obj["FAllowAmt"].ToString());
                     dict.Add("FNote", "对公资金申请 ");
                     break;
+                case "ora_PersonMoney"://个人资金申请-新
+                    dict.Add("FDSrcType", "资金");
+                    dict.Add("FBraOffice", obj["FPayOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
+                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
+                    dict.Add("FDCostPrj", obj["FCostItem"].ToString());
+                    dict.Add("FPreCost", obj["FApplyAmt"].ToString());
+                    dict.Add("FReCost", obj["FAllowAmt"].ToString());
+                    dict.Add("FNote", "个人资金申请 ");
+                    break;
+                case "ora_PublicMoney"://对公资金申请-新
+                    dict.Add("FDSrcType", "资金");
+                    dict.Add("FBraOffice", obj["FPayOrgId"].ToString());
+                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
+                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
+                    dict.Add("FDCostPrj", obj["FCostItem"].ToString());
+                    dict.Add("FPreCost", obj["FApplyAmt"].ToString());
+                    dict.Add("FReCost", obj["FAllowAmt"].ToString());
+                    dict.Add("FNote", "对公资金申请 ");
+                    break;
                 // 不用
                 case "k5c88e2dc1ac14349935d452e74e152c8"://对公费用报销
                     dict.Add("FDSrcType", "报销");
@@ -400,6 +449,7 @@ update ora_t_PublicSubmitEntry set FBillStatus=case when FAppliedMoney<FRealAmou
             }
             return dict;
         }
+        
         /// <summary>
         /// 通过FID获取单据数据
         /// </summary>

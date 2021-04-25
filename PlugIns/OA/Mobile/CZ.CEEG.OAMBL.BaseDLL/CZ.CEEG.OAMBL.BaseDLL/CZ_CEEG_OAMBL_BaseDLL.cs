@@ -228,14 +228,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     dict.Add("FRankID", "F_ora_Level");
                     dict.Add("FMobile", "F_ora_Mobile");
                     break;
-                case "ke6d80dfd260e4ef88d75f69f4c7ef0a1": //个人费用立项
-                    dict.Add("FEmpID", "FApplyID");
-                    dict.Add("FOrgId", "FOrgId");
-                    dict.Add("FDeptID", "F_DeptID");
-                    dict.Add("FPostID", "FPost");
-                    dict.Add("FRankID", "F_ora_AppLevel");
-                    dict.Add("FMobile", "FTel");
-                    break;
                 case "k0c6b452fa8154c4f8e8e5f55f96bcfac": //个人资金借支
                     dict.Add("FEmpID", "FApply");
                     dict.Add("FOrgId", "FOrgId");
@@ -243,6 +235,30 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     dict.Add("FPostID", "FPost");
                     dict.Add("FRankID", "F_ora_Level");
                     dict.Add("FMobile", "FContract");
+                    break;
+                case "ora_PublicMoney": //对公资金申请-新
+                    dict.Add("FEmpID", "FApplyID");
+                    dict.Add("FOrgId", "FOrgId");
+                    dict.Add("FDeptID", "FDeptID");
+                    dict.Add("FPostID", "F_ora_Post");
+                    dict.Add("FRankID", "F_ora_Level");
+                    dict.Add("FMobile", "F_ora_Mobile");
+                    break;
+                case "ora_PersonMoney": //个人资金申请-新
+                    dict.Add("FEmpID", "FApply");
+                    dict.Add("FOrgId", "FOrgId");
+                    dict.Add("FDeptID", "FDeptID");
+                    dict.Add("FPostID", "FPost");
+                    dict.Add("FRankID", "F_ora_Level");
+                    dict.Add("FMobile", "FContract");
+                    break;
+                case "ke6d80dfd260e4ef88d75f69f4c7ef0a1": //个人费用立项
+                    dict.Add("FEmpID", "FApplyID");
+                    dict.Add("FOrgId", "FOrgId");
+                    dict.Add("FDeptID", "F_DeptID");
+                    dict.Add("FPostID", "FPost");
+                    dict.Add("FRankID", "F_ora_AppLevel");
+                    dict.Add("FMobile", "FTel");
                     break;
                 case "k9c79fe3a14f54d8ba0922480b91c1e05": //加班申请
                     dict.Add("FEmpID", "F_ora_Applicant");
@@ -571,18 +587,18 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             option.SetIgnoreWarning(true);
             // 暂存数据
             var saveResult = BusinessDataServiceHelper.Draft(this.View.Context, targetBillMeta.BusinessInfo, objs, option);
-            string targetId = saveResult.SuccessDataEnity.Select(item => item["FID"].ToString()).Distinct().FirstOrDefault();
+            string targetId = saveResult.SuccessDataEnity.Select(item => item["Id"].ToString()).Distinct().FirstOrDefault();
 
             // 打开目标单据
             if(targetId != null)
             {
                 MobileShowParameter param = new MobileShowParameter();
                 param.Caption = "个人资金申请";
-                param.FormId = targetFormId;
+                param.FormId = "ora_GRZJJZ";
                 param.PKey = targetId;
                 param.ParentPageId = this.View.PageId;
                 param.Status = OperationStatus.EDIT;
-                param.OpenStyle.ShowType = ShowType.Modal;
+                param.OpenStyle.ShowType = ShowType.Default;
 
                 this.View.ShowForm(param);
             }
