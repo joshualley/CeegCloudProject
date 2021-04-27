@@ -32,12 +32,8 @@ namespace CZ.CEEG.BosWF.BdgActionService
             { "k1ae2591790044d95b9966ad0dff1d987", new string[] { "ora_t_ServeFee", "" }},
             //个人资金申请
             {"k0c6b452fa8154c4f8e8e5f55f96bcfac", new string[] { "ora_t_PersonMoney", "ora_t_PersonMoneyEntry" } },
-            //个人资金申请-新
-            {"ora_PersonMoney", new string[] { "ora_t_PersonMoney", "ora_t_PersonMoneyEntry" } },
             //对公资金申请
             { "k191b3057af6c4252bcea813ff644cd3a", new string[] { "ora_t_Cust100011", "ora_t_PublicMoneyEntry" } },
-            //对公资金申请-新
-            { "ora_PublicMoney", new string[] { "ora_t_PublicMoney", "ora_t_PublicMoneyEntry" } },
             //非生产采购合同评审
             { "kbb14985fbec4445c846533837b2eea65", new string[] { "ora_t_ContractReviewHead", "" } },
             //生产采购合同评审
@@ -227,7 +223,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
         /// <param name="amt"></param>
         private string GeneBackWriteSQL(string formId, string entryId, decimal amt)
         {
-            if(formId == "ora_PersonMoney") // 个人资金
+            if(formId == "k0c6b452fa8154c4f8e8e5f55f96bcfac") // 个人资金
             {
                 string sql = $"select FSId, FSTableName from ora_t_PublicMoneyEntry_LK where FEntryId={entryId}";
                 var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
@@ -256,7 +252,7 @@ update ora_t_ServeFee set FSourceStatus=case when FAppliedMoney<FACTUALCOST then
                 }
                 return sql;
             }
-            else if(formId == "ora_PublicMoney") // 对公资金
+            else if(formId == "k191b3057af6c4252bcea813ff644cd3a") // 对公资金
             {
                 string sql = $"select FSId, FSTableName from ora_t_PublicMoneyEntry_LK where FEntryId={entryId}";
                 var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
@@ -356,26 +352,6 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                     dict.Add("FNote", "个人资金申请 ");
                     break;
                 case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
-                    dict.Add("FDSrcType", "资金");
-                    dict.Add("FBraOffice", obj["FPayOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
-                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
-                    dict.Add("FDCostPrj", obj["FCostItem"].ToString());
-                    dict.Add("FPreCost", obj["FApplyAmt"].ToString());
-                    dict.Add("FReCost", obj["FAllowAmt"].ToString());
-                    dict.Add("FNote", "对公资金申请 ");
-                    break;
-                case "ora_PersonMoney"://个人资金申请-新
-                    dict.Add("FDSrcType", "资金");
-                    dict.Add("FBraOffice", obj["FPayOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());
-                    dict.Add("FDSrcSEQ", obj["FSEQ"].ToString());
-                    dict.Add("FDCostPrj", obj["FCostItem"].ToString());
-                    dict.Add("FPreCost", obj["FApplyAmt"].ToString());
-                    dict.Add("FReCost", obj["FAllowAmt"].ToString());
-                    dict.Add("FNote", "个人资金申请 ");
-                    break;
-                case "ora_PublicMoney"://对公资金申请-新
                     dict.Add("FDSrcType", "资金");
                     dict.Add("FBraOffice", obj["FPayOrgId"].ToString());
                     dict.Add("FDSrcEntryID", obj["FEntryID"].ToString());

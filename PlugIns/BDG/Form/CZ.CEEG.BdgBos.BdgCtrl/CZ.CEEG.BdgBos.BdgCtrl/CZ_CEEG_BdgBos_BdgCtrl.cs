@@ -114,14 +114,27 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
             string FBraOffice = CZ_GetBaseData(fieldname["FBraOffice"], "Id");
             //查询预算余额
             var objs = GetBudgetBalance(FBraOffice);
-            float FOccBal = 0; //预算占用余额
+            decimal FOccBal = 0; //预算占用余额
             if (objs.Count > 0)
             {
-                FOccBal = float.Parse(objs[0]["FOccBal"].ToString());
+                FOccBal = decimal.Parse(objs[0]["FOccBal"].ToString());
                 if (GetCtrlStrategy(FBraOffice) == 0) //如果总控
-                {
-                    //获取单据中总预计金额
-                    float FTPreCost = float.Parse(this.View.Model.GetValue(fieldname["FTPreCost"]).ToString());
+                {   
+                    string formId = this.View.GetFormId();
+                    decimal FTPreCost = 0;
+                    // 如果为资金单
+                    if (formId.Equals("ora_PersonMoney") || formId.Equals("ora_PublicMoney"))
+                    {
+                        var entity = this.Model.DataObject["FEntity"] as DynamicObjectCollection;
+                        FTPreCost = entity.Where(item => item["FSourceBillNo"].IsNullOrEmptyOrWhiteSpace())
+                            .Select(item => Convert.ToDecimal(item["FApplyAmt"]))
+                            .Sum();
+                    }
+                    else 
+                    {
+                        //获取单据中总预计金额
+                        FTPreCost = decimal.Parse(this.View.Model.GetValue(fieldname["FTPreCost"]).ToString());
+                    }
                     if(FOccBal < FTPreCost)
                     {
                         string msg = string.Format("本月预算占用余额为：{0:f2}元。\n金额不能超过本月预算余额！", FOccBal);
@@ -131,44 +144,76 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                 }
                 else if(GetCtrlStrategy(FBraOffice) == 1) //分控
                 {
-                    //获取单据中各个费用项目的合计金额
-                    var datas = DB_GetFormDatas();
-                    string FCostPrj = "";
-                    float FPreCost = 0;
-                    float FReCost = 0;
-
-                    Dictionary<string, float> preMap = new Dictionary<string, float>();
-                    
-                    foreach (var data in datas)
+                    string formId = this.View.GetFormId();
+                    // 如果为资金单
+                    if (formId.Equals("ora_PersonMoney") || formId.Equals("ora_PublicMoney"))
                     {
-                        FCostPrj = (data[fieldname["FCostPrj"]] as DynamicObject)["Id"].ToString();
-                        FPreCost = float.Parse(data[fieldname["FPreCost"]].ToString());
-                        FReCost = float.Parse(data[fieldname["FReCost"]].ToString());
-                        if (preMap.ContainsKey(FCostPrj))
+                        var entity = this.Model.DataObject["FEntity"] as DynamicObjectCollection;
+                        var rows = entity.Where(item => item["FSourceBillNo"].IsNullOrEmptyOrWhiteSpace())
+                            .Select(i => new 
+                            {
+                                FCostPrj = Convert.ToInt32(i["FCostItem"]), 
+                                FApplyAmt = Convert.ToDecimal(i["FApplyAmt"])
+                            }).ToArray();
+                        var costs = rows.Select(i => i.FCostPrj).Distinct();
+                        foreach (var FCostPrj in costs)
                         {
-                            preMap[FCostPrj] += FPreCost;
-                        }
-                        else
-                        {
-                            preMap.Add(FCostPrj, FPreCost);
+                            //获取单一费用项目的预算余额
+                            var objs1 = GetBudgetBalance(FBraOffice, FCostPrj.ToString());
+                            FOccBal = decimal.Parse(objs1[0]["FEOccBal"].ToString()); //预算占用余额
+
+                            decimal FPreCost = rows.Where(i => i.FCostPrj == FCostPrj).Sum(i => i.FApplyAmt);
+                            if (FOccBal < FPreCost)
+                            {
+                                string sql = "select FNAME from T_BD_EXPENSE_L where FEXPID='" + FCostPrj + "'";
+                                string FCostPrjName = DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FNAME"].ToString();
+                                string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1:f2}元。\n金额不能超过本月预算余额！", FCostPrjName, FOccBal);
+                                this.View.ShowErrMessage(msg);
+                                return true;
+                            }
                         }
                     }
-
-                    foreach(var d in preMap)
+                    else
                     {
-                        //获取单一费用项目的预算余额
-                        var objs1 = GetBudgetBalance(FBraOffice, d.Key);
-                        FOccBal = float.Parse(objs1[0]["FEOccBal"].ToString()); //预算占用余额
+                        //获取单据中各个费用项目的合计金额
+                        var datas = DB_GetFormDatas();
+                        string FCostPrj = "";
+                        decimal FPreCost = 0;
+                        decimal FReCost = 0;
 
-                        FCostPrj = d.Key;
-                        FPreCost = d.Value;
-                        if (FOccBal < FPreCost)
+                        Dictionary<string, decimal> preMap = new Dictionary<string, decimal>();
+                        
+                        foreach (var data in datas)
                         {
-                            string sql = "select FNAME from T_BD_EXPENSE_L where FEXPID='" + FCostPrj + "'";
-                            string FCostPrjName = DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FNAME"].ToString();
-                            string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1:f2}元。\n金额不能超过本月预算余额！", FCostPrjName, FOccBal);
-                            this.View.ShowErrMessage(msg);
-                            return true;
+                            FCostPrj = (data[fieldname["FCostPrj"]] as DynamicObject)["Id"].ToString();
+                            FPreCost = decimal.Parse(data[fieldname["FPreCost"]].ToString());
+                            FReCost = decimal.Parse(data[fieldname["FReCost"]].ToString());
+                            if (preMap.ContainsKey(FCostPrj))
+                            {
+                                preMap[FCostPrj] += FPreCost;
+                            }
+                            else
+                            {
+                                preMap.Add(FCostPrj, FPreCost);
+                            }
+                        }
+
+                        foreach(var d in preMap)
+                        {
+                            //获取单一费用项目的预算余额
+                            var objs1 = GetBudgetBalance(FBraOffice, d.Key);
+                            FOccBal = decimal.Parse(objs1[0]["FEOccBal"].ToString()); //预算占用余额
+
+                            FCostPrj = d.Key;
+                            FPreCost = d.Value;
+                            if (FOccBal < FPreCost)
+                            {
+                                string sql = "select FNAME from T_BD_EXPENSE_L where FEXPID='" + FCostPrj + "'";
+                                string FCostPrjName = DBUtils.ExecuteDynamicObject(this.Context, sql)[0]["FNAME"].ToString();
+                                string msg = string.Format("费用项目：{0}，本月预算占用余额为：{1:f2}元。\n金额不能超过本月预算余额！", FCostPrjName, FOccBal);
+                                this.View.ShowErrMessage(msg);
+                                return true;
+                            }
                         }
                     }
                 }
@@ -261,7 +306,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FReCost", "FRealAmt");
                     break;
                 case "k191b3057af6c4252bcea813ff644cd3a"://对公资金申请
-                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FBraOffice", "FPayOrgId");
                     dict.Add("FTPreCost", "FPreCost");
                     dict.Add("FTReCost", "FRealMoney");
                     dict.Add("FCostPrj", "FCostItem");
@@ -269,7 +314,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FReCost", "FAllowAmt");
                     break;
                 case "k0c6b452fa8154c4f8e8e5f55f96bcfac"://个人资金申请
-                    dict.Add("FBraOffice", "FOrgId");
+                    dict.Add("FBraOffice", "FPayOrgId");
                     dict.Add("FTPreCost", "FAmount");
                     dict.Add("FTReCost", "FStatusAmount");
                     dict.Add("FCostPrj", "FCostItem");
@@ -318,7 +363,6 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                     dict.Add("FPreCost", "FAmount");
                     dict.Add("FReCost", "FCheckAmount");
                     break;
-                
                 case "kdcdde6ac18cb4d419a6924b49a593460"://招待费用报销
                     dict.Add("FBraOffice", "F_ora_OrgId");
                     dict.Add("FTPreCost", "FTotalAmount");
