@@ -225,7 +225,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
         {
             if(formId == "k0c6b452fa8154c4f8e8e5f55f96bcfac") // 个人资金
             {
-                string sql = $"select FSId, FSTableName from ora_t_PublicMoneyEntry_LK where FEntryId={entryId}";
+                string sql = $"select FSId, FSTableName from ora_t_PersonMoneyEntry_LK where FEntryId={entryId}";
                 var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
                 if (item == null) return "";
                 sql = "";
