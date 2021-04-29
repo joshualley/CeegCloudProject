@@ -236,22 +236,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     dict.Add("FRankID", "F_ora_Level");
                     dict.Add("FMobile", "FContract");
                     break;
-                case "ora_PublicMoney": //对公资金申请-新
-                    dict.Add("FEmpID", "FApplyID");
-                    dict.Add("FOrgId", "FOrgId");
-                    dict.Add("FDeptID", "FDeptID");
-                    dict.Add("FPostID", "F_ora_Post");
-                    dict.Add("FRankID", "F_ora_Level");
-                    dict.Add("FMobile", "F_ora_Mobile");
-                    break;
-                case "ora_PersonMoney": //个人资金申请-新
-                    dict.Add("FEmpID", "FApply");
-                    dict.Add("FOrgId", "FOrgId");
-                    dict.Add("FDeptID", "FDeptID");
-                    dict.Add("FPostID", "FPost");
-                    dict.Add("FRankID", "F_ora_Level");
-                    dict.Add("FMobile", "FContract");
-                    break;
                 case "ke6d80dfd260e4ef88d75f69f4c7ef0a1": //个人费用立项
                     dict.Add("FEmpID", "FApplyID");
                     dict.Add("FOrgId", "FOrgId");
@@ -494,15 +478,10 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             switch (e.Field.Key.ToString().ToUpperInvariant())
             {
                 case "FAPPLYID":
-                    SetApplyValueUpdate();
-                    break;
                 case "FAPPLY":
-                    SetApplyValueUpdate();
-                    break;
                 case "F_ORA_APPLICANT": 
                     SetApplyValueUpdate();
                     break;
-
             }
         }
 
@@ -558,7 +537,6 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             
             // 调用下推服务，生成下游单据数据包
             ConvertOperationResult operationResult = null;
-            //var custParams = new Dictionary<string, string>();
             PushArgs pushArgs = new PushArgs(rule, selectedRows)
             {
                 TargetBillTypeId = "",
@@ -572,10 +550,12 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             catch (KDExceptionValidate ex)
             {
                 this.View.ShowErrMessage(ex.Message, ex.ValidateString);
+                return;
             }
             catch(Exception ex)
             {
                 this.View.ShowErrMessage(ex.Message);
+                return;
             }
 
             // 获取生成的目标单据数据包

@@ -126,6 +126,7 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         if (FDSrcType == "资金") // 资金要确认仅注册审核、反审核操作
                         {
                             string srcBillNo = obj["FSourceBillNo"].ToString();
+                            
                             switch(FDSrcAction)
                             {
                                 case "提交":
