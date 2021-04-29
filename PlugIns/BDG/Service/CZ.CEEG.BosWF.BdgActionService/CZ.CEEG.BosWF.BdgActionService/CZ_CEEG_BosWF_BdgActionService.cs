@@ -235,19 +235,19 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         sql = string.Format(
 @"update ora_t_TravelApplyEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
 update ora_t_TravelApplyEntry set FSourceStatus=case when FAppliedMoney<FActualCost then 'A' else 'B' end where FEntryId={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                     case "ora_t_Cust100050": // 费用立项
                         sql = string.Format(
 @"update ora_t_Cust100050 set FAppliedMoney=FAppliedMoney+{0} where FID={1};
 update ora_t_Cust100050 set FCommitStatus=case when FAppliedMoney<FCommitAmount then 'A' else 'B' end where FID={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                     case "ora_t_ServeFee": // 招待费用申请
                         sql = string.Format(
 @"update ora_t_ServeFee set FAppliedMoney=FAppliedMoney+{0} where FID={1};
 update ora_t_ServeFee set FSourceStatus=case when FAppliedMoney<FACTUALCOST then 'A' else 'B' end where FID={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                 }
                 return sql;
@@ -264,19 +264,19 @@ update ora_t_ServeFee set FSourceStatus=case when FAppliedMoney<FACTUALCOST then
                         sql = string.Format(
 @"update ora_t_PublicSubmitEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
 update ora_t_PublicSubmitEntry set FBillStatus=case when FAppliedMoney<FRealAmount then 'A' else 'B' end where FEntryId={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                     case "ora_t_ContractReviewHead": // 非生产采购合同评审
                         sql = string.Format(
 @"update ora_t_ContractReviewHead set FAppliedMoney=FAppliedMoney+{0} where FID={1};
 update ora_t_ContractReviewHead set FCloseStatus=case when FAppliedMoney<FRealAmt then 'A' else 'B' end where FID={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                     case "ora_t_PCReviewEntry": // 生产采购合同评审
                         sql = string.Format(
 @"update ora_t_PCReviewEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
 update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxAmountItem then 'A' else 'B' end where FEntryId={1};
-", amt, entryId);
+", amt, item["FSId"]);
                         break;
                 }
                 

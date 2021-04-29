@@ -62,6 +62,12 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
             base.DataChanged(e);
             if (IsUsingBdgSys())
             {
+                string formId = this.View.GetFormId();
+                if (formId == "k0c6b452fa8154c4f8e8e5f55f96bcfac" || formId == "k191b3057af6c4252bcea813ff644cd3a")
+                {
+                    string srcBillno = this.Model.GetValue("FSourceBillNo", e.Row)?.ToString();
+                    if (!srcBillno.IsNullOrEmptyOrWhiteSpace()) return;
+                }
                 var FieldName = Transform();
                 if (e.Field.Key == FieldName["FCostPrj"])
                 {
@@ -98,6 +104,7 @@ namespace CZ.CEEG.BdgBos.BdgCtrl
                 string opKey = e.Operation.FormOperation.Operation.ToUpperInvariant();
                 switch (opKey)
                 {
+                    case "SAVE":
                     case "SUBMIT":
                         if (Check())
                         {
