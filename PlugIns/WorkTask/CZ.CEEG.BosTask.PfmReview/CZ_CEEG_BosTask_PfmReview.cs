@@ -63,9 +63,13 @@ namespace CZ.CEEG.BosTask.PfmReview
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
-            if (e.Field.Key.ToString() == "FOrgId" || e.Field.Key.ToString() == "FDeptId" || e.Field.Key.ToString() == "FPeriod")
+            switch(e.Field.Key)
             {
-                Act_GetPerformanceInfo();
+                case "FOrgId":
+                case "FDeptId":
+                case "FPeriod":
+                    Act_GetPerformanceInfo();
+                    break;
             }
         }
 
@@ -75,7 +79,6 @@ namespace CZ.CEEG.BosTask.PfmReview
             switch (e.BarItemKey.ToString())
             {
                 case "tbViewPr":
-                    //this.View.GetControl<EntryGrid>("FEntity").GetSelectedRows();
                     OpenPsnReportForm();
                     break;
             }
@@ -95,11 +98,6 @@ namespace CZ.CEEG.BosTask.PfmReview
             switch(key)
             {
                 case "SAVE":
-                    if (!Validate())
-                    {
-                        e.Cancel = true;
-                    }
-                    break;
                 case "SUBMIT":
                     if(!Validate())
                     {
@@ -116,19 +114,11 @@ namespace CZ.CEEG.BosTask.PfmReview
         private bool Validate()
         {
             var entity = this.View.Model.DataObject["FEntity"] as DynamicObjectCollection;
-            bool isAllow = true;
-            List<string> names = new List<string>();
-            foreach(var row in entity)
-            {
-                double score = double.Parse(row["FESCORE"].ToString());
-                if (score == 0)
-                {
-                    string name = (row["FEEmpId"] as DynamicObject)["Name"].ToString();
-                    names.Add(name);
-                    isAllow = false;
-                }
-            }
-            if (!isAllow)
+            var names = entity.Where(row => Convert.ToDecimal(row["FESCORE"]) == 0)
+                .Select(row => (row["FEEmpId"] as DynamicObject)?["Name"].ToString() ?? "")
+                .ToArray();
+
+            if (names.Length > 0)
             {
                 string msg = "员工:\n" + string.Join(",", names) + "\n的工作计划还未提交！";
                 this.View.ShowWarnningMessage(msg);
@@ -147,7 +137,6 @@ namespace CZ.CEEG.BosTask.PfmReview
                 string fid = rowData["FEPrPk"].ToString();
                 BillShowParameter para = new BillShowParameter();
                 para.FormId = "ora_Task_PersonalReport";
-                //para.OpenStyle.ShowType = ShowType.InContainer;
                 para.OpenStyle.ShowType = ShowType.Modal;
                 para.ParentPageId = this.View.PageId;
                 para.PKey = fid;
