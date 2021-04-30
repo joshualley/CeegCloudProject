@@ -196,9 +196,9 @@ namespace CZ.CEEG.BosWF.BdgActionService
                         }
                         
                         sql += String.Format(@"exec proc_czly_InsertBudgetFlowS
-	                             @FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
-	                             @FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
-	                             @FDCostPrj='{8}',@FPreCost='{9}',@FReCost='{10}',@FNote='{11}';
+@FBraOffice='{0}',@FDSrcType='{1}',@FDSrcAction='{2}',@FDSrcBillID='{3}',
+@FDSrcFID='{4}',@FDSrcBNo='{5}',@FDSrcEntryID='{6}',@FDSrcSEQ='{7}',
+@FDCostPrj='{8}',@FPreCost='{9}',@FReCost='{10}',@FNote='{11}';
                                 ", FBraOffice, FDSrcType, FDSrcAction, FDSrcBillID,
                                     FDSrcFID, FDSrcBNo, FDSrcEntryID, FDSrcSEQ,
                                     FDCostPrj, FPreCost, FReCost, FNote);
@@ -295,7 +295,7 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                 case "ora_FYLX"://费用立项
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["FUseOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcEntryID", obj["FEId"].ToString());
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostType1"].ToString());
                     dict.Add("FPreCost", obj["FExpectCost1"].ToString());
@@ -305,7 +305,7 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                 case "k1ae2591790044d95b9966ad0dff1d987"://招待费用申请
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["F_ora_OrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcEntryID", obj["FEId"].ToString());
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostType"].ToString());
                     dict.Add("FPreCost", obj["F_ora_Amount"].ToString());
@@ -335,7 +335,7 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                 case "kbb14985fbec4445c846533837b2eea65"://非生产采购合同评审
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["FOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcEntryID", obj["FEId"].ToString());
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostItem"].ToString());
                     dict.Add("FPreCost", obj["FPreAmt"].ToString());
@@ -376,7 +376,7 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                 case "kaa55d0cac0c5447bbc6700cfbdf0b11e"://对公费用立项
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["FOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcEntryID", obj["FEId"].ToString());
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostType1"].ToString());
                     dict.Add("FPreCost", obj["FExpectCost1"].ToString());
@@ -396,7 +396,7 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
                 case "ke6d80dfd260e4ef88d75f69f4c7ef0a1"://个人费用立项
                     dict.Add("FDSrcType", "立项");
                     dict.Add("FBraOffice", obj["FOrgId"].ToString());
-                    dict.Add("FDSrcEntryID", "0");
+                    dict.Add("FDSrcEntryID", obj["FEId"].ToString());
                     dict.Add("FDSrcSEQ", "0");
                     dict.Add("FDCostPrj", obj["FCostType1"].ToString());
                     dict.Add("FPreCost", obj["FPREMONEY1"].ToString());
@@ -441,11 +441,11 @@ update ora_t_PCReviewEntry set FCloseStatus=case when FAppliedMoney<FIncludeTaxA
             string sql = "";
             if (t_entry == "")
             {
-                sql = string.Format("select * from {0} where FID='{1}'", t_head, FID);
+                sql = string.Format("select FID FEId, * from {0} where FID='{1}'", t_head, FID);
             }
             else
             {
-                sql = string.Format(@"select * from {0} h 
+                sql = string.Format(@"select h.FID FEId, * from {0} h 
                                     inner join {1} e on h.FID=e.FID
                                     where h.FID='{2}'", t_head, t_entry, FID);
             }

@@ -84,7 +84,7 @@ else
 if @FDSrcType = '立项' and @FDSrcAction='审核'
 begin
 	set @FNote+=@FDSrcType+@FDSrcAction+'，调整占用'
-	set @FDBdgOcc=@FPreCost --占用，此部分应该传入 实际金额-预计金额
+	set @FDBdgOcc=@FReCost --占用，此部分应该传入 实际金额-预计金额
 end
 else
 if @FDSrcType = '立项' and @FDSrcAction='反审核'
