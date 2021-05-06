@@ -31,17 +31,14 @@ namespace CZ.CEEG.BdgBos.SalePlan
         public override void AfterBarItemClick(AfterBarItemClickEventArgs e)
         {
             base.AfterBarItemClick(e);
-            if(this.Context.ClientType.ToString() != "Mobile")
+            switch (e.BarItemKey.ToUpperInvariant())
             {
-                switch (e.BarItemKey.ToUpperInvariant())
-                {
-                    case "TBDOANZBG": //年度销售计划，生成预算
-                        Act_GeneJanPlan();
-                        break;
-                    case "TBDOANZBG1": //年度预算计划，生成预算
-                        Act_GeneJanPlan1();
-                        break;
-                }
+                case "TBDOANZBG": //年度销售计划，生成预算
+                    Act_GeneJanPlan();
+                    break;
+                case "TBDOANZBG1": //年度预算计划，生成预算
+                    Act_GeneJanPlan1();
+                    break;
             }
         }
 
@@ -65,33 +62,32 @@ namespace CZ.CEEG.BdgBos.SalePlan
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
-            if (this.Context.ClientType.ToString() != "Mobile" && CZ_GetCommonField("DocumentStatus") == "Z")
+            if (CZ_GetCommonField("DocumentStatus") == "Z")
             {
-                this.View.Model.SetValue("FYear", DateTime.Today.Year);
-                this.View.Model.SetValue("FBegMon", DateTime.Today.Month);
+                this.Model.SetValue("FYear", DateTime.Today.Year);
+                this.Model.SetValue("FBegMon", DateTime.Today.Month);
+                this.Model.SetValue("FAMonth", DateTime.Today.Month);
             }
+        }
+
+        public override void AfterCreateNewEntryRow(CreateNewEntryEventArgs e)
+        {
+            base.AfterCreateNewEntryRow(e);
+            this.Model.SetValue("FAMonth", DateTime.Today.Month);
         }
 
         public override void BeforeDoOperation(BeforeDoOperationEventArgs e)
         {
             base.BeforeDoOperation(e);
-            if (this.Context.ClientType.ToString() != "Mobile")
+            switch (e.Operation.FormOperation.Operation.ToUpperInvariant())
             {
-                switch (e.Operation.FormOperation.Operation.ToUpperInvariant())
-                {
-                    case "SAVE":
-                        if (Act_Check())
-                        {
-                            e.Cancel = true;
-                        }
-                        break;
-                    case "SUBMIT":
-                        if (Act_Check())
-                        {
-                            e.Cancel = true;
-                        }
-                        break;
-                }
+                case "SAVE":
+                case "SUBMIT":
+                    if (Act_Check())
+                    {
+                        e.Cancel = true;
+                    }
+                    break;
             }
         }
         #endregion
@@ -102,29 +98,23 @@ namespace CZ.CEEG.BdgBos.SalePlan
         /// </summary>
         private void Act_SumMonthBudgetPlanEntry()
         {
-            var AnzEntry = this.View.Model.DataObject["FEntityAnz"] as DynamicObjectCollection;
-            int _FBegMon = int.Parse(this.View.Model.GetValue("FBegMon").ToString());
-            int _FEndMon = int.Parse(this.View.Model.GetValue("FEndMon").ToString());
-            float budget = 0;
+            var AnzEntry = this.Model.DataObject["FEntityAnz"] as DynamicObjectCollection;
+            int begMon = int.Parse(this.Model.GetValue("FBegMon").ToString());
+            int endMon = int.Parse(this.Model.GetValue("FEndMon").ToString());
+            decimal budget = 0;
             int entryCount = 0;
-            this.View.Model.DeleteEntryData("FEntity");
-            for (int i = _FBegMon; i <= _FEndMon; i++)
+            this.Model.DeleteEntryData("FEntity");
+            for (int i = begMon; i <= endMon; i++)
             {
-                budget = 0;
-                foreach(var row in AnzEntry)
-                {
-                    if (int.Parse(row["FAMonth"].ToString()) == i)
-                    {
-                        budget += float.Parse(row["FAPrjBudget"].ToString());
-                    }
-                }
+                budget = AnzEntry.Where(row => Convert.ToInt32(row["FAMonth"]) == i)
+                    .Sum(item => Convert.ToDecimal(item["FAPrjBudget"]));
                 //为明细表体创建一行
-                entryCount = this.View.Model.GetEntryRowCount("FEntity");
-                this.View.Model.CreateNewEntryRow("FEntity");
-                this.View.Model.SetValue("FMonth", i, entryCount - 1);
-                this.View.Model.SetValue("FBudgetMon", budget, entryCount - 1);
+                entryCount = this.Model.GetEntryRowCount("FEntity");
+                this.Model.CreateNewEntryRow("FEntity");
+                this.Model.SetValue("FMonth", i, entryCount - 1);
+                this.Model.SetValue("FBudgetMon", budget, entryCount - 1);
             }
-            this.View.Model.DeleteEntryRow("FEntity", _FEndMon - _FBegMon + 1);
+            this.Model.DeleteEntryRow("FEntity", endMon - begMon + 1);
             this.View.UpdateView("FEntity");
             this.View.ShowMessage("预算汇总完成！");
         }
@@ -190,7 +180,6 @@ namespace CZ.CEEG.BdgBos.SalePlan
         /// </summary>
         private void Act_GeneJanPlan()
         {
-
             //验证年销售计划（本单）及其对应的费用系数表是否已经审核
             string _FDocumentStatus = CZ_GetCommonField("DocumentStatus");
             string _FYear = CZ_GetCommonField("FYear");

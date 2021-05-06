@@ -67,17 +67,17 @@ DBCC CHECKIDENT (Z_ora_BDG_BudgetMD,RESEED,@FID_BudgetMD)
 --单据体
 select @FID_BudgetMD as FID, 0 as FEntryID, bmde.FSEQ as FSEQ,
 	@FYear as FEYEAR, @FMonth as FEMONTH, @FBraOffice as FEBRAOFFICE, bmde.FCOSTPRJ as FCOSTPRJ,
-	spa.FAPrjBudget as FEMonBdg,  --本月计划预算
+	isnull(spa.FAPrjBudget,0) as FEMonBdg,  --本月计划预算
 	bmde.FEOccMon as FEBegOcc, --上月结转占用
 	bmde.FEUseBal as FEBegBdg, --上月结转余额
 	bmde.FEOccMon as FEOccMon, --已占用预算
-	bmde.FEOccBal+spa.FAPrjBudget-bmde.FEOccMon as FEOccBal, --预算占用余额
-	bmde.FEUseBal+spa.FAPrjBudget as FEUseBal  --预算实际余额
+	bmde.FEOccBal+isnull(spa.FAPrjBudget,0)-bmde.FEOccMon as FEOccBal, --预算占用余额
+	bmde.FEUseBal+isnull(spa.FAPrjBudget,0) as FEUseBal  --预算实际余额
 into #BudgetMDEntry_temp --临时存放预算明细表
 from ora_BDG_BudgetMDEntry bmde
-inner join ora_BDG_SalePlanAnz spa on bmde.FCOSTPRJ=spa.FACOSTPRJ
-inner join ora_BDG_SalePlan sp on sp.FID=spa.FID
-where bmde.FID=@FIDB and spa.FAMONTH=@FMonth and sp.FYEAR=@FYear and sp.FDocumentStatus = 'C'
+left join ora_BDG_SalePlanAnz spa on bmde.FCOSTPRJ=spa.FACOSTPRJ and spa.FAMONTH=@FMonth 
+left join ora_BDG_SalePlan sp on sp.FID=spa.FID and sp.FYEAR=@FYear and sp.FDocumentStatus = 'C'
+where bmde.FID=@FIDB
 
 
 declare @FEntryID int --表体FEntryID
