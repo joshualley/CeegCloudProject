@@ -261,6 +261,12 @@ update ora_t_ServeFee set FSourceStatus=case when FAppliedMoney<FACTUALCOST then
                 sql = "";
                 switch(item["FSTableName"].ToString())
                 {
+                    case "ora_t_Cust100050": // 费用立项
+                        sql = string.Format(
+@"update ora_t_Cust100050 set FAppliedMoney=FAppliedMoney+{0} where FID={1};
+update ora_t_Cust100050 set FCommitStatus=case when FAppliedMoney<FCommitAmount then 'A' else 'B' end where FID={1};
+", amt, item["FSId"]);
+                        break;
                     case "ora_t_PublicSubmitEntry": // 对公费用报销
                         sql = string.Format(
 @"update ora_t_PublicSubmitEntry set FAppliedMoney=FAppliedMoney+{0} where FEntryId={1};
