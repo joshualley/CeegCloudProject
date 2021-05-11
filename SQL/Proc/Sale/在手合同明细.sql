@@ -3,7 +3,7 @@
 Created: 2020-11-03
 Author: 刘跃
 */
-CREATE PROC [dbo].[proc_czly_HoldContractDetail](
+ALTER PROC [dbo].[proc_czly_HoldContractDetail](
     @QSDt DATETIME='',
     @QEDt DATETIME='',
     @QOrderNo VARCHAR(100)='',
@@ -90,7 +90,7 @@ SELECT o.FID, o.FBILLNO FOrderNo,  o.F_ora_poorderno FPoorderNo,
     oe.FExpPeriod, ofi.FSettleCurrId, cyl.FNAME FCurrencyName, 
     oe.FQty, oer.FStockOutQty FDelvQty, oer.FStockOutQty*oef.FTaxPrice FDelvAmt, 
     oe.FQty-oer.FStockOutQty FNotDelvQty, (oe.FQty-oer.FStockOutQty)*oef.FTaxPrice FNotDelvAmt,
-    oef.FTaxPrice, ofi.FBILLALLAMOUNT FOrderAmt, oe.F_CZ_FBRangeAmtGP FWithholdAmt,
+    oef.FTaxPrice, oef.FAllAmount FOrderRowAmt, ofi.FBILLALLAMOUNT FOrderAmt, oe.F_CZ_FBRangeAmtGP FWithholdAmt,
     -- 到款时间，预付款，收款，[收款比例，特殊付款，合同情况]
     rcv.FRcvDate, rcv.FPreRcvAmt, rcv.FRcvAmt, 
     CASE WHEN ofi.FBILLALLAMOUNT=0 THEN 1 ELSE rcv.FRcvAmt/ofi.FBILLALLAMOUNT*100 END FRcvRate, 
@@ -98,7 +98,7 @@ SELECT o.FID, o.FBILLNO FOrderNo,  o.F_ora_poorderno FPoorderNo,
 -- 订单
 FROM T_SAL_ORDER o
 INNER JOIN T_SAL_ORDERFIN ofi ON ofi.FID=o.FID
-INNER JOIN T_SAL_ORDERENTRY oe ON oe.FID=o.FID
+INNER JOIN T_SAL_ORDERENTRY oe ON oe.FID=o.FID AND oe.F_ORA_JJYY=''
 INNER JOIN T_SAL_ORDERENTRYDELIPLAN oep ON oep.FENTRYID=oe.FENTRYID
 INNER JOIN T_SAL_ORDERENTRY_R oer ON oer.FEntryID=oe.FENTRYID
 INNER JOIN T_SAL_ORDERENTRY_F oef ON oef.FEntryID=oe.FENTRYID

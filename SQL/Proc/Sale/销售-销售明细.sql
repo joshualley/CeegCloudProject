@@ -3,7 +3,7 @@
 Created: 2020-11-03
 Author: 刘跃
 */
-CREATE PROC [dbo].[proc_czly_SaleDetail](
+ALTER PROC [dbo].[proc_czly_SaleDetail](
     @QSDt DATETIME='',
     @QEDt DATETIME='',
     @QOrderNo VARCHAR(100)='',
@@ -84,7 +84,7 @@ INNER JOIN T_SAL_OUTSTOCKENTRY ose ON osr.FEntryId=ose.FEntryId
 INNER JOIN T_SAL_OUTSTOCKENTRY_F osef ON ose.FEntryId=osef.FEntryId
 -- 订单
 INNER JOIN T_SAL_ORDERENTRY_F oef ON oef.FEntryID=osr.FSOENTRYID
-INNER JOIN T_SAL_ORDERENTRY oe ON oe.FENTRYID=oef.FENTRYID
+INNER JOIN T_SAL_ORDERENTRY oe ON oe.FENTRYID=oef.FENTRYID AND oe.F_ORA_JJYY=''
 INNER JOIN T_SAL_ORDER o ON o.FID=oe.FID
 INNER JOIN #order_type ot ON o.F_CZ_BillType=ot.FVALUE
 -- 销售组织

@@ -1,7 +1,7 @@
 /*
 销售员签订产品价格分析
 */
-CREATE PROC [dbo].[proc_czly_SellerProdSign](
+ALTER PROC [dbo].[proc_czly_SellerProdSign](
     @QDate DATETIME='', 
     @QSaleNo VARCHAR(100)=''
 )
@@ -45,7 +45,8 @@ SELECT FSaleNo,
     SUM(F100_D) F100_D, SUM(F100_M) F100_M, SUM(F100_Y) F100_Y,
     SUM(F95U_D) F95U_D, SUM(F95U_M) F95U_M, SUM(F95U_Y) F95U_Y,
     SUM(F90U_D) F90U_D, SUM(F90U_M) F90U_M, SUM(F90U_Y) F90U_Y,
-    SUM(F90D_D) F90D_D, SUM(F90D_M) F90D_M, SUM(F90D_Y) F90D_Y
+    SUM(F90D_D) F90D_D, SUM(F90D_M) F90D_M, SUM(F90D_Y) F90D_Y,
+    SUM(FTotal) FTotal
 INTO #result
 FROM (
     ---------------------------------- 基价110%以上 -------------------------------------
@@ -56,7 +57,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价110%以上'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -67,7 +68,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价110%以上'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -78,7 +79,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价110%以上'
     AND YEAR(FDate)=@year
     UNION ALL
@@ -90,7 +91,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价100%-110%' 
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -101,7 +102,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价100%-110%' 
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -112,7 +113,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%-110%' 
     AND YEAR(FDate)=@year
     UNION ALL
@@ -124,7 +125,7 @@ FROM (
         FOrderRowAmt F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价100%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -135,7 +136,7 @@ FROM (
         0 F100_D, FOrderRowAmt F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价100%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -146,7 +147,7 @@ FROM (
         0 F100_D, 0 F100_M, FOrderRowAmt F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%'
     AND YEAR(FDate)=@year
     UNION ALL
@@ -158,7 +159,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         FOrderRowAmt F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价95%-100%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -169,7 +170,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, FOrderRowAmt F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价95%-100%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -180,7 +181,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, FOrderRowAmt F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价95%-100%'
     AND YEAR(FDate)=@year
     UNION ALL
@@ -192,7 +193,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         FOrderRowAmt F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价90%-95%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -203,7 +204,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, FOrderRowAmt F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价90%-95%'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -214,7 +215,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, FOrderRowAmt F90U_Y,
-        0 F90D_D, 0 F90D_M, 0 F90D_Y
+        0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%-95%'
     AND YEAR(FDate)=@year
     UNION ALL
@@ -226,7 +227,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        FOrderRowAmt F90D_D, 0 F90D_M, 0 F90D_Y
+        FOrderRowAmt F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价90%以下'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month AND DAY(FDate)=@day
     UNION ALL
@@ -237,7 +238,7 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, FOrderRowAmt F90D_M, 0 F90D_Y
+        0 F90D_D, FOrderRowAmt F90D_M, 0 F90D_Y, 0 FTotal
     FROM #t_order WHERE FPriceRange='基价90%以下'
     AND YEAR(FDate)=@year AND MONTH(FDate)=@month
     UNION ALL
@@ -248,12 +249,11 @@ FROM (
         0 F100_D, 0 F100_M, 0 F100_Y,
         0 F95U_D, 0 F95U_M, 0 F95U_Y,
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
-        0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y
+        0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%以下'
     AND YEAR(FDate)=@year
 
 ) t GROUP BY FSaleNo
-
 
 
 SELECT el.FName FSaleName, r.* 
@@ -270,5 +270,5 @@ END
 
 /*
 EXEC proc_czly_SellerProdSign @QDate='#FDate#', @QSaleNo='#FSaleNo#'
-
+EXEC proc_czly_SellerProdSign @QDate='2020-12-31'
 */

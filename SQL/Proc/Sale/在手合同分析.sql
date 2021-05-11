@@ -67,13 +67,16 @@ CREATE TABLE #t_result(
 )
 
 DECLARE @i INT=0, 
-        @count INT=(SELECT COUNT(*) FROM #product_type),
+        @count INT=(SELECT COUNT(*) FROM #product_type)+1,
         @FProdType VARCHAR(100),
         @FProdTypeName VARCHAR(100),
         @FVoltageLevel VARCHAR(100),
         @FVoltageLevelName VARCHAR(100)
 
-WHILE @i <= @count
+insert into #product_type values(@count, '', '其他')
+insert into #capacity values('', '其他')
+
+WHILE @i < @count
 BEGIN 
     SET @i += 1
     SELECT @FProdType=FENTRYID, @FProdTypeName=FDATAVALUE FROM #product_type WHERE FSeq=@i

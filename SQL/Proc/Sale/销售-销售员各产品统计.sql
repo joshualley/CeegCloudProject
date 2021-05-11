@@ -1,7 +1,7 @@
 /*
 销售员各产品统计
 */
-CREATE PROC [dbo].[proc_czly_SellerProd](
+ALTER PROC [dbo].[proc_czly_SellerProd](
     @QDate DATETIME='', 
     @QSaleNo VARCHAR(55)='', 
     @QProdType VARCHAR(55)=''
@@ -30,6 +30,7 @@ WHERE al.FNAME='产品大类'
 --AND ael.FDATAVALUE LIKE '%'+ @QProdType + '%'
 
 
+
 -- 全部订单
 SELECT o.FDate, sm.FNumber FSaleNo, mpt.FENTRYID FProdType, oef.FAllAmount FOrderRowAmt
 INTO #t_order
@@ -55,15 +56,17 @@ INNER JOIN V_BD_SALESMAN sm ON sm.FID=o.FSalerID
 INNER JOIN T_BD_Material m ON oe.FMATERIALID=m.FMATERIALID
 LEFT JOIN #product_type mpt ON m.F_ora_Assistant=mpt.FENTRYID
 WHERE sm.FNUMBER LIKE '%'+ @QSaleNo +'%'
+AND oe.F_ORA_JJYY=''
 
 
 -- 定义循环时需要的变量
 DECLARE @i INT
        ,@j INT
-       ,@len INT = (SELECT COUNT(*) FROM #product_type)
+       ,@len INT = (SELECT COUNT(*) FROM #product_type)+1
        ,@prod_type_id VARCHAR(55)
        ,@prod_type_name VARCHAR(55)
 
+insert into #product_type values(@len, '', '其他')
 
 DECLARE @sql VARCHAR(MAX)=''
        ,@sum_fields VARCHAR(MAX)='FSaleNo,'
@@ -335,5 +338,7 @@ END
 /*
 EXEC proc_czly_SellerProd @QDate='#FDate#', 
     @QSaleNo='#FSellerNo#', @QProdType=''
+
+EXEC proc_czly_SellerProd @QDate='2020-12-31'
 
 */

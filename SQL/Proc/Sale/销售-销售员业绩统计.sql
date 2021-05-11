@@ -1,7 +1,7 @@
 /*
 销售员业绩统计
 */
-CREATE PROC [dbo].[proc_czly_SellerPerform](
+ALTER PROC [dbo].[proc_czly_SellerPerform](
     @QDate DATETIME='',
     @QSaleNo VARCHAR(55)=''
 )
@@ -22,17 +22,22 @@ DECLARE @year INT=YEAR(@QDate)
 
 
 -- 全部订单
-SELECT o.FDate, sm.FNumber FSaleNo, ofi.FBILLALLAMOUNT FOrderAmt, 
-    -- oef.FALLAMOUNT FOrderAmt,
+SELECT o.FDate, sm.FNumber FSaleNo, 
+    --ofi.FBILLALLAMOUNT FOrderAmt, 
+    oe.FOrderAmt,
     ofi.FRecConditionId
 INTO #t_order
 FROM T_SAL_ORDER o
 INNER JOIN T_SAL_ORDERFIN ofi ON o.FID=ofi.FID
--- INNER JOIN T_SAL_ORDERENTRY oe ON o.FID=oe.FID
--- INNER JOIN T_SAL_ORDERENTRY_F oef ON oef.FENTRYID=oe.FENTRYID
+inner join (
+    select oe.FID,SUM(oef.FALLAMOUNT) FOrderAmt 
+    from T_SAL_ORDERENTRY oe
+    INNER JOIN T_SAL_ORDERENTRY_F oef ON oef.FENTRYID=oe.FENTRYID
+    where oe.F_ORA_JJYY=''
+    group by oe.FID
+) oe on oe.FID=o.FID
 INNER JOIN V_BD_SALESMAN sm ON sm.FID=o.FSalerID
 WHERE sm.FNUMBER LIKE '%'+ @QSaleNo +'%'
--- AND oe.F_ORA_JJYY=''
 
 -- 全款订单
 SELECT * 
@@ -50,6 +55,7 @@ INNER JOIN T_SAL_ORDERENTRY oe ON oe.FENTRYID=oef.FENTRYID
 INNER JOIN T_SAL_ORDER o ON o.FID=oe.FID
 INNER JOIN V_BD_SALESMAN sm ON sm.FID=o.FSalerID
 WHERE sm.FNUMBER LIKE '%'+ @QSaleNo +'%'
+and oe.F_ORA_JJYY=''
 
 
 

@@ -3,7 +3,7 @@
 Created: 2020-10-04
 Author: 刘跃
 */
-CREATE PROC [dbo].[proc_czly_DailyOrderSale](
+ALTER PROC [dbo].[proc_czly_DailyOrderSale](
     @QDate DATETIME='',
     @QProdType VARCHAR(100)='',
     @QVoltageLevel VARCHAR(100)=''
@@ -61,7 +61,7 @@ WHERE ISNULL(mpt.FDATAVALUE, '') LIKE '%'+ @QProdType +'%'
 AND ISNULL(mct.FDATAVALUE, '') LIKE '%'+ @QVoltageLevel +'%'
 AND oe.F_ORA_JJYY=''
 
--- select SUM(FOrderRowAmt) from #order_amt where FDate BETWEEN '2020-11-1' AND '2020-11-24'
+-- select SUM(FOrderRowAmt) from #order_amt where FDate BETWEEN '2020-1-1' AND '2020-12-31'
 -- drop table #order_amt
 
 --发货（销售）金额
@@ -77,6 +77,7 @@ LEFT JOIN #product_type mpt ON m.F_ora_Assistant=mpt.FENTRYID
 LEFT JOIN #capacity mct ON m.F_ora_Assistant1=mct.FENTRYID
 WHERE ISNULL(mpt.FDATAVALUE, '') LIKE '%'+ @QProdType +'%'
 AND ISNULL(mct.FDATAVALUE, '') LIKE '%'+ @QVoltageLevel +'%'
+AND oe.F_ORA_JJYY=''
 
 -- 返回结果
 CREATE TABLE #daily_order_data(

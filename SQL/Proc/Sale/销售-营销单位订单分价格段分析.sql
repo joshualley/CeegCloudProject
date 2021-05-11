@@ -37,7 +37,8 @@ AND oe.F_ORA_JJYY=''
 SELECT FOrgId,
     SUM(FUpperAmtD) FUpperAmtD, SUM(FUpperAmtM) FUpperAmtM, SUM(FUpperAmtY) FUpperAmtY,
     SUM(FBaseAmtD) FBaseAmtD, SUM(FBaseAmtM) FBaseAmtM, SUM(FBaseAmtY) FBaseAmtY,
-    SUM(FLowerAmtD) FLowerAmtD, SUM(FLowerAmtM) FLowerAmtM, SUM(FLowerAmtY) FLowerAmtY
+    SUM(FLowerAmtD) FLowerAmtD, SUM(FLowerAmtM) FLowerAmtM, SUM(FLowerAmtY) FLowerAmtY,
+    SUM(FTotal) FTotal
 INTO #t_result
 FROM (
     --------------------------超价-------------------------------
@@ -45,7 +46,7 @@ FROM (
     SELECT FOrgId, 
         FOrderRowAmt FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate) AND DAY(FDate)=DAY(@QDate)
     AND FPriceRange='超价'
     UNION ALL
@@ -53,7 +54,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, FOrderRowAmt FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate)
     AND FPriceRange='超价'
     UNION ALL
@@ -61,7 +62,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, FOrderRowAmt FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, FOrderRowAmt FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
     AND FPriceRange='超价'
     UNION ALL
@@ -70,7 +71,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         FOrderRowAmt FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate) AND DAY(FDate)=DAY(@QDate)
     AND FPriceRange='基价'
     UNION ALL
@@ -78,7 +79,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, FOrderRowAmt FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate)
     AND FPriceRange='基价'
     UNION ALL
@@ -86,7 +87,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, FOrderRowAmt FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, FOrderRowAmt FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
     AND FPriceRange='基价'
     UNION ALL
@@ -95,7 +96,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        FOrderRowAmt FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY
+        FOrderRowAmt FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate) AND DAY(FDate)=DAY(@QDate)
     AND FPriceRange='特价'
     UNION ALL
@@ -103,7 +104,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, FOrderRowAmt FLowerAmtM, 0 FLowerAmtY
+        0 FLowerAmtD, FOrderRowAmt FLowerAmtM, 0 FLowerAmtY, 0 FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate)
     AND FPriceRange='特价'
     UNION ALL
@@ -111,7 +112,7 @@ FROM (
     SELECT FOrgId, 
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
-        0 FLowerAmtD, 0 FLowerAmtM, FOrderRowAmt FLowerAmtY
+        0 FLowerAmtD, 0 FLowerAmtM, FOrderRowAmt FLowerAmtY, FOrderRowAmt FTotal
     FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
     AND FPriceRange='特价'
 ) t GROUP BY FOrgId

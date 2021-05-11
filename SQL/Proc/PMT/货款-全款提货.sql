@@ -8,7 +8,7 @@ Info:
     1.汇总全款提货的销售订单
     2.全款提货包含两类：1)销售订单上收款; 2)发货前，收款金额>=发货金额
 */
-CREATE PROC [dbo].[proc_czly_PmtFullDelv](
+ALTER PROC [dbo].[proc_czly_PmtFullDelv](
     @Type VARCHAR(55),
     @sDt DATETIME,
     @eDt DATETIME,
@@ -77,7 +77,7 @@ BEGIN
         0 FDelvCapacity
     FROM #pmt o
     INNER JOIN T_SAL_ORDERFIN ofi ON o.FID=ofi.FID
-    INNER JOIN T_SAL_ORDERENTRY oe ON o.FID=oe.FID
+    INNER JOIN T_SAL_ORDERENTRY oe ON o.FID=oe.FID AND oe.F_ORA_JJYY=''
     --INNER JOIN T_SAL_ORDERENTRY_F oef ON oe.FENTRYID=oef.FENTRYID --财务信息拆分表
     --INNER JOIN T_SAL_ORDERENTRY_R oer ON oe.FENTRYID=oer.FENTRYID
     INNER JOIN T_SAL_OUTSTOCKENTRY_R osr ON oe.FENTRYID=osr.FSOENTRYID

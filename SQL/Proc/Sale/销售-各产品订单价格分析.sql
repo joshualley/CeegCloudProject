@@ -92,17 +92,24 @@ CREATE TABLE #t_result(
     F90D_D DECIMAL(18, 6),
     F90D_M DECIMAL(18, 6),
     F90D_Y DECIMAL(18, 6),
+    FTotal DECIMAL(18, 6)
 )
 
 
 DECLARE @i INT=0, 
-        @count INT=(SELECT COUNT(*) FROM #product_type),
+        @count INT=(SELECT COUNT(*) FROM #product_type)+1,
         @FOrgId INT,
         @FOrgName VARCHAR(100),
         @FProdType VARCHAR(100),
         @FProdTypeName VARCHAR(100),
         @FVoltageLevel VARCHAR(100),
         @FVoltageLevelName VARCHAR(100)
+
+
+-- 计入空的产品大类
+insert into #product_type values(@count, '', '其他')
+-- 记录空的电压等级
+insert into #capacity values('', '其他')
 
 WHILE EXISTS(SELECT * FROM #org)
 BEGIN
@@ -111,7 +118,7 @@ BEGIN
     DELETE FROM #org WHERE FOrgId=@FOrgId
     -- 遍历产品大类
     SET @i=0
-    WHILE @i <= @count
+    WHILE @i < @count
     BEGIN 
         SET @i += 1
         SELECT @FProdType=FENTRYID, @FProdTypeName=FDATAVALUE FROM #product_type WHERE FSeq=@i
@@ -120,7 +127,6 @@ BEGIN
         FROM T_BD_Material WHERE F_ora_Assistant=@FProdType
         AND F_ora_Assistant1 IN (SELECT FENTRYID FROM #capacity)
         ORDER BY F_ora_Assistant1
-        
         -- 遍历电压等级
         WHILE EXISTS(SELECT * FROM #lv)
         BEGIN
@@ -135,7 +141,7 @@ BEGIN
                     SUM(F100_D), SUM(F100_M), SUM(F100_Y),
                     SUM(F95_100_D), SUM(F95_100_M), SUM(F95_100_Y),
                     SUM(F90_95_D), SUM(F90_95_M), SUM(F90_95_Y),
-                    SUM(F90D_D), SUM(F90D_M), SUM(F90D_Y)
+                    SUM(F90D_D), SUM(F90D_M), SUM(F90D_Y), SUM(FTotal)
             FROM (
                 -- 当日
                 SELECT @FVoltageLevel FVoltageLevel, 
@@ -144,7 +150,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价110%以上'
@@ -157,7 +163,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价110%以上'
@@ -170,7 +176,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价110%以上'
@@ -184,7 +190,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%-110%'
@@ -197,7 +203,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%-110%'
@@ -210,7 +216,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%-110%'
@@ -224,7 +230,7 @@ BEGIN
                     FOrderRowAmt F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%'
@@ -237,7 +243,7 @@ BEGIN
                     0 F100_D, FOrderRowAmt F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%'
@@ -250,7 +256,7 @@ BEGIN
                     0 F100_D, 0 F100_M, FOrderRowAmt F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%'
@@ -264,7 +270,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     FOrderRowAmt F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价95%-100%'
@@ -277,7 +283,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, FOrderRowAmt F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价95%-100%'
@@ -290,7 +296,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, FOrderRowAmt F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价95%-100%'
@@ -304,7 +310,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     FOrderRowAmt F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%-95%'
@@ -317,7 +323,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, FOrderRowAmt F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%-95%'
@@ -330,7 +336,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, FOrderRowAmt F90_95_Y,
-                    0 F90D_D, 0 F90D_M, 0 F90D_Y
+                    0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%-95%'
@@ -344,7 +350,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    FOrderRowAmt F90D_D, 0 F90D_M, 0 F90D_Y
+                    FOrderRowAmt F90D_D, 0 F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%以下'
@@ -357,7 +363,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, FOrderRowAmt F90D_M, 0 F90D_Y
+                    0 F90D_D, FOrderRowAmt F90D_M, 0 F90D_Y, 0 FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%以下'
@@ -370,7 +376,7 @@ BEGIN
                     0 F100_D, 0 F100_M, 0 F100_Y,
                     0 F95_100_D, 0 F95_100_M, 0 F95_100_Y,
                     0 F90_95_D, 0 F90_95_M, 0 F90_95_Y,
-                    0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y
+                    0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y, FOrderRowAmt FTotal
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%以下'
