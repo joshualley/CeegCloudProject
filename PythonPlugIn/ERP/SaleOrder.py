@@ -145,7 +145,7 @@ def AlterCustAndSalerByOrg():
 		srcBill = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
 		if srcBill.Count > 0:
 			FSalerId = srcBill[0]["FSalerID"]
-			FCustId = srcBill[0]["FCustID"]
+			FCustId = 102450
 	else:
 		return
 
