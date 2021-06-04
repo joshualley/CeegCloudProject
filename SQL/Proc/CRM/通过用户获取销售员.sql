@@ -1,5 +1,5 @@
 --ͨ通过用户获取销售员
-CREATE PROC [dbo].[proc_czly_GetSalesmanIdByUserId](
+ALTER PROC [dbo].[proc_czly_GetSalesmanIdByUserId](
 	@FUserId int,
 	@FOrgId int=-1
 )
@@ -29,7 +29,7 @@ else
 END
 
 -- EXEC proc_czly_GetSalesmanIdByUserId @FUserId=100559
--- EXEC proc_czly_GetSalesmanIdByUserId @FUserId=100560
+-- EXEC proc_czly_GetSalesmanIdByUserId @FUserId=1086117
 
 /*
 select distinct u.FUserId, u.FName --,s.FID FSalesmanId, s.FFORBIDSTATUS
