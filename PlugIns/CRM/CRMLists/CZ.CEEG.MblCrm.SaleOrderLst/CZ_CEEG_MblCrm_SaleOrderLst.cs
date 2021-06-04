@@ -27,6 +27,7 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
             //e.CustomFilter["FSelectAllOrg"] = true;
             e.AppendQueryFilter(filter);
             e.AppendQueryOrderby(" FCreateDate DESC");
+            // this.View.ShowMessage(filter);
             
         }
 
@@ -45,17 +46,13 @@ namespace CZ.CEEG.MblCrm.SaleOrderLst
         private string Act_SetCustFilter()
         {
             string userId = this.Context.UserId.ToString();
-            string sql = string.Format("EXEC proc_czly_GetSalesmanIdByUserId @FUserId='{0}'", userId);
+            string sql = string.Format(@"select u.FUserId, u.FName, c.FNumber
+from (select FUserId,FName,FLinkObject from T_SEC_USER where FUSERID={0}) u
+inner join V_bd_ContactObject c on u.FLINKOBJECT=c.FID", userId);
+            var items = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
+            string filter = items == null ? "" : $" FSALERID.FNumber='{items["FNumber"]}' ";
 
-            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            var ids = new List<long>();
-            foreach(var obj in objs)
-            {
-                ids.Add(Convert.ToInt64(obj["FSalesmanId"]));
-            }
-            string ids_str = ids.Count > 0 ? string.Join(",", ids) : "-1";
-
-            return " FSALERID in (" + ids_str + ")";
+            return filter;
         }
     }
 }
