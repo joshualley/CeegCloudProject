@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_OrgOrderSaleSumm](
     @QDate DATETIME='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QOrgNo VARCHAR(55)=''
 )
 AS
@@ -74,7 +76,9 @@ FROM (
         0 FOrderAmtD, 0 FOrderAmtM, FOrderAmt FOrderAmtY, 
         0 FFullPayAmtD, 0 FFullPayAmtM, 0 FFullPayAmtY, 
         0 FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY 
-    FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     -- 全款当日
     SELECT FOrgId, 
@@ -95,7 +99,9 @@ FROM (
         0 FOrderAmtD, 0 FOrderAmtM, 0 FOrderAmtY, 
         0 FFullPayAmtD, 0 FFullPayAmtM, FOrderAmt FFullPayAmtY, 
         0 FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY 
-    FROM #t_fullpay WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_fullpay WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     -- 销售当日
     SELECT FOrgId, 
@@ -104,19 +110,21 @@ FROM (
         FDelvAmt FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY 
     FROM #t_sale WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate) AND DAY(FDate)=DAY(@QDate)
     UNION ALL
-    -- 销售当日
+    -- 销售当月
     SELECT FOrgId, 
         0 FOrderAmtD, 0 FOrderAmtM, 0 FOrderAmtY, 
         0 FFullPayAmtD, 0 FFullPayAmtM, 0 FFullPayAmtY, 
         0 FSaleAmtD, FDelvAmt FSaleAmtM, 0 FSaleAmtY 
     FROM #t_sale WHERE YEAR(FDate)=YEAR(@QDate) AND MONTH(FDate)=MONTH(@QDate)
     UNION ALL
-    -- 销售当日
+    -- 销售当年
     SELECT FOrgId, 
         0 FOrderAmtD, 0 FOrderAmtM, 0 FOrderAmtY, 
         0 FFullPayAmtD, 0 FFullPayAmtM, 0 FFullPayAmtY, 
         0 FSaleAmtD, 0 FSaleAmtM, FDelvAmt FSaleAmtY 
-    FROM #t_sale WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_sale WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
 ) t
 GROUP BY FOrgId
 
@@ -134,5 +142,7 @@ END
 /*
 EXEC proc_czly_OrgOrderSaleSumm @QDate='2020-11-16', @QOrgNo=''
 
-EXEC proc_czly_OrgOrderSaleSumm @QDate='#FDate#', @QOrgNo='#FOrgNo#'
+EXEC proc_czly_OrgOrderSaleSumm @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
+    @QOrgNo='#FOrgNo#'
 */

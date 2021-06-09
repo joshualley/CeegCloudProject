@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_SellerProdSign](
     @QDate DATETIME='', 
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QSaleNo VARCHAR(100)=''
 )
 AS
@@ -81,7 +83,8 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价110%以上'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ---------------------------------- 基价100%-110% -------------------------------------
     -- 基价100%以上 当日
@@ -115,7 +118,8 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%-110%' 
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ---------------------------------- 基价100% -------------------------------------
     -- 基价100% 当日
@@ -149,7 +153,8 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ---------------------------------- 基价95%-100% -------------------------------------
     -- 基价95%-100% 当日
@@ -183,7 +188,8 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价95%-100%'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ---------------------------------- 基价90%-95% -------------------------------------
     -- 基价90%-95% 当日
@@ -217,7 +223,8 @@ FROM (
         0 F90U_D, 0 F90U_M, FOrderRowAmt F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%-95%'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ---------------------------------- 基价90%以下 -------------------------------------
     -- 基价90%以下 当日
@@ -251,8 +258,8 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%以下'
-    AND YEAR(FDate)=@year
-
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
 ) t GROUP BY FSaleNo
 
 
@@ -269,6 +276,8 @@ DROP TABLE #result
 END
 
 /*
-EXEC proc_czly_SellerProdSign @QDate='#FDate#', @QSaleNo='#FSaleNo#'
+EXEC proc_czly_SellerProdSign @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#',
+    @QSaleNo='#FSellerNo#'
 EXEC proc_czly_SellerProdSign @QDate='2020-12-31'
 */

@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_OrgFullPay](
     @QOrgNo VARCHAR(100)='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QDate DATETIME=''
 ) AS
 BEGIN
@@ -57,7 +59,9 @@ FROM (
     -- 全款当年
     SELECT FOrgId, 
         0 FFullPayAmtD, 0 FFullPayAmtM, FOrderAmt FFullPayAmtY
-    FROM #t_fullpay WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_fullpay WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
 ) t GROUP BY FOrgId
 
 SELECT o.FOrgId, o.FNUMBER FOrgNo, ol.FNAME FOrgName,
@@ -71,5 +75,7 @@ DROP TABLE #t_result
 
 END
 /*
-EXEC proc_czly_OrgFullPay @QDate='#FDate#', @QOrgNo='#FOrgNo#'
+EXEC proc_czly_OrgFullPay @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
+    @QOrgNo='#FOrgNo#'
 */

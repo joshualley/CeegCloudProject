@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_OrgOrderPrice](
     @QOrgNo VARCHAR(100)='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QDate DATETIME=''
 ) AS
 BEGIN
@@ -63,7 +65,9 @@ FROM (
         0 FUpperAmtD, 0 FUpperAmtM, FOrderRowAmt FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
         0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, FOrderRowAmt FTotal
-    FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     AND FPriceRange='超价'
     UNION ALL
     --------------------------基价-------------------------------
@@ -88,7 +92,9 @@ FROM (
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, FOrderRowAmt FBaseAmtY,
         0 FLowerAmtD, 0 FLowerAmtM, 0 FLowerAmtY, FOrderRowAmt FTotal
-    FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     AND FPriceRange='基价'
     UNION ALL
     --------------------------特价-------------------------------
@@ -113,7 +119,9 @@ FROM (
         0 FUpperAmtD, 0 FUpperAmtM, 0 FUpperAmtY,
         0 FBaseAmtD, 0 FBaseAmtM, 0 FBaseAmtY,
         0 FLowerAmtD, 0 FLowerAmtM, FOrderRowAmt FLowerAmtY, FOrderRowAmt FTotal
-    FROM #t_order WHERE YEAR(FDate)=YEAR(@QDate)
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     AND FPriceRange='特价'
 ) t GROUP BY FOrgId
 
@@ -129,5 +137,7 @@ DROP TABLE #t_result
 
 END
 /*
-EXEC proc_czly_OrgOrderPrice @QDate='#FDate#', @QOrgNo='#FOrgNo#'
+EXEC proc_czly_OrgOrderPrice @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
+    @QOrgNo='#FOrgNo#'
 */

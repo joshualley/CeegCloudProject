@@ -3,133 +3,6 @@ using System;
 
 namespace CZ.CEEG.SrvErp.CreatePurOrder.Models
 {
-    public class BaseData 
-    {
-        public string FNumber { get; set; }
-    }
-
-    public class BaseDataName
-    {
-        public string FName { get; set; }
-    }
-
-    /// <summary>
-    /// 财务信息
-    /// </summary>
-    public class SaleOrderFinance
-    {
-        public BaseData FSettleCurrId { get; set; }
-        public BaseData FRecConditionId { get; set; }
-        public bool FIsPriceExcludeTax { get; set; }
-        public BaseData FSettleModeId { get; set; }
-        public bool FIsIncludedTax { get; set; }
-        public BaseData FPriceListId { get; set; }
-        public BaseData FDiscountListId { get; set; }
-        public BaseData FExchangeTypeId { get; set; }
-        public decimal FMarginLevel { get; set; }
-        public decimal FMargin { get; set; }
-        public bool FOverOrgTransDirect { get; set; }
-        public string FRecBarcodeLink { get; set; }
-    }
-
-    /// <summary>
-    /// 订单条款
-    /// </summary>
-    public class SaleOrderClause
-    {
-        public BaseData FClauseId { get; set; }
-        public string FClauseDesc { get; set; }
-    }
-
-    public class SaleOrderEntry
-    {
-        public string FReturnType { get; set; }
-        public string FRowType { get; set; }
-        public string F_CZ_CustItemName { get; set; }
-        public BaseData FMapId { get; set; }
-        public BaseData FMaterialId { get; set; }
-        public BaseData FBMtlGroup { get; set; }
-        public int FBSrcSEQ { get; set; }
-        /// <summary>
-        /// ?? 辅助属性ID
-        /// </summary>
-        /// <value></value>
-        public BaseData FAuxPropId { get; set; }
-        public BaseData FParentMatId { get; set; }
-        public BaseData FUnitID { get; set; }
-        public decimal FInventoryQty { get; set; }
-        public decimal FCurrentInventory { get; set; }
-        public decimal FAwaitQty { get; set; }
-        public decimal FAvailableQty { get; set; }
-        public decimal FQty { get; set; }
-        public decimal FOldQty { get; set; }
-        public BaseData FPurPriceUnitId { get; set; }
-        public decimal FPrice { get; set; }
-        public decimal FTaxPrice { get; set; }
-        public bool FIsFree { get; set; }
-        public BaseData FTaxCombination { get; set; }
-        public decimal FEntryTaxRate { get; set; }
-        public decimal F_CZ_BRangeAmtGP { get; set; }
-        public decimal F_CZ_FBRangeAmtGP { get; set; }
-        public string F_CZ_FBrangeAmtReason { get; set; }
-        public string F_ora_CutpaySmtRmk { get; set; }
-        public decimal F_CZ_FBPAmt { get; set; }
-        public decimal F_ora_ProdGroupAmt { get; set; }
-        public decimal FBDownPoints { get; set; }
-        public bool F_CZ_IsSettle { get; set; }
-        public DateTime FProduceDate { get; set; }
-        public int FExpPeriod { get; set; }
-        public string FExpUnit { get; set; }
-        public DateTime FExpiryDate { get; set; }
-        public BaseData FLot { get; set; }
-        public decimal FPriceDiscount { get; set; }
-        public decimal FInStockPrice { get; set; }
-        public decimal FDiscountRate { get; set; }
-        public DateTime FDeliveryDate { get; set; }
-        public BaseData FStockOrgId { get; set; }
-        public BaseData FSettleOrgIds { get; set; }
-        public BaseData FSupplyOrgId { get; set; }
-        public string FOwnerTypeId { get; set; }
-        public BaseData FOwnerId { get; set; }
-        public string F_ora_Jjyy { get; set; }
-        public string FEntryNote { get; set; }
-        public string FReserveType { get; set; }
-        public int FPriority { get; set; }
-        public string FMtoNo { get; set; }
-        public string FPromotionMatchType { get; set; }
-        public int FNetOrderEntryId { get; set; }
-        public decimal FPriceBaseQty { get; set; }
-        public BaseData FStockUnitID { get; set; }
-        public decimal FStockQty { get; set; }
-        public decimal FStockBaseQty { get; set; }
-        public string FServiceContext { get; set; }
-        public BaseData FOutLmtUnitID { get; set; }
-        public string FOUTLMTUNIT { get; set; }
-        public BaseData FSOStockId { get; set; }
-        public bool FISMRP { get; set; }
-    }
-
-    public class SaleOrderPlan
-    {
-        public bool FNeedRecAdvance { get; set; }
-        public BaseData FReceiveType { get; set; }
-        public decimal FRecAdvanceRate { get; set; }
-        public decimal FRecAdvanceAmount { get; set; }
-        public DateTime FMustDate { get; set; }
-        public string FRelBillNo { get; set; }
-        public decimal FRecAmount { get; set; }
-        public string FControlSend { get; set; }
-        public bool FIsOutStockByRecamount { get; set; }
-        public string FReMark { get; set; }
-        public BaseData FPlanMaterialId { get; set; }
-        public int FMaterialSeq { get; set; }
-        public string FMaterialRowID { get; set; }
-        public int FOrderEntryId { get; set; }
-        public bool F_CZ_SpecChk { get; set; }
-        public decimal F_ora_SplitAmount { get; set; }
-        public decimal F_ora_SplitAmountFor { get; set; }
-    }
-
     /// <summary>
     /// 销售订单的数据模型
     /// </summary>
@@ -140,42 +13,122 @@ namespace CZ.CEEG.SrvErp.CreatePurOrder.Models
         public DateTime FDate { get; set; }
         public BaseData FSaleOrgId { get; set; }
         public BaseData FCustId { get; set; }
+        /// <summary>
+        /// 交货方式
+        /// </summary>
         public BaseData FHeadDeliveryWay { get; set; }
+        /// <summary>
+        /// 交货地点
+        /// </summary>
         public BaseData FHEADLOCID { get; set; }
+        /// <summary>
+        /// 对应组织
+        /// </summary>
         public BaseData FCorrespondOrgId { get; set; }
+        /// <summary>
+        /// 办事处
+        /// </summary>
         public BaseData FSaleDeptId { get; set; }
+        /// <summary>
+        /// 销售组
+        /// </summary>
         public BaseData FSaleGroupId { get; set; }
+        /// <summary>
+        /// 销售员
+        /// </summary>
         public BaseData FSalerId { get; set; }
+        /// <summary>
+        /// 收货方地址
+        /// </summary>
         public string FReceiveAddress { get; set; }
+        /// <summary>
+        /// 收货方联系人
+        /// </summary>
         public BaseDataName FReceiveContact { get; set; }
+        /// <summary>
+        /// 付款方
+        /// </summary>
         public BaseData FChargeId { get; set; }
+        /// <summary>
+        /// 总基价
+        /// </summary>
         public decimal FAmount2 { get; set; }
-        public string FNetOrderBillNo { get; set; }
-        public int FNetOrderBillId { get; set; }
-        public int FOppID { get; set; }
-        public BaseData FSalePhaseID { get; set; }
+        /// <summary>
+        /// 是否期初单据
+        /// </summary>
         public bool FISINIT { get; set; }
+        /// <summary>
+        /// 备注
+        /// </summary>
         public string FNote { get; set; }
-        public bool FIsMobile { get; set; }
+        /// <summary>
+        /// 是否上传原件
+        /// </summary>
         public bool F_ora_SCYJ { get; set; }
+        /// <summary>
+        /// 大项目
+        /// </summary>
         public bool F_CZ_IsBig { get; set; }
+        /// <summary>
+        /// 订单拒绝
+        /// </summary>
         public bool F_CZ_IsR { get; set; }
+        /// <summary>
+        /// 保函
+        /// </summary>
         public bool F_ora_BH { get; set; }
+        /// <summary>
+        /// 质保金
+        /// </summary>
         public bool F_ora_ZBJ { get; set; }
+        /// <summary>
+        /// 订单类型
+        /// </summary>
         public string F_CZ_BillType { get; set; }
+        /// <summary>
+        /// 订单来源
+        /// </summary>
         public string FSOFrom { get; set; }
+        /// <summary>
+        /// 项目名称
+        /// </summary>
         public string F_CZ_PrjName { get; set; }
+        /// <summary>
+        /// 商机编号
+        /// </summary>
         public string FNicheBillNo { get; set; }
+        /// <summary>
+        /// 期初收款计划
+        /// </summary>
         public string F_CZ_Prepay { get; set; }
+        /// <summary>
+        /// 项目地址
+        /// </summary>
         public string F_ora_Adress { get; set; }
+        /// <summary>
+        /// 采购订单编号
+        /// </summary>
         public string F_ora_poorderno { get; set; }
+        /// <summary>
+        /// 老系统销售员
+        /// </summary>
         public string F_CZ_OldSaler { get; set; }
+        /// <summary>
+        /// 是否有违约风险
+        /// </summary>
         public bool F_ora_breach { get; set; }
+        /// <summary>
+        /// 原销售订单号
+        /// </summary>
         public string F_ora_Sonum { get; set; }
+        /// <summary>
+        /// 签约公司
+        /// </summary>
         public BaseData F_ora_SignOrgId { get; set; }
         public SaleOrderFinance FSaleOrderFinance { get; set; }
-        public SaleOrderClause[] FSaleOrderClause { get; set; }
         public SaleOrderEntry[] FSaleOrderEntry { get; set; }
-        public SaleOrderPlan[] FSaleOrderPlan { get; set; }
+        
+        // public SaleOrderClause[] FSaleOrderClause { get; set; }
+        // public SaleOrderPlan[] FSaleOrderPlan { get; set; }
     }
 }

@@ -2,7 +2,8 @@
 在手合同分析
 */
 ALTER PROC [dbo].[proc_czly_HoldContractAnaly](
-    @QDate DATETIME='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QProdType VARCHAR(100)='',
     @QVoltageLevel VARCHAR(100)=''
 ) AS
@@ -15,11 +16,9 @@ SET NOCOUNT ON
 --        ,@QVoltageLevel VARCHAR(100)=''
 
 
-IF @QDate='' SET @QDate=GETDATE()
+IF @QBeginDate='' SET @QBeginDate=GETDATE()
+IF @QEndDate='' SET @QEndDate=GETDATE()
 
-DECLARE @year INT=YEAR(@QDate)
-       ,@month INT=MONTH(@QDate)
-       ,@day INT=DAY(@QDate)
 
 
 SELECT ROW_NUMBER() OVER(ORDER BY ae.FENTRYID) FSeq, ae.FENTRYID, ael.FDATAVALUE 
@@ -54,7 +53,7 @@ LEFT JOIN #capacity mct ON m.F_ora_Assistant1=mct.FENTRYID
 WHERE o.FDocumentStatus='C'
 AND ISNULL(mpt.FDATAVALUE, '') LIKE '%'+ @QProdType +'%'
 AND ISNULL(mct.FDATAVALUE, '') LIKE '%'+ @QVoltageLevel +'%'
-AND YEAR(o.FDate)=@year AND MONTH(o.FDate)=@month
+AND FDate BETWEEN @QBeginDate AND @QEndDate
 AND oe.F_ORA_JJYY=''
 
 
@@ -110,6 +109,6 @@ DROP TABLE #t_result
 END
 
 /*
-EXEC proc_czly_HoldContractAnaly @QDate='#FDate#',
+EXEC proc_czly_HoldContractAnaly @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
     @QProdType='#FProdType#',@QVoltageLevel='#FVoltageLevel#'
 */

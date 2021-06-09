@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_ProdOrderPrice](
     @QDate DATETIME=''
+    ,@QBeginDate DATETIME=''
+    ,@QEndDate DATETIME=''
     ,@QOrgNo VARCHAR(100)=''
     ,@QProdType VARCHAR(100)=''
     ,@QVoltageLevel VARCHAR(100)=''
@@ -180,7 +182,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价110%以上'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
                 UNION ALL
                 ---------------------------------------- 基价100%-110% ---------------------------------------
                 -- 当日
@@ -220,7 +223,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%-110%'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
                 UNION ALL
                 ---------------------------------------- 基价100% ---------------------------------------
                 -- 当日
@@ -260,7 +264,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
                 UNION ALL
                 ---------------------------------------- 基价95%-100% ---------------------------------------
                 -- 当日
@@ -300,7 +305,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价95%-100%'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
                 UNION ALL
                 ---------------------------------------- 基价90%-95% ---------------------------------------
                 -- 当日
@@ -340,7 +346,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%-95%'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
                 UNION ALL
                 ---------------------------------------- 基价90%以下 ---------------------------------------
                 -- 当日
@@ -380,7 +387,8 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%以下'
-                AND YEAR(FDate)=@year
+                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
             ) t GROUP BY FVoltageLevel
         END
         DROP TABLE #lv
@@ -399,6 +407,7 @@ DROP TABLE #org
 END
 
 /*
-EXEC proc_czly_ProdOrderPrice @QDate='#FDate#',@QOrgNo='#FOrgNo#',
-       @QProdType='#FProdType#',@QVoltageLevel='#FVoltageLevel#'
+EXEC proc_czly_ProdOrderPrice @QDate='#FDate#',
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#',@QOrgNo='#FOrgNo#',
+    @QProdType='#FProdType#',@QVoltageLevel='#FVoltageLevel#'
 */

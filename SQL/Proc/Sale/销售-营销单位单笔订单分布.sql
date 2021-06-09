@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_OrgSingleOrder](
     @QOrgNo VARCHAR(100)='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QDate DATETIME=''
 ) AS
 BEGIN
@@ -79,30 +81,36 @@ FROM (
         0 F50W_M, 0 F50_100W_M, 0 F100_200W_M, 0 F200W_M, 0 FSum_M,
         FOrderAmt F50W_Y, 0 F50_100W_Y, 0 F100_200W_Y, 0 F200W_Y, 0 FSum_Y
     FROM #t_order WHERE FDistribution='50万以下'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     SELECT FOrgID, 
         0 F50W_M, 0 F50_100W_M, 0 F100_200W_M, 0 F200W_M, 0 FSum_M,
         0 F50W_Y, FOrderAmt F50_100W_Y, 0 F100_200W_Y, 0 F200W_Y, 0 FSum_Y
     FROM #t_order WHERE FDistribution='50-100万'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     SELECT FOrgID, 
         0 F50W_M, 0 F50_100W_M, 0 F100_200W_M, 0 F200W_M, 0 FSum_M,
         0 F50W_Y, 0 F50_100W_Y, FOrderAmt F100_200W_Y, 0 F200W_Y, 0 FSum_Y
     FROM #t_order WHERE FDistribution='100-200万'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     SELECT FOrgID, 
         0 F50W_M, 0 F50_100W_M, 0 F100_200W_M, 0 F200W_M, 0 FSum_M,
         0 F50W_Y, 0 F50_100W_Y, 0 F100_200W_Y, FOrderAmt F200W_Y, 0 FSum_Y
     FROM #t_order WHERE FDistribution='200万以上'
-    AND YEAR(FDate)=@year
+    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     SELECT FOrgID, 
         0 F50W_M, 0 F50_100W_M, 0 F100_200W_M, 0 F200W_M, 0 FSum_M,
         0 F50W_Y, 0 F50_100W_Y, 0 F100_200W_Y, 0 F200W_Y, FOrderAmt FSum_Y
-    FROM #t_order WHERE YEAR(FDate)=@year
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=YEAR(@QDate))
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
 ) t GROUP BY FOrgID
 
 
@@ -118,5 +126,7 @@ DROP TABLE #t_result
 END
 
 /*
-EXEC proc_czly_OrgSingleOrder  @QDate='#FDate#', @QOrgNo='#FOrgNo#'
+EXEC proc_czly_OrgSingleOrder  @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
+    @QOrgNo='#FOrgNo#'
 */

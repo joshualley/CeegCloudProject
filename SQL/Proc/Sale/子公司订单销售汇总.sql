@@ -3,7 +3,9 @@
 */
 
 ALTER PROC [dbo].[proc_czly_CompanyOrderSale](
-    @QDate DATETIME=''
+    @QDate DATETIME='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME=''
 ) AS
 BEGIN
 
@@ -60,7 +62,9 @@ FROM (
     SELECT FSTOCKORGID, 
         0 FOrderAmtD, 0 FOrderAmtM, FOrderAmt FOrderAmtY, 
         0 FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY
-    FROM #t_order WHERE YEAR(FDate)=@year
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     ------------------------------- 销售 ------------------------------------
     -- 销售当日
@@ -79,7 +83,9 @@ FROM (
     SELECT FSTOCKORGID, 
         0 FOrderAmtD, 0 FOrderAmtM, 0 FOrderAmtY, 
         0 FSaleAmtD, 0 FSaleAmtM, FDelvAmt FSaleAmtY
-    FROM #t_sale WHERE YEAR(FDate)=@year
+    FROM #t_sale WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
 ) t GROUP BY FSTOCKORGID
 
 SELECT ol.FNAME FOrgName, r.* 
@@ -93,5 +99,6 @@ DROP TABLE #t_result
 
 END
 /*
-EXEC proc_czly_CompanyOrderSale @QDate='#FDate#'
+EXEC proc_czly_CompanyOrderSale @QDate='#FDate#',
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#'
 */

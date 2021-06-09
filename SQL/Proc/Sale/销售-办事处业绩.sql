@@ -2,8 +2,10 @@
 办事处业绩
 */
 ALTER PROC [dbo].[proc_czly_DeptPerform] (
-       @QDeptNo VARCHAR(100)='',
-       @QDate DATETIME=''
+    @QDeptNo VARCHAR(100)='',
+    @QDate DATETIME='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME=''
 ) AS
 BEGIN
 
@@ -92,7 +94,9 @@ FROM (
         0 FFullPayAmtLD, 0 FFullPayAmtLM, 
         0 FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY,
         0 FSaleAmtLD, 0 FSaleAmtLM
-    FROM #t_order WHERE YEAR(FDate)=@year
+    FROM #t_order WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     -- ------>>>>>>>>>>>>>>>--------上年订单----------<<<<<<<<<<<<<<<<<------
     -- 上年 订单当日
@@ -144,7 +148,9 @@ FROM (
         0 FFullPayAmtLD, 0 FFullPayAmtLM, 
         0 FSaleAmtD, 0 FSaleAmtM, 0 FSaleAmtY,
         0 FSaleAmtLD, 0 FSaleAmtLM  
-    FROM #t_fullpay WHERE YEAR(FDate)=@year
+    FROM #t_fullpay WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     -- ------>>>>>>>>>>>>>>>--------上年全款订单----------<<<<<<<<<<<<<<<<<------
     -- 上年 全款当日
@@ -196,7 +202,9 @@ FROM (
         0 FFullPayAmtLD, 0 FFullPayAmtLM, 
         0 FSaleAmtD, 0 FSaleAmtM, FDelvAmt FSaleAmtY,
         0 FSaleAmtLD, 0 FSaleAmtLM 
-    FROM #t_sale WHERE YEAR(FDate)=@year
+    FROM #t_sale WHERE 
+        (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
+        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
     UNION ALL
     -- ------>>>>>>>>>>>>>>>--------上年销售----------<<<<<<<<<<<<<<<<<------
     -- 上年 销售当日
@@ -245,5 +253,7 @@ DROP TABLE #t_result
 
 END
 /*
-EXEC proc_czly_DeptPerform @QDate='#FDate#', @QDeptNo='#FDeptNo#'
+EXEC proc_czly_DeptPerform @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
+    @QDeptNo='#FDeptNo#'
 */

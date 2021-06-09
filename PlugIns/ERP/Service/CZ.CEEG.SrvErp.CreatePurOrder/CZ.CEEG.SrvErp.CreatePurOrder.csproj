@@ -1,4 +1,4 @@
-﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -66,6 +66,12 @@
     <Compile Include="CreatePurOrder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\SaleOrder.cs" />
+    <Compile Include="Models\BaseData.cs" />
+    <Compile Include="Models\BaseDataName.cs" />
+    <Compile Include="Models\SaleOrderFinance.cs" />
+    <Compile Include="Models\SaleOrderClause.cs" />
+    <Compile Include="Models\SaleOrderEntry.cs" />
+    <Compile Include="Models\SaleOrderPlan.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
