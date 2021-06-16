@@ -1,5 +1,5 @@
 -- 业务费余额查询
-CREATE PROC [dbo].[proc_czly_QueryExpBalance](
+ALTER PROC [dbo].[proc_czly_QueryExpBalance](
     @FYear INT,
     @FMonth INT,
     @FSellerNo VARCHAR(100)=''
@@ -99,8 +99,9 @@ FROM (
 ) t
 GROUP BY FSellerNumber--,FInitBalance,FNewSysAmt,FOldSysAmt,FRecordedAmt
 
-SELECT sm.FID FSellerId, r.* FROM #result r
+SELECT sm.FID FSellerId, sml.FName, r.* FROM #result r
 INNER JOIN V_BD_SALESMAN sm ON sm.FNUMBER=r.FSellerNumber AND sm.FBizOrgID=1
+inner join V_BD_SALESMAN_L sml on sml.fid=sm.fid
 WHERE FSellerNumber LIKE '%'+ @FSellerNo +'%'
 
 DROP TABLE #balance
@@ -112,4 +113,4 @@ DROP TABLE #record
 
 END
 
--- exec proc_czly_QueryExpBalance 2020, 9
+-- exec proc_czly_QueryExpBalance 2021, 4
