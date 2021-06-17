@@ -22,11 +22,12 @@ BEGIN
     SET @FLastYear=@FYear
 END
 -- 期初余额
-SELECT ISNULL(FCurrPeriodBalance, 0) FInitBalance, sm.FNumber FSellerNumber
+SELECT ISNULL(FCurrPeriodBalance, 0) FInitBalance, e.FNumber FSellerNumber
 INTO #balance
 FROM ora_Exp_Balance b
 INNER JOIN ora_Exp_BalanceEntry be ON b.FID=be.FID
-INNER JOIN V_BD_SALESMAN sm ON be.FSellerID=sm.FID
+-- INNER JOIN V_BD_SALESMAN sm ON be.FSellerID=sm.FID
+inner join T_HR_EMPINFO e on e.FID=be.FEmpId
 WHERE b.FYear=@FLastYear AND b.FMonth=@FLastMonth AND b.FDOCUMENTSTATUS='C'
 
 -- 结算金额
