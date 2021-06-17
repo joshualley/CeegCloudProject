@@ -99,8 +99,9 @@ FROM (
 ) t
 GROUP BY FSellerNumber--,FInitBalance,FNewSysAmt,FOldSysAmt,FRecordedAmt
 
-SELECT sm.FID FSellerId, sml.FName, r.* FROM #result r
+SELECT sm.FID FSellerId, e.FID FEmpId, sml.FName, r.* FROM #result r
 INNER JOIN V_BD_SALESMAN sm ON sm.FNUMBER=r.FSellerNumber AND sm.FBizOrgID=1
+inner join T_HR_EMPINFO e on e.FNumber=sm.FNUMBER
 inner join V_BD_SALESMAN_L sml on sml.fid=sm.fid
 WHERE FSellerNumber LIKE '%'+ @FSellerNo +'%'
 

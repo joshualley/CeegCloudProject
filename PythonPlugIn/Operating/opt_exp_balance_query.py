@@ -75,6 +75,7 @@ def QueryBalance():
 	this.Model.BatchCreateNewEntryRow("FEntity", objs.Count)
 	for i in range(objs.Count):
 		this.Model.SetValue("FSellerId", objs[i]["FSellerId"], i)
+		this.Model.SetValue("FEmpId", objs[i]["FEmpId"], i)
 		this.Model.SetValue("FInitBalance", objs[i]["FInitBalance"], i)
 		this.Model.SetValue("FOldSysAmt", objs[i]["FOldSysAmt"], i)
 		this.Model.SetValue("FNewSysAmt", objs[i]["FNewSysAmt"], i)
