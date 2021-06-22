@@ -29,7 +29,7 @@ SELECT o.FDate, sm.FNumber FSaleNo, oef.FALLAMOUNT FOrderRowAmt, CONVERT(DECIMAL
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)>0 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<=5 THEN '基价95%-100%'
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)=0 THEN '基价100%'
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)>=-10 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<0 THEN '基价100%-110%'
-         WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)<-10 THEN '基价110%以上'
+         WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)< -10 THEN '基价110%以上'
     END FPriceRange
 INTO #t_order
 FROM T_SAL_ORDER o
@@ -83,8 +83,7 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价110%以上'
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
     UNION ALL
     ---------------------------------- 基价100%-110% -------------------------------------
     -- 基价100%以上 当日
@@ -118,8 +117,7 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%-110%' 
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
     UNION ALL
     ---------------------------------- 基价100% -------------------------------------
     -- 基价100% 当日
@@ -153,8 +151,7 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价100%'
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
     UNION ALL
     ---------------------------------- 基价95%-100% -------------------------------------
     -- 基价95%-100% 当日
@@ -188,8 +185,7 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价95%-100%'
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
     UNION ALL
     ---------------------------------- 基价90%-95% -------------------------------------
     -- 基价90%-95% 当日
@@ -223,8 +219,7 @@ FROM (
         0 F90U_D, 0 F90U_M, FOrderRowAmt F90U_Y,
         0 F90D_D, 0 F90D_M, 0 F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%-95%'
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
     UNION ALL
     ---------------------------------- 基价90%以下 -------------------------------------
     -- 基价90%以下 当日
@@ -258,8 +253,7 @@ FROM (
         0 F90U_D, 0 F90U_M, 0 F90U_Y,
         0 F90D_D, 0 F90D_M, FOrderRowAmt F90D_Y, FOrderRowAmt FTotal
     FROM #t_order WHERE FPriceRange='基价90%以下'
-    AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-        OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+    AND FDate BETWEEN @QBeginDate AND @QEndDate
 ) t GROUP BY FSaleNo
 
 

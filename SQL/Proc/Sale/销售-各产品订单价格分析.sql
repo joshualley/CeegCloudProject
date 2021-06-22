@@ -49,7 +49,7 @@ SELECT org.FOrgID, orgl.FName FOrgName, ISNULL(mpt.FENTRYID, '') FProdType, ISNU
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)>5 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<=10 THEN '基价90%-95%'
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)>0 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<=5 THEN '基价95%-100%'
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)=0 THEN '基价100%'
-         WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)>-10 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<0 THEN '基价100%-110%'
+         WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)> -10 AND CONVERT(DECIMAL(18,6),oe.FBDownPoints)<0 THEN '基价100%-110%'
          WHEN CONVERT(DECIMAL(18,6),oe.FBDownPoints)<=-10 THEN '基价110%以上'
     END FPriceRange
 INTO #t_order
@@ -182,8 +182,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价110%以上'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
                 UNION ALL
                 ---------------------------------------- 基价100%-110% ---------------------------------------
                 -- 当日
@@ -223,8 +222,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%-110%'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
                 UNION ALL
                 ---------------------------------------- 基价100% ---------------------------------------
                 -- 当日
@@ -264,8 +262,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价100%'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
                 UNION ALL
                 ---------------------------------------- 基价95%-100% ---------------------------------------
                 -- 当日
@@ -305,8 +302,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价95%-100%'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
                 UNION ALL
                 ---------------------------------------- 基价90%-95% ---------------------------------------
                 -- 当日
@@ -346,8 +342,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%-95%'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
                 UNION ALL
                 ---------------------------------------- 基价90%以下 ---------------------------------------
                 -- 当日
@@ -387,8 +382,7 @@ BEGIN
                 FROM #t_order
                 WHERE FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel AND FOrgId=@FOrgId
                 AND FPriceRange='基价90%以下'
-                AND (@QBeginDate='' AND @QEndDate='' AND YEAR(FDate)=@year)
-                    OR (FDate BETWEEN @QBeginDate AND @QEndDate)
+                AND FDate BETWEEN @QBeginDate AND @QEndDate
             ) t GROUP BY FVoltageLevel
         END
         DROP TABLE #lv

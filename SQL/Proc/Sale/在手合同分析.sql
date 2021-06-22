@@ -50,7 +50,12 @@ INNER JOIN T_SAL_ORDERENTRY_F oef ON oe.FENTRYID=oef.FENTRYID
 INNER JOIN T_BD_Material m ON oe.FMATERIALID=m.FMATERIALID
 LEFT JOIN #product_type mpt ON m.F_ora_Assistant=mpt.FENTRYID
 LEFT JOIN #capacity mct ON m.F_ora_Assistant1=mct.FENTRYID
-WHERE o.FDocumentStatus='C'
+-- 发货
+LEFT JOIN T_SAL_DELIVERYNOTICEENTRY_LK dnlk ON dnlk.FSID=oe.FENTRYID AND dnlk.FSTABLENAME='T_SAL_ORDERENTRY'
+LEFT JOIN T_SAL_DELIVERYNOTICEENTRY dne ON dne.FENTRYID=dnlk.FENTRYID
+LEFT JOIN T_SAL_DELIVERYNOTICE dn ON dn.FID=dne.FID
+WHERE ISNULL(dn.FDocumentStatus, '')='' AND o.FCloseStatus='A'
+AND o.FDocumentStatus='C'
 AND ISNULL(mpt.FDATAVALUE, '') LIKE '%'+ @QProdType +'%'
 AND ISNULL(mct.FDATAVALUE, '') LIKE '%'+ @QVoltageLevel +'%'
 AND FDate BETWEEN @QBeginDate AND @QEndDate

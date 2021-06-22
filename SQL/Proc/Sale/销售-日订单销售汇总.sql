@@ -5,6 +5,8 @@ Author: 刘跃
 */
 ALTER PROC [dbo].[proc_czly_DailyOrderSale](
     @QDate DATETIME='',
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QProdType VARCHAR(100)='',
     @QVoltageLevel VARCHAR(100)=''
 )
@@ -128,7 +130,7 @@ BEGIN
         WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
         -- 本年订单
         SELECT @FOrderYear=ISNULL(SUM(FOrderRowAmt),0) FROM #order_amt 
-        WHERE YEAR(FDate)=@QYear AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
+        WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
         
         -- 计算销售情况
         -- 今日销售
@@ -139,7 +141,7 @@ BEGIN
         WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
         -- 本年销售
         SELECT @FSaleYear=ISNULL(SUM(FDelvAmt),0) FROM #sale_amt 
-        WHERE YEAR(FDate)=@QYear AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
+        WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType=@FProdType AND FVoltageLevel=@FVoltageLevel
         --插入一行数据
         INSERT INTO #daily_order_data 
         VALUES(@FProdTypeName, @FVoltageLevelName, @FOrderToday, @FOrderMonth, @FOrderYear, @FSaleToday, @FSaleMonth, @FSaleYear)
@@ -157,7 +159,7 @@ BEGIN
         WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType=@FProdType AND FVoltageLevel=''
         -- 本年订单
         SELECT @FOrderYear=ISNULL(SUM(FOrderRowAmt),0) FROM #order_amt 
-        WHERE YEAR(FDate)=@QYear AND FProdType=@FProdType AND FVoltageLevel=''
+        WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType=@FProdType AND FVoltageLevel=''
         
         -- 计算销售情况
         -- 今日销售
@@ -168,7 +170,7 @@ BEGIN
         WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType=@FProdType AND FVoltageLevel=''
         -- 本年销售
         SELECT @FSaleYear=ISNULL(SUM(FDelvAmt),0) FROM #sale_amt 
-        WHERE YEAR(FDate)=@QYear AND FProdType=@FProdType AND FVoltageLevel=''
+        WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType=@FProdType AND FVoltageLevel=''
         --插入一行数据
         INSERT INTO #daily_order_data 
         VALUES(@FProdTypeName, '其他分类', @FOrderToday, @FOrderMonth, @FOrderYear, @FSaleToday, @FSaleMonth, @FSaleYear)
@@ -185,7 +187,7 @@ BEGIN
     WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType='' AND FVoltageLevel=''
     -- 本年订单
     SELECT @FOrderYear=ISNULL(SUM(FOrderRowAmt),0) FROM #order_amt 
-    WHERE YEAR(FDate)=@QYear AND FProdType='' AND FVoltageLevel=''
+    WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType='' AND FVoltageLevel=''
 
     -- 计算销售情况
     -- 今日销售
@@ -196,7 +198,7 @@ BEGIN
     WHERE YEAR(FDate)=@QYear AND MONTH(FDate)=@QMonth AND FProdType='' AND FVoltageLevel=''
     -- 本年销售
     SELECT @FSaleYear=ISNULL(SUM(FDelvAmt),0) FROM #sale_amt 
-    WHERE YEAR(FDate)=@QYear AND FProdType='' AND FVoltageLevel=''
+    WHERE FDate BETWEEN @QBeginDate AND @QEndDate AND FProdType='' AND FVoltageLevel=''
     --插入一行数据
     INSERT INTO #daily_order_data 
     VALUES('其他大类', '其他分类', @FOrderToday, @FOrderMonth, @FOrderYear, @FSaleToday, @FSaleMonth, @FSaleYear)
@@ -218,5 +220,6 @@ EXEC proc_czly_DailyOrderSale
 
 
 EXEC proc_czly_DailyOrderSale @QDate='#FDate#',
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#',
     @QProdType='#FProdType#',@QVoltageLevel='#FVoltageLevel#'
 */
