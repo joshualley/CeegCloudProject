@@ -20,7 +20,7 @@ namespace CZ.CEEG.BosOA.TransactionDetail
     public class CZ_CEEG_BosOA_TransactionDetail :  AbstractDynamicFormPlugIn
     {
 
-        public override void AfterButtonClick(AfterButtonClickEventArgs e)
+        /*public override void AfterButtonClick(AfterButtonClickEventArgs e)
         {
             base.AfterButtonClick(e);
             if (e.Key.Equals("F_ORA_DETAIL_VIEW_PUBLIC"))
@@ -58,7 +58,7 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     this.View.ShowForm(param);
                 }
             }
-        }
+        }*/
 
         public override void AfterBindData(EventArgs e)
         {
@@ -87,6 +87,30 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                         CZ_FB_GetObjBalDetail(CZ_FB_EnFBObject.BD_Customer, objId.ToString());
                     }
                 }           
+            }
+        }
+
+        public override void DataChanged(DataChangedEventArgs e)
+        {
+            base.DataChanged(e);
+            string key = e.Field.Key.ToString();
+            switch (key)
+            {
+                case "FContractParty":  //往来单位-对公资金
+                    string FContractPartyType = this.View.Model.GetValue("FContractPartyType") == null ? "" : this.View.Model.GetValue("FContractPartyType").ToString();
+                    string FContractParty = this.View.Model.GetValue("FContractParty") == null ? "0" : (this.View.Model.GetValue("FContractParty") as DynamicObject)["Id"].ToString();
+                    if (FContractPartyType == "BD_Supplier")
+                    {
+                        CZ_FB_GetObjBalDetail(CZ_FB_EnFBObject.BD_Supplier, FContractParty);
+                    }
+                    else if (FContractPartyType == "BD_Customer")
+                    {
+                        CZ_FB_GetObjBalDetail(CZ_FB_EnFBObject.BD_Customer, FContractParty);
+                    }
+                    break;
+                case "FApply":          //申请人-个人资金借支
+                    CZ_FB_GetObjBalDetail(CZ_FB_EnFBObject.BD_Empinfo, (this.View.Model.GetValue("FApply") as DynamicObject)["Id"].ToString());
+                    break;
             }
         }
 
