@@ -210,9 +210,10 @@ namespace CZ.CEEG.BosOa.GetIntercourse
                 _ObjAcctWhile = " and a.FAcctID='" + _FAcctID + "' ";
             }
 
+            
             _sb.Append("/*dialect*/ ");
             _sb.Append("select i.FORGID,ab.FBookID,sy.FValue FCBYear,sp.FValue FCBPeriod, ");
-            _sb.Append("convert(datetime,CONVERT(varchar,sy.FValue)+'-'+CONVERT(varchar,sp.FValue)+'-01')FBegDate ");
+            _sb.Append("convert(datetime,CONVERT(varchar,sy.FValue)+'-'+CONVERT(varchar,sp.FValue)+'-01') FBegDate ");
             _sb.Append("into #aco from T_ORG_Organizations i inner join t_bd_AccountBook ab on i.FOrgID=ab.FAccountOrgID ");
             _sb.Append("inner join T_BAS_SystemProFile sy on ab.FBOOKID=sy.FAccountBookID and sy.FCategory='GL' and sy.FKEY='CurrentYear' ");
             _sb.Append("inner join T_BAS_SystemProFile sp on ab.FBOOKID=sp.FAccountBookID and sp.FCategory='GL' and sp.FKEY='CurrentPeriod';");
@@ -226,7 +227,17 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");
             _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
             _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile);
+
+
+            if (!_fbo.ToString().Equals("BD_Empinfo"))
+            {
+                _sb.Append("where aco.FOrgID not in (156140,156141,293071,293073,1088184,156142,293065) " + _ObjAcctWhile);
+            }
+            else {
+                _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile);
+            }
+
+            
             //_sb.Append("union all select 888 FGOBAmt ");  //测试用行
             _sb.Append(")t ");
             string _sqlGetFOBAmt = _sb.ToString();
