@@ -3,6 +3,8 @@
 */
 ALTER PROC [dbo].[proc_czly_SellerProd](
     @QDate DATETIME='', 
+    @QBeginDate DATETIME='',
+    @QEndDate DATETIME='',
     @QSaleNo VARCHAR(55)='', 
     @QProdType VARCHAR(55)=''
 ) AS
@@ -177,7 +179,8 @@ BEGIN
         -- 当年
         SET @one_type += 'SELECT ' + @fields_y + CHAR(10)
             + ' FROM #t_order WHERE FProdType=''' + @prod_type_id 
-            + ''' AND YEAR(FDate)=' + CONVERT(VARCHAR(10), @year) + CHAR(10)
+            + ''' AND FDate BETWEEN ''' + CONVERT(VARCHAR(20), @QBeginDate) 
+            + ''' AND ''' + CONVERT(VARCHAR(20), @QEndDate) + ''' ' + CHAR(10)
             + 'UNION ALL' + CHAR(10)
     END 
     ELSE
@@ -198,7 +201,8 @@ BEGIN
         -- 当年
         SET @one_type += 'SELECT ' + @fields_y + CHAR(10)
             + ' FROM #t_sale WHERE FProdType=''' + @prod_type_id 
-            + ''' AND YEAR(FDate)=' + CONVERT(VARCHAR(10), @year) + CHAR(10)
+            + ''' AND FDate BETWEEN ''' + CONVERT(VARCHAR(20), @QBeginDate) 
+            + ''' AND ''' + CONVERT(VARCHAR(20), @QEndDate) + ''' ' + CHAR(10)
             + 'UNION ALL' + CHAR(10)
     END
     --------------------------------- END 一个产品大类(包括当日、当月、当年) END ------------------------------------
@@ -259,7 +263,8 @@ SET @one_type += 'SELECT ' + @fields_m + CHAR(10)
     + 'UNION ALL' + CHAR(10)
 -- 当年
 SET @one_type += 'SELECT ' + @fields_y + CHAR(10)
-    + ' FROM #t_order WHERE YEAR(FDate)=' + CONVERT(VARCHAR(10), @year) + CHAR(10)
+    + ' FROM #t_order WHERE FDate BETWEEN ''' + CONVERT(VARCHAR(20), @QBeginDate) 
+    + ''' AND ''' + CONVERT(VARCHAR(20), @QEndDate) + ''' ' + CHAR(10)
     + 'UNION ALL' + CHAR(10)
  --PRINT(@one_type)
 SET @sql += @one_type
@@ -312,7 +317,8 @@ SET @one_type += 'SELECT ' + @fields_m + CHAR(10)
     + 'UNION ALL' + CHAR(10)
 -- 当年
 SET @one_type += 'SELECT ' + @fields_y + CHAR(10)
-    + ' FROM #t_sale WHERE YEAR(FDate)=' + CONVERT(VARCHAR(10), @year) + CHAR(10)
+    + ' FROM #t_sale WHERE FDate BETWEEN ''' + CONVERT(VARCHAR(20), @QBeginDate) 
+    + ''' AND ''' + CONVERT(VARCHAR(20), @QEndDate) + ''' ' + CHAR(10)
     -- + 'UNION ALL' + CHAR(10)
  --PRINT(@one_type)
 SET @sql += @one_type
@@ -337,6 +343,7 @@ DROP TABLE #product_type
 END
 /*
 EXEC proc_czly_SellerProd @QDate='#FDate#', 
+    @QBeginDate='#FBeginDate#', @QEndDate='#FEndDate#', 
     @QSaleNo='#FSellerNo#', @QProdType=''
 
 EXEC proc_czly_SellerProd @QDate='2020-12-31'
