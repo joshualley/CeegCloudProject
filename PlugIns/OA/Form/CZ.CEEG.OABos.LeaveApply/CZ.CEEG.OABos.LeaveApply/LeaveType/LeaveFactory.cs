@@ -12,6 +12,10 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
     {
         private Dictionary<string, ILeaveType> leaveTypes = new Dictionary<string, ILeaveType>();
 
+        /// <summary>
+        /// 哺乳假请假次数
+        /// </summary>
+        private int count = 0;
 
         /// <summary>
         /// 创建一个请假对象
@@ -84,6 +88,12 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType
             ILeaveType leave = null;
             
             string type = "L" + leaveTypeValue + "_" + leaver;
+            // 哺乳假不进行合并
+            if((LeaveTypeName)leaveTypeValue == LeaveTypeName.BreastfeedingLeave)
+            {
+                type += "_" + count.ToString();
+                count++;
+            }
             if (leaveTypes.ContainsKey(type))
             {
                 leave = leaveTypes[type];
