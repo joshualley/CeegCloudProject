@@ -23,11 +23,11 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public override bool ValidateLeave(ref string msg)
         {
-            if(mLeaveDays > mOnceAllowDays)
-            {
-                msg += string.Format("{0}的{1}提交失败, 原因：超出了本次可请假的时间1小时。\n", getLeaver(), getLeaveName());
-                return false;
-            }
+            // if(mLeaveDays > mOnceAllowDays)
+            // {
+            //     msg += string.Format("{0}的{1}提交失败, 原因：超出了本次可请假的时间1小时。\n", getLeaver(), getLeaveName());
+            //     return false;
+            // }
             return true;
         }
     }
