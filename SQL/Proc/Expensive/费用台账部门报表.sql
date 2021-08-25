@@ -7,7 +7,7 @@ Info:
 	对于费用台账每行的费用项目按部门(包含其下的子部门)汇总
 */
 
-CREATE PROC [dbo].[proc_czly_AccountDept](
+ALTER PROC [dbo].[proc_czly_AccountDept](
     @SDt DATETIME,
     @EDt DATETIME,
     @FOrgId BIGINT=0, --冗余字段，提供根据子公司查询
@@ -38,6 +38,7 @@ fi.FFLEX5 FDeptID, fi.FFLEX9 FOrignCostItem,
 ISNULL(ae.FAccountActual, 0) FCostItem
 INTO #temp
 FROM T_GL_VOUCHERENTRY ve
+inner join T_BD_ACCOUNT acc on acc.FACCTID=ve.FACCOUNTID
 INNER JOIN T_GL_VOUCHER v ON v.FVOUCHERID=ve.FVOUCHERID
 INNER JOIN T_BD_FLEXITEMDETAILV fi ON fi.FID=ve.FDETAILID
 INNER JOIN T_BD_DEPARTMENT d ON fi.FFLEX5=d.FDEPTID
@@ -46,7 +47,7 @@ LEFT JOIN ora_t_AccountEntry ae ON ae.FEntryID=aek.FEntryID
 LEFT JOIN ora_t_Account a ON a.FID=ae.FID AND a.FDOCUMENTSTATUS='C'
 WHERE v.FDate BETWEEN @SDt AND @EDt --AND v.FDOCUMENTSTATUS='C' 
 AND ve.FCREDIT=0 --贷方金额
-AND ve.FACCOUNTID IN (4083, 4084)
+AND acc.FNUMBER IN ('6601', '6602')
 AND (@FAccountId=0 OR ve.FACCOUNTID=@FAccountId)
 AND (@FOrgId=0 OR d.FUSEORGID=@FOrgId)
 AND (@FDeptId=0 OR d.FNumber LIKE @FDeptNumber)
