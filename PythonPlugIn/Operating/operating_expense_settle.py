@@ -45,7 +45,7 @@ def return_callback(FormResult):
 	SUM(FAllAmount_LC) FOrderAmt, SUM(F_CZ_FBPAmt) FBaseAmt
 FROM T_SAL_ORDER o
 INNER JOIN T_SAL_ORDERENTRY oe ON o.FID=oe.FID
-INNER JOIN T_SAL_ORDERENTRY_F oef ON o.FID=oef.FID
+INNER JOIN T_SAL_ORDERENTRY_F oef ON oef.FEntryID=oe.FEntryID
 WHERE ISNULL(F_ora_Jjyy, '')='' AND o.FID IN ({})
 GROUP BY o.FID, FBillNo, FSalerId, FDate, FCustId'''.format(fids)
 
