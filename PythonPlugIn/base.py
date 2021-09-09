@@ -13,7 +13,7 @@ from Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel import *
 from System import *
 from Kingdee.BOS.App.Data import *
 
- 
+
 '''
 数据与View绑定后触发
 '''
