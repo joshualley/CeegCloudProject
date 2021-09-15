@@ -40,7 +40,10 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
         /// <returns></returns>
         private bool HasApplied()
         {
-            string sql = string.Format("SELECT FID FROM ora_t_Leave WHERE FLeaveType='{0}' AND FNAME='{1}'", (int)mLeaveType, mLeaver);
+            string sql = string.Format(@"SELECT lh.FID FROM ora_t_Leave le
+                inner join ora_t_LeaveHead lh on lh.FID=le.FID
+                WHERE FDocumentStatus in ('B', 'C') AND
+                le.FLeaveType='{0}' AND le.FNAME='{1}'", (int)mLeaveType, mLeaver);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
 
             return obj.Count > 0 ? true : false;
@@ -100,7 +103,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
             }
             string leaveName = getLeaveName();
             return string.Format("{0}(需一次性休完), 本年可请{1}天。\n",
-                leaveName, mYearAllowDays);
+                leaveName, mYearAllowDays, mAge);
         }
 
         public override bool ValidateLeave(ref string msg)
