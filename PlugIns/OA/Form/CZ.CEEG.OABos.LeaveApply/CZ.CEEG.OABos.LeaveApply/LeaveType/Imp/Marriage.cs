@@ -102,7 +102,7 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
                 return "您的性别或出生日期可能没有录入系统，请联系HR进行信息补录！";
             }
             string leaveName = getLeaveName();
-            return string.Format("{0}(需一次性休完), 本年可请{1}天。\n",
+            return string.Format("{0}(需一次性休完), 本年可请{1}天({2}岁)。\n",
                 leaveName, mYearAllowDays, mAge);
         }
 
