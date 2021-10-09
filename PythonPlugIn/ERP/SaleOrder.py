@@ -11,22 +11,38 @@ def BarItemClick(e):
 		return
 	fid = str(this.Model.DataObject['Id'])
 	if key == "ORA_CLOSE":
+		if not check_permission(): return
 		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='B' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
 	elif key == "ORA_UNCLOSE":
+		if not check_permission(): return
 		sql = "/*dialect*/update T_SAL_ORDER set FCloseStatus='A' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
 	elif key == "ORA_AUDIT":
+		if not check_permission(): return
 		sql = "/*dialect*/update T_SAL_ORDER set FDocumentStatus='C' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
 	elif key == "ORA_UNAUDIT":
+		if not check_permission(): return
 		sql = "/*dialect*/update T_SAL_ORDER set FDocumentStatus='D' where fid='{}'".format(fid)
 		DBUtils.Execute(this.Context, sql)
 		this.View.Refresh()
-		
+
+def check_permission():
+	uid = this.Context.UserId
+	sql = """select FNumber from t_SEC_role r 
+		inner join T_SEC_ROLEUSER ru on ru.FRoleId=r.FRoleId
+		where r.FNumber='999' and ru.FUserId={} and ru.FUserStatus='A'
+		""".format(uid)
+	results = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0].Rows
+	if results.Count > 0:
+		return True
+	this.View.ShowErrMessage('您没有使用该按钮的权限！')
+	return False
+
 
 def DataChanged(e):
 	if e.Key == "FSalerId":
