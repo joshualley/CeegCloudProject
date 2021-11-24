@@ -137,23 +137,6 @@
         sqlxhelper.go   # sql工具
 ```
 
-原始配置文件`conf.json`如下：
-
-```json
-{
-    "DbConnections":[
-        {
-            "HRConnStr": "server=10.8.8.8;port=1433;database=BYGCEEG_HR;user id=sa;password=czkingdee;encrypt=disable",
-            "OAConnStr": "server=10.8.8.8;port=1433;database=AIS201907CEEG;user id=sa;password=czkingdee;encrypt=disable"
-        },
-        {
-            "HRConnStr": "server=10.8.8.9;port=1433;database=CEEG_HR;user id=sa;password=czkingdee;encrypt=disable",
-            "OAConnStr": "server=10.8.8.9;port=1433;database=AIS201907KMJT;user id=sa;password=czkingdee;encrypt=disable"
-        }
-    ]
-}
-```
-
 将`conf.json`与`encrypt_config.exe`放置在同一目录下，运行`encrypt_config.exe`后会生成加密后的配置文件`enconf.json`
 
 ### 函数
