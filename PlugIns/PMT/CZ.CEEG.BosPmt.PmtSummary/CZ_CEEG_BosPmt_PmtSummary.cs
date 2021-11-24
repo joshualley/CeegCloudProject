@@ -44,7 +44,6 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             this.Model.SetValue("FEDate", eDt);
             this.View.UpdateView("FEDate");
             Act_QuerySummaryData();
-            //Act_QueryDetailData();
         }
 
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
@@ -55,7 +54,6 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             {
                 case "FQUERYBTN":
                     Act_QuerySummaryData();
-                    //Act_QueryDetailData();
                     break;
             }
         }
@@ -112,10 +110,12 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             string FSerialNum = this.Model.GetValue("FSerialNum", Row).ToString();
             string FSellerID = this.Model.GetValue("FSellerID", Row) == null ? "0" : (this.Model.GetValue("FSellerID") as DynamicObject)["Id"].ToString();
             string FDeptID = this.Model.GetValue("FDeptID", Row) == null ? "0" : (this.Model.GetValue("FDeptID") as DynamicObject)["Id"].ToString();
+            string FDelvPmt = this.Model.GetValue("FOuterPmt", Row).ToString();
             para.CustomParams.Add("FOrderNo", FOrderNo);
             para.CustomParams.Add("FSellerID", FSellerID);
             para.CustomParams.Add("FDeptID", FDeptID);
             para.CustomParams.Add("FSerialNum", FSerialNum);
+            para.CustomParams.Add("FDelvPmt", FDelvPmt);
 
             this.View.ShowForm(para);
         }
@@ -144,20 +144,13 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             {
                 return;
             }
-            string FIsOldSysOrder = "";
+            string FIsOldSysOrder;
             this.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
             for (int i = 0; i < objs.Count; i++)
             {
                 //this.Model.CreateNewEntryRow("FEntity");
                 this.Model.SetValue("FOrderNo", objs[i]["FOrderNo"].ToString(), i);
                 this.Model.SetValue("FSerialNum", objs[i]["FSerialNum"].ToString(), i);
-                string[] FStrDirectors = objs[i]["FDirectors"].ToString().Split(',');
-                List<long> FDirectors = new List<long>();
-                foreach (var d in FStrDirectors)
-                {
-                    FDirectors.Add(int.Parse(d));
-                }
-                this.Model.SetValue("FDirectors", FDirectors, i);
                 this.Model.SetValue("FSaleOrgID", objs[i]["FSaleOrgID"].ToString(), i);
                 this.View.Model.SetValue("FSignOrgID", objs[i]["FSignOrgID"].ToString(), i);
                 this.Model.SetValue("FSellerID", objs[i]["FSellerID"].ToString(), i);
@@ -189,70 +182,10 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.Model.SetValue("FRemarks", objs[i]["FRemark"].ToString(), i);
                 FIsOldSysOrder = objs[i]["FOrderNo"].ToString().StartsWith("XSDD") ? "否" : "是";
                 this.Model.SetValue("FIsOldSysOrder", FIsOldSysOrder, i);
+                this.Model.SetValue("FDeliverNote", objs[i]["FDeliverNote"].ToString(), i);
+                this.Model.SetValue("FDelvPmt", objs[i]["FDelvPmt"].ToString(), i);
             }
             this.View.UpdateView("FEntity");
-        }
-
-        /// <summary>
-        /// 查询货款明细
-        /// </summary>
-        private void Act_QueryDetailData()
-        {
-            string FSDate = this.Model.GetValue("FSDate") == null ? "" : this.Model.GetValue("FSDate").ToString();
-            string FEDate = this.Model.GetValue("FEDate") == null ? "" : this.Model.GetValue("FEDate").ToString();
-            string FQDeptId = this.Model.GetValue("FQDeptId") == null ? "0" : (this.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
-            string FQSalerId = this.Model.GetValue("FQSalerId") == null ? "0" : (this.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
-            string FQCustId = this.Model.GetValue("FQCustId") == null ? "0" : (this.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
-            string FQFactoryId = this.Model.GetValue("FQFactoryId") == null ? "0" : (this.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
-            string FQOrderNo = this.Model.GetValue("FQOrderNo") == null ? "" : this.Model.GetValue("FQOrderNo").ToString().Trim();
-
-            string sql = string.Format(@"exec proc_czly_GetPmtDetail2 @SDt='{0}', @EDt='{1}', 
-@FQDeptId={2}, @FQSalerId={3}, @FQCustId={4}, @FQFactoryId={5}, @FQOrderNo='{6}'",
-            FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
-            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            this.Model.DeleteEntryData("FDetailEntity");
-            if (objs.Count <= 0)
-            {
-                return;
-            }
-            this.Model.BatchCreateNewEntryRow("FDetailEntity", objs.Count);
-            for (int i = 0; i < objs.Count; i++)
-            {
-                this.Model.SetValue("FEOrderNo", objs[i]["FOrderNo"].ToString(), i);
-                this.Model.SetValue("FEOrderSeq", objs[i]["FOrderSeq"].ToString(), i);
-                this.Model.SetValue("FESellerID", objs[i]["FSellerID"].ToString(), i);
-                this.Model.SetValue("FEDeptID", objs[i]["FDeptID"].ToString(), i);
-                this.Model.SetValue("FEOrgID", objs[i]["FOrgID"].ToString(), i);
-                this.Model.SetValue("FESaleOrgID", objs[i]["FSaleOrgID"].ToString(), i);
-                this.Model.SetValue("FECustID", objs[i]["FCustID"].ToString(), i);
-                this.Model.SetValue("FEFactoryID", objs[i]["FFactoryID"].ToString(), i);
-                this.Model.SetValue("FEPayWay", objs[i]["FPayWay"].ToString(), i);
-                this.Model.SetValue("FERemark", objs[i]["FRemark"].ToString(), i);
-                this.Model.SetValue("FEEarlyDelvGoodsDt", objs[i]["FEarlyDelvGoodsDt"].ToString(), i);
-                this.Model.SetValue("FELaterDelvGoodsDt", objs[i]["FLaterDelvGoodsDt"].ToString(), i);
-
-                this.Model.SetValue("FEOrderAmt", objs[i]["FOrderAmt"].ToString(), i);
-                this.Model.SetValue("FETOrderAmt", objs[i]["FTOrderAmt"].ToString(), i);
-
-                this.Model.SetValue("FEDeliverAmt", objs[i]["FDeliverAmt"].ToString(), i);
-                this.Model.SetValue("FEReceiverAmt", objs[i]["FReceiverAmt"].ToString(), i);
-                this.Model.SetValue("FEInvoiceAmt", objs[i]["FInvoiceAmt"].ToString(), i);
-                this.Model.SetValue("FEOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
-                this.Model.SetValue("FENormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
-                this.Model.SetValue("FENormUnoverduePmt", objs[i]["FNormUnoverduePmt"].ToString(), i);
-                this.Model.SetValue("FEOverduePmt", objs[i]["FOverduePmt"].ToString(), i);
-                this.Model.SetValue("FETOverduePmt", objs[i]["FTOverduePmt"].ToString(), i);
-                this.Model.SetValue("FETUnoverduePmt", objs[i]["FTUnoverduePmt"].ToString(), i);
-                this.Model.SetValue("FETExceedePmt", objs[i]["FTExceedePmt"].ToString(), i);
-                this.Model.SetValue("FEOverdueWarranty", objs[i]["FOverdueWarranty"].ToString(), i);
-                this.Model.SetValue("FEUnoverdueWarranty", objs[i]["FUnoverdueWarranty"].ToString(), i);
-                this.Model.SetValue("FEWarranty", objs[i]["FTWarranty"].ToString(), i);
-                this.Model.SetValue("FEIntervalMonth", objs[i]["FIntervalMonth"].ToString(), i);
-                this.Model.SetValue("FEIntervalDay", objs[i]["FIntervalDay"].ToString(), i);
-            }
-            
-            this.View.UpdateView("FDetailEntity");
-
         }
 
         #endregion

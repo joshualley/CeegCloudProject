@@ -1,5 +1,5 @@
 -- 货款明细
-CREATE PROC [dbo].[proc_czly_GetPmtDetail2](
+ALTER PROC [dbo].[proc_czly_GetPmtDetail2](
     @SDt DATETIME='',
     @EDt DATETIME='',
     @FQDeptId BIGINT=0,
@@ -17,7 +17,7 @@ IF @EDt='' SET @EDt = GETDATE()
 
 -- 货款明细 select * from T_SAL_OUTSTOCK
 SELECT ISNULL(MIN(FEarlyDelvGoodsDt), '1900-01-01') FEarlyDelvGoodsDt,
-    ISNULL(MAX(FLaterDelvGoodsDt), '') FLaterDelvGoodsDt, 0 FDirectors, --ISNULL(dd.FDirectors, '0') FDirectors, 
+    ISNULL(MAX(FLaterDelvGoodsDt), '') FLaterDelvGoodsDt, 0 FDirectors, 
     o.FBILLNO FOrderNo, 
     o.FID, o.F_ora_poorderno FSerialNum,
     o.FSALERID FSellerID, d.FDeptID, d.FUSEORGID FOrgID,
@@ -26,9 +26,10 @@ SELECT ISNULL(MIN(FEarlyDelvGoodsDt), '1900-01-01') FEarlyDelvGoodsDt,
     o.FNote FRemark,
     ofi.FRecConditionId FPayWay,
     MAX(ofi.FBILLALLAMOUNT) FTOrderAmt, 
-    -- SUM(oer.FInvoiceAmount) FInvoiceAmt,   --累计开票金额
     ISNULL(si.FInvoiceAmt, 0) FInvoiceAmt,
-    SUM(ISNULL(ost.FDeliverAmt, 0)) FDeliverAmt
+    SUM(ISNULL(ost.FDeliverAmt, 0)) FDeliverAmt,
+    case ISNULL(dlv.FID, 0) when 0 then '已移交' else '未移交' end FDeliverNote,
+    ISNULL(dlv.FDeliverAmt, 0) FDelvPmt -- 移交货款
 into #order_entry_temp
 FROM T_SAL_ORDER o
 INNER JOIN T_SAL_ORDERFIN ofi ON o.FID=ofi.FID
@@ -57,14 +58,14 @@ LEFT JOIN V_BD_SALESMAN sm ON o.FSALERID=sm.FID
 LEFT JOIN V_BD_SALESMAN smt ON smt.FNUMBER=sm.FNUMBER AND smt.FBIZORGID=1
 LEFT JOIN T_BD_CUSTOMER c ON c.FCUSTID=o.FCUSTID
 LEFT JOIN T_BD_DEPARTMENT d ON dbo.fun_czty_GetWorkDeptID(sm.FDEPTID)=d.FDEPTID
--- LEFT JOIN #dept_directors dd ON d.FDEPTID=dd.FDEPTID
+LEFT JOIN ora_PMT_Deliver dlv on o.FBILLNO=dlv.FORDERNO AND dlv.FDOCUMENTSTATUS='C' -- 货款移交单
 WHERE o.FDocumentStatus='C' 
     -- and   convert(varchar(10),o.fdate,20) <='2020-07-28'  ---临时增加 
 AND o.FCustID NOT IN ( --过滤掉内单
 	SELECT cl.FCUSTID FROM T_BD_CUSTOMER_L cl
 	INNER JOIN T_ORG_ORGANIZATIONS_L ol ON cl.FNAME=ol.FNAME
 )
-AND (SELECT COUNT(1) NUM FROM ora_PMT_Deliver dlv WHERE o.FBILLNO=dlv.FORDERNO AND dlv.FDOCUMENTSTATUS='C')=0 --过滤掉转交单
+-- AND (SELECT COUNT(1) NUM FROM ora_PMT_Deliver dlv WHERE o.FBILLNO=dlv.FORDERNO AND dlv.FDOCUMENTSTATUS='C')=0 --过滤掉转交单
 AND o.F_CZ_BillType<>'ZRD2' --过滤维修合同
 AND (o.FBILLTYPEID<>'a300e2620037435492aed9842875b451' AND ofi.FBILLALLAMOUNT<>0) --过滤退货订单
 AND ISNULL(oe.F_ora_Jjyy, '')='' --过滤掉存在拒绝原因的行
@@ -77,7 +78,7 @@ AND (@FQFactoryId=0 OR oe.FSTOCKORGID=@FQFactoryId)
 AND (@FQOrderNo='' OR o.FBILLNO LIKE '%'+@FQOrderNo+'%')
 GROUP BY o.FID,o.FBILLNO,o.F_ora_poorderno,o.FSALERID, d.FDeptID, d.FUSEORGID,
 o.FCustID,o.FSaleOrgID,o.F_ora_SignOrgId,ofi.FRecConditionId,o.FNote, si.FInvoiceAmt,
-o.FDate
+o.FDate, dlv.FID, dlv.FDeliverAmt
 ORDER BY o.FDATE DESC
 
 -- 累计期初的发货金额
@@ -247,7 +248,8 @@ SELECT o.FID, 0 FEntryID, 0 FBeforeRcvAmt, o.FOrderNo, 0 FOrderSeq, 0 FFactoryID
     p.FNormOverAmt FNormOverduePmt, p.FUnOverAmt FNormUnoverduePmt, 
     p.FOverAmt FOverduePmt, p.FTOverAmt FTOverduePmt, 
     p.FTUnOverAmt FTUnoverduePmt, p.FExceedeAmt FTExceedePmt, 
-    p.FWrtAmt FTWarranty, p.FOverWrtAmt FOverdueWarranty, p.FUnOverWrtAmt FUnoverdueWarranty
+    p.FWrtAmt FTWarranty, p.FOverWrtAmt FOverdueWarranty, p.FUnOverWrtAmt FUnoverdueWarranty,
+    o.FDeliverNote, o.FDelvPmt
 FROM #order_entry_temp o 
 LEFT JOIN #rcv_total rt ON rt.FID=o.FID
 LEFT JOIN #payment p ON p.FID=o.FID

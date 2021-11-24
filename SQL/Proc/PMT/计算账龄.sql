@@ -1,5 +1,5 @@
 --计算账龄
-CREATE PROC [dbo].[proc_czly_GetAging](
+ALTER PROC [dbo].[proc_czly_GetAging](
     @Type VARCHAR(100)
 )
 AS
@@ -39,7 +39,9 @@ CREATE TABLE #pmt_entry(
     FTExceedePmt DECIMAL(18, 2),
     FTWarranty DECIMAL(18, 2),
     FOverdueWarranty DECIMAL(18, 2),
-    FUnoverdueWarranty DECIMAL(18, 2)
+    FUnoverdueWarranty DECIMAL(18, 2),
+    FDeliverNote VARCHAR(55),
+    FDelvPmt DECIMAL(18, 2)
 )
 DECLARE @SDt DATETIME = (SELECT TOP 1 FDate FROM T_SAL_ORDER ORDER BY FDate ASC)
 DECLARE @EDt DATETIME = GETDATE()

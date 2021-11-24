@@ -1,5 +1,5 @@
 -- 各类别货款
-CREATE PROC [dbo].[proc_czly_GetPmt](
+ALTER PROC [dbo].[proc_czly_GetPmt](
     @FormId VARCHAR(55),
     @FSellerID BIGINT=0,
     @sDt DATETIME='',
@@ -50,7 +50,9 @@ CREATE TABLE #pmt(
     FTExceedePmt DECIMAL(18, 2),
     FTWarranty DECIMAL(18, 2),
     FOverdueWarranty DECIMAL(18, 2),
-    FUnoverdueWarranty DECIMAL(18, 2)
+    FUnoverdueWarranty DECIMAL(18, 2),
+    FDeliverNote VARCHAR(55),
+    FDelvPmt DECIMAL(18, 2)
 )
 
 INSERT INTO #pmt EXEC proc_czly_GetPmtDetail2 @SDt=@sDt, @EDt=@eDt, 
@@ -69,7 +71,7 @@ BEGIN
         FTOrderAmt,FDeliverAmt FTDeliverAmt,FReceiverAmt FTReceiverAmt,FInvoiceAmt FTInvoiceAmt,
         FOuterPmt,FNormOverduePmt,FNormUnoverduePmt,FOverduePmt,FTOverduePmt,FTUnoverduePmt,
         FTExceedePmt,FOverdueWarranty,FUnoverdueWarranty,FTWarranty,
-        FIntervalMonth,FIntervalDay,FRemark
+        FIntervalMonth,FIntervalDay,FRemark,FDeliverNote,FDelvPmt
     FROM #pmt p
 END
 IF @FormId = 'ora_PMT_OfficePmt'
