@@ -144,12 +144,12 @@
 1. 补零函数
 
    ```mssql
-create function [dbo].[fun_BosRnd_addSpace](
-   @itemID varchar(10),	--待处理值
-   @strB varchar(50),		--前缀
-   @strE varchar(50),		--后缀
-   @maxLen int				--补足长度
-   )
+    create function [dbo].[fun_BosRnd_addSpace](
+        @itemID varchar(10),	--待处理值
+        @strB varchar(50),		--前缀
+        @strE varchar(50),		--后缀
+        @maxLen int				--补足长度
+    )
    ```
 
 2. 计算货款收款到期日
