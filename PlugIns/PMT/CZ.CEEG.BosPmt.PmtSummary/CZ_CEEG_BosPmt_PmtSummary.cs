@@ -108,8 +108,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
 
             string FOrderNo = this.Model.GetValue("FOrderNo", Row).ToString();
             string FSerialNum = this.Model.GetValue("FSerialNum", Row).ToString();
-            string FSellerID = this.Model.GetValue("FSellerID", Row) == null ? "0" : (this.Model.GetValue("FSellerID") as DynamicObject)["Id"].ToString();
-            string FDeptID = this.Model.GetValue("FDeptID", Row) == null ? "0" : (this.Model.GetValue("FDeptID") as DynamicObject)["Id"].ToString();
+            string FSellerID = this.Model.GetValue("FSellerID", Row) == null ? "0" : (this.Model.GetValue("FSellerID", Row) as DynamicObject)["Id"].ToString();
+            string FDeptID = this.Model.GetValue("FDeptID", Row) == null ? "0" : (this.Model.GetValue("FDeptID", Row) as DynamicObject)["Id"].ToString();
             string FDelvPmt = this.Model.GetValue("FOuterPmt", Row).ToString();
             para.CustomParams.Add("FOrderNo", FOrderNo);
             para.CustomParams.Add("FSellerID", FSellerID);

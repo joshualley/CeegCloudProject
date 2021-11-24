@@ -28,7 +28,7 @@ SELECT ISNULL(MIN(FEarlyDelvGoodsDt), '1900-01-01') FEarlyDelvGoodsDt,
     MAX(ofi.FBILLALLAMOUNT) FTOrderAmt, 
     ISNULL(si.FInvoiceAmt, 0) FInvoiceAmt,
     SUM(ISNULL(ost.FDeliverAmt, 0)) FDeliverAmt,
-    case ISNULL(dlv.FID, 0) when 0 then '已移交' else '未移交' end FDeliverNote,
+    case ISNULL(dlv.FID, 0) when 0 then '' else '已移交' end FDeliverNote,
     ISNULL(dlv.FDeliverAmt, 0) FDelvPmt -- 移交货款
 into #order_entry_temp
 FROM T_SAL_ORDER o
