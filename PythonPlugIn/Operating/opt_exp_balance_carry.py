@@ -82,6 +82,8 @@ def Query():
 	for i in range(objs.Count):
 		this.Model.SetValue("FSellerId", objs[i]["FSellerId"], i)
 		this.Model.SetValue("FEmpId", objs[i]["FEmpId"], i)
+		this.Model.SetValue("FSellerName", objs[i]["FName"], i)
+		this.Model.SetValue("FSellerNumber", objs[i]["FSellerNumber"], i)
 		this.Model.SetValue("FInitBalance", objs[i]["FInitBalance"], i)
 		this.Model.SetValue("FOldSysAmt", objs[i]["FOldSysAmt"], i)
 		this.Model.SetValue("FNewSysAmt", objs[i]["FNewSysAmt"], i)
