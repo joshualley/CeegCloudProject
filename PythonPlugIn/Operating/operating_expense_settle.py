@@ -142,6 +142,8 @@ def create_settle_entry(FQOrderNo, FQSellerNumber, FQSDate, FQEDate):
 		return
 	this.Model.BatchCreateNewEntryRow("FEntity", objs.Count)
 	for i in range(objs.Count):
+		this.Model.SetValue("F_ora_seller_text", objs[i]["sellername"], i)
+		this.Model.SetValue("F_ora_sellerno_text", objs[i]["sellerno"], i)
 		this.Model.SetValue("FSellerId", objs[i]["FSALERID"], i)
 		this.Model.SetValue("FOrgId", objs[i]["FSALEORGID"], i)
 		this.Model.SetValue("FDeptId", objs[i]["FSALEDEPTID"], i)
