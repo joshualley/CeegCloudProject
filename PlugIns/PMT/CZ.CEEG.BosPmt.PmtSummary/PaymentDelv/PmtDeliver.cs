@@ -6,7 +6,7 @@ using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.Util;
 using System;
 using System.ComponentModel;
-
+using System.Linq;
 
 namespace CZ.CEEG.BosPmt.PmtSummary.PaymentDelv
 {
@@ -37,6 +37,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary.PaymentDelv
                 this.View.Model.SetValue("FSerialNum", FSerialNum);
                 this.View.Model.SetValue("FDeliverAmt", FDelvPmt);
                 this.View.Model.SetValue("FOrderAmt", FOrderAmt);
+
+                SetAudit();
             }
 
             string FDeliverType = this.Model.GetValue("FDeliverType")?.ToString() ?? "";
@@ -45,6 +47,23 @@ namespace CZ.CEEG.BosPmt.PmtSummary.PaymentDelv
                 this.View.GetControl("FBackReason").Visible = false;
             }
 
+            
+
+        }
+
+
+        /// <summary>
+        /// 设置审核人，直接领导岗位、单位总经理
+        /// </summary>
+        private void SetAudit()
+        {
+            string userId = this.Context.UserId.ToString();
+            string sql = string.Format("exec proc_czty_GetLoginUser2Emp @FUserID='{0}'", userId);
+            var item = DBUtils.ExecuteDynamicObject(Context, sql).FirstOrDefault();
+            if(item != null)
+            {
+                this.View.Model.SetValue("FGManager", item["FGManager"].ToString());
+            }
         }
 
     }
