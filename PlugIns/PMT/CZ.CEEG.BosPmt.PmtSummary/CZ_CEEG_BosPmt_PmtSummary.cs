@@ -106,16 +106,28 @@ namespace CZ.CEEG.BosPmt.PmtSummary
            
             para.Status = OperationStatus.ADDNEW;
 
+            string FDeliverNote = this.Model.GetValue("FDeliverNote", Row)?.ToString() ?? "";
+            if (!FDeliverNote.IsNullOrEmptyOrWhiteSpace()) 
+            {
+                this.View.ShowMessage("订单已移交处理，请勿重复操作！");
+                return;
+            }
             string FOrderNo = this.Model.GetValue("FOrderNo", Row).ToString();
             string FSerialNum = this.Model.GetValue("FSerialNum", Row).ToString();
-            string FSellerID = this.Model.GetValue("FSellerID", Row) == null ? "0" : (this.Model.GetValue("FSellerID", Row) as DynamicObject)["Id"].ToString();
-            string FDeptID = this.Model.GetValue("FDeptID", Row) == null ? "0" : (this.Model.GetValue("FDeptID", Row) as DynamicObject)["Id"].ToString();
+            string FSignOrgID = (this.Model.GetValue("FSignOrgID", Row) as DynamicObject)?["Id"].ToString() ?? "0";
+            string FCustID = (this.Model.GetValue("FCustID", Row) as DynamicObject)?["Id"].ToString() ?? "0";
+            string FSellerID = (this.Model.GetValue("FSellerID", Row) as DynamicObject)?["Id"].ToString() ?? "0";
+            string FDeptID = (this.Model.GetValue("FDeptID", Row) as DynamicObject)?["Id"].ToString() ?? "0";
             string FDelvPmt = this.Model.GetValue("FOuterPmt", Row).ToString();
+            string FOrderAmt = this.Model.GetValue("FTOrderAmt", Row).ToString();
             para.CustomParams.Add("FOrderNo", FOrderNo);
+            para.CustomParams.Add("FSignOrgID", FSignOrgID);
+            para.CustomParams.Add("FCustID", FCustID);
             para.CustomParams.Add("FSellerID", FSellerID);
             para.CustomParams.Add("FDeptID", FDeptID);
             para.CustomParams.Add("FSerialNum", FSerialNum);
             para.CustomParams.Add("FDelvPmt", FDelvPmt);
+            para.CustomParams.Add("FOrderAmt", FOrderAmt);
 
             this.View.ShowForm(para);
         }
