@@ -60,6 +60,18 @@ LEFT JOIN T_BD_CUSTOMER c ON c.FCUSTID=o.FCUSTID
 LEFT JOIN T_BD_DEPARTMENT d ON dbo.fun_czty_GetWorkDeptID(sm.FDEPTID)=d.FDEPTID
 LEFT JOIN ora_PMT_Deliver dlv on o.FBILLNO=dlv.FORDERNO AND dlv.FDOCUMENTSTATUS='C' -- 货款移交单
 WHERE o.FDocumentStatus='C' 
+AND o.FBillNo not in (
+    '20019999',
+    '20019716',
+    '20019964',
+    '20017963',
+    '20018556',
+    '20016179',
+    '20015555',
+    '20015374',
+    '20014703',
+    '20001701'
+)
     -- and   convert(varchar(10),o.fdate,20) <='2020-07-28'  ---临时增加 
 AND o.FCustID NOT IN ( --过滤掉内单
 	SELECT cl.FCUSTID FROM T_BD_CUSTOMER_L cl
