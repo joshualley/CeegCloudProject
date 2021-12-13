@@ -76,6 +76,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PaymentDelv\ChangeExecutorDyForm.cs" />
     <Compile Include="PaymentDelv\PmtDeliverService.cs" />
+    <Compile Include="TenderBond\TenderBondDyForm.cs" />
+    <Compile Include="TenderBond\MarginTransForm.cs" />
+    <Compile Include="TenderBond\BinddingForm.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
