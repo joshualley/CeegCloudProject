@@ -221,7 +221,17 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
             _sb.Append("inner join T_GL_BALANCE b on f.FID=b.FDetailID and aco.FBOOKID=b.FACCOUNTBOOKID and aco.FCBYear=b.FYEAR and aco.FCBPeriod=b.FPeriod and b.FCURRENCYID=0 ");
             _sb.Append("inner join T_BD_ACCOUNT a on b.FACCOUNTID=a.FACCTID ");
-            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " union all ");
+            
+            
+            if (!_fbo.ToString().Equals("BD_Empinfo"))
+            {
+                _sb.Append("where aco.FOrgID not in (156140,156141,293071,293073,1088184,156142,293065) " + _ObjAcctWhile+ " union all ");
+            }
+            else {
+                _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " union all ");
+            }
+            
+            
             _sb.Append("select ve.FDC*ve.FAmount FGOBAmt from(" + _ObjMstIDSch + ")o1 ");
             _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
             _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");

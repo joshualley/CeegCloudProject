@@ -254,13 +254,14 @@ WHERE FISFIRSTPOST='1' AND d.FUseOrgId='{0}'", orgId);
                     {
                         this.View.Model.SetValue("F_ora_SocialWorkDay", objs[0]["FJoinDate"].ToString());//参加工作日期
                     }
+                    DynamicObjectCollection objs2;
                     sql = string.Format(@"select FID from T_BD_STAFFTEMP es
 inner join T_BD_STAFF s on es.FSTAFFID=s.FSTAFFID and s.FDOCUMENTSTATUS='C' and s.FFORBIDSTATUS='A'
 where es.FPostID='{0}' and FIsFirstPost='1' ", obj["FSuperiorPost"].ToString());
-                    objs = CZDB_GetData(sql);
-                    if (objs.Count > 0)
+                    objs2 = CZDB_GetData(sql);
+                    if (objs2.Count > 0)
                     {
-                        this.View.Model.SetValue("F_ora_Leader", objs[0]["FID"].ToString());//直接领导
+                        this.View.Model.SetValue("F_ora_Leader", objs2[0]["FID"].ToString());//直接领导
                     }
 
                     if (!IsKaiMan())
