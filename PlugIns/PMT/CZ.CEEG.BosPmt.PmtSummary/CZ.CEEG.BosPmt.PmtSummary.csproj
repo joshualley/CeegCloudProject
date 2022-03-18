@@ -1,4 +1,4 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>C:\Program Files %28x86%29\Kingdee\K3Cloud\WebSite\bin\</OutputPath>
+    <OutputPath>G:\kd\WebSite\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,26 +31,53 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Kingdee.BOS">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.App">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.App.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.App.Core">
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.App.ServicePlugIn">
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.ServicePlugIn.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Business.Bill">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Business.Bill.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.Bill.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Business.DynamicForm">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.DynamicForm.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Business.PlugIn">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.PlugIn.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Contracts">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Core">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Core.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Core.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.DataEntity">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.DataEntity.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.DataEntity.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Model">
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Model.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Model.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.ServiceHelper, Version=7.5.1800.6, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.ServiceHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Workflow">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Workflow.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Workflow.App.Core">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Workflow.App.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Workflow.Models">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Workflow.Models.dll</HintPath>
+    </Reference>
+    <Reference Include="Kingdee.BOS.Workflow.PlugIns">
+      <HintPath>E:\erp\bos\Kingdee.BOS.Workflow.PlugIns.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

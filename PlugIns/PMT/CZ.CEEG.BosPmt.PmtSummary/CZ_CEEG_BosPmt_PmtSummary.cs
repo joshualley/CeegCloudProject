@@ -21,7 +21,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
     [Description("货款汇总报表")]
     public class CZ_CEEG_BosPmt_PmtSummary : AbstractDynamicFormPlugIn
     {
-       
+
         #region Overrides
         public override void AfterBindData(EventArgs e)
         {
@@ -34,11 +34,11 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             //设置开始日期为订单最早日期
             string sql = "SELECT TOP 1 FDate FROM T_SAL_ORDER ORDER BY FDate ASC";
             var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
-            if(obj.Count > 0)
+            if (obj.Count > 0)
             {
                 sDt = obj[0]["FDate"].ToString();
             }
-           
+
             this.Model.SetValue("FSDate", sDt);
             this.View.UpdateView("FSDate");
             this.Model.SetValue("FEDate", eDt);
@@ -69,7 +69,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                     break;
             }
         }
-        
+
         public override void AfterEntryBarItemClick(AfterBarItemClickEventArgs e)
         {
             base.AfterEntryBarItemClick(e);
@@ -91,7 +91,7 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         }
 
         #endregion
-        
+
         #region Actions
 
         /// <summary>
@@ -103,11 +103,11 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             para.FormId = "ora_PMT_Deliver";
             para.OpenStyle.ShowType = ShowType.Modal;
             para.ParentPageId = this.View.PageId;
-           
+
             para.Status = OperationStatus.ADDNEW;
 
             string FDeliverNote = this.Model.GetValue("FDeliverNote", Row)?.ToString() ?? "";
-            if (!FDeliverNote.IsNullOrEmptyOrWhiteSpace()) 
+            if (!FDeliverNote.IsNullOrEmptyOrWhiteSpace())
             {
                 this.View.ShowMessage("订单已移交处理，请勿重复操作！");
                 return;
@@ -140,7 +140,19 @@ namespace CZ.CEEG.BosPmt.PmtSummary
             string formid = this.View.GetFormId();
             string FSDate = this.Model.GetValue("FSDate") == null ? "" : this.Model.GetValue("FSDate").ToString();
             string FEDate = this.Model.GetValue("FEDate") == null ? "" : this.Model.GetValue("FEDate").ToString();
+
             string FQDeptId = this.Model.GetValue("FQDeptId") == null ? "0" : (this.Model.GetValue("FQDeptId") as DynamicObject)["Id"].ToString();
+
+            string deptSql = "0";
+            DynamicObjectCollection deptIds = this.Model.GetValue("FQDeptIds") as DynamicObjectCollection;
+            if (deptIds.Count > 0)
+            {
+                deptSql = string.Join(",", deptIds.Select(d => d["FQDeptIds_Id"].ToString()));
+            }
+
+
+            DynamicObjectCollection regionIds = this.Model.GetValue("FRegionIds") as DynamicObjectCollection;
+
             string FQSalerId = this.Model.GetValue("FQSalerId") == null ? "0" : (this.Model.GetValue("FQSalerId") as DynamicObject)["Id"].ToString();
             string FQCustId = this.Model.GetValue("FQCustId") == null ? "0" : (this.Model.GetValue("FQCustId") as DynamicObject)["Id"].ToString();
             string FQFactoryId = this.Model.GetValue("FQFactoryId") == null ? "0" : (this.Model.GetValue("FQFactoryId") as DynamicObject)["Id"].ToString();
@@ -148,16 +160,35 @@ namespace CZ.CEEG.BosPmt.PmtSummary
 
 
             string sql = string.Format(@"exec proc_czly_GetPmt @FormId='{0}', @SDt='{1}', @EDt='{2}', 
-@FQDeptId={3}, @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
-            formid, FSDate, FEDate, FQDeptId, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
-            var objs = DBUtils.ExecuteDynamicObject(this.Context, sql);
+@FQDeptId='{3}', @FQSalerId={4}, @FQCustId={5}, @FQFactoryId='{6}', @FQOrderNo='{7}'",
+            formid, FSDate, FEDate, deptSql, FQSalerId, FQCustId, FQFactoryId, FQOrderNo);
+            var objsDB = DBUtils.ExecuteDynamicObject(this.Context, sql);
             this.Model.DeleteEntryData("FEntity");
-            if (objs.Count <= 0)
+            if (objsDB.Count <= 0)
             {
                 return;
             }
             string FIsOldSysOrder;
+            
+
+            List<DynamicObject> objs = objsDB.ToList();
+
+            //过滤大区
+            if (regionIds.Count > 0)
+            {
+                objs = objs.Where(o => regionIds.Any(r =>
+                {
+
+                    DynamicObject dept = r["FRegionIds"] as DynamicObject;
+
+                    return o["FDeptNumber"].ToString().StartsWith(dept["Number"].ToString());
+
+                }
+                )).ToList();
+            }
+
             this.Model.BatchCreateNewEntryRow("FEntity", objs.Count);
+
             for (int i = 0; i < objs.Count; i++)
             {
                 //this.Model.CreateNewEntryRow("FEntity");
@@ -177,8 +208,8 @@ namespace CZ.CEEG.BosPmt.PmtSummary
                 this.Model.SetValue("FTReceiverAmt", objs[i]["FTReceiverAmt"].ToString(), i);
                 this.Model.SetValue("FTInvoiceAmt", objs[i]["FTInvoiceAmt"].ToString(), i);
                 this.Model.SetValue("FOuterPmt", objs[i]["FOuterPmt"].ToString(), i);
-                this.Model.SetValue("FOuterPmtAll", 
-                    decimal.Parse(objs[i]["FTDeliverAmt"].ToString()) - 
+                this.Model.SetValue("FOuterPmtAll",
+                    decimal.Parse(objs[i]["FTDeliverAmt"].ToString()) -
                     decimal.Parse(objs[i]["FTReceiverAmt"].ToString()), i);
                 this.Model.SetValue("FNormOverduePmt", objs[i]["FNormOverduePmt"].ToString(), i);
                 this.Model.SetValue("FNormUnoverduePmt", objs[i]["FNormUnoverduePmt"].ToString(), i);
@@ -201,6 +232,6 @@ namespace CZ.CEEG.BosPmt.PmtSummary
         }
 
         #endregion
-        
+
     }
 }
