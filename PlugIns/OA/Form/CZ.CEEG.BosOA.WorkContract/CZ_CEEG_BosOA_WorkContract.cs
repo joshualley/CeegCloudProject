@@ -27,6 +27,7 @@ namespace CZ.CEEG.BosOA.WorkContract
                     break;
                 case "FContractCompany":
                     Act_GetGManager();
+                    SetDepMan();
                     break;
             }
         }
@@ -67,6 +68,24 @@ namespace CZ.CEEG.BosOA.WorkContract
             //}
 
 
+        }
+
+        private void SetDepMan()
+        {
+            string FContractCompany = this.View.Model.GetValue("FContractCompany") == null ? "0" : (this.View.Model.GetValue("FContractCompany") as DynamicObject)["Id"].ToString();
+            string sql = "select d.fid  from T_ORG_POST a join T_ORG_POSTREPORTLINE b on a.FPOSTID = b.FPOSTID " +
+                "join T_BD_STAFF c on c.FPOSTID = a.FPOSTID join T_HR_EMPINFO d on c.FSTAFFID = d.FSTAFFID " +
+                "where b.FSUPERIORPOST = 103570 and c.FFORBIDSTATUS = 'A' and a.FDEPTID =  " + FContractCompany;
+           
+            var dt = DBUtils.ExecuteDynamicObject(this.Context, sql);
+            if (dt.Count > 0)
+            {
+                this.View.Model.SetValue("FORGMAN", dt[0]["fid"]);
+            }
+            else
+            {
+                this.View.Model.SetValue("FORGMAN", "0");
+            }
         }
     }
 }
