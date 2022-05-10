@@ -51,6 +51,7 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT o.FID, SUM(FInvCurAmt) FInvoiceAmt FROM ora_CRM_SaleInvoice s
     INNER JOIN T_SAL_ORDER o ON o.FBILLNO=s.FSaleOrderID
+    WHERE s.FDocumentStatus='C'
 	-- where convert(varchar(10),o.fdate,20) <='2020-07-28'  ---临时增加
     GROUP BY o.FID
 ) si ON si.FID=o.FID
