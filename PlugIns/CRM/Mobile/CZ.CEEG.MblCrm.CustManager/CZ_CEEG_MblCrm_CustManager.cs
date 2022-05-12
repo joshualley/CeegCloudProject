@@ -77,6 +77,7 @@ namespace CZ.CEEG.MblCrm.CustManager
                     {
                         e.Cancel = true;
                     }
+                    //this.View.BillModel.SetValue("FNumber", "dfajskldfjas");
                     Act_CatAddress();
                     break;
             }
@@ -86,19 +87,27 @@ namespace CZ.CEEG.MblCrm.CustManager
 
         public override void AfterDoOperation(AfterDoOperationEventArgs e)
         {
+
             base.AfterDoOperation(e);
-            CZ_DoFileUpLoad();
-            string opKey = e.Operation.Operation.ToUpperInvariant();
-            switch (opKey)
+
+            bool success = e.OperationResult.IsSuccess;
+
+            if (success)
             {
-                case "SUBMIT":
-                    string FID = this.View.BillModel.DataObject["Id"].ToString();
-                    Act_CreateDefaultContract(FID);
-                    this.View.ShowMessage("提交成功！", MessageBoxOptions.OK, (result) =>
-                    {
-                        this.View.Close();
-                    });
-                    break;
+                
+                CZ_DoFileUpLoad();
+                string opKey = e.Operation.Operation.ToUpperInvariant();
+                switch (opKey)
+                {
+                    case "SUBMIT":
+                        string FID = this.View.BillModel.DataObject["Id"].ToString();
+                        Act_CreateDefaultContract(FID);
+                        this.View.ShowMessage("提交成功！", MessageBoxOptions.OK, (result) =>
+                        {
+                            this.View.Close();
+                        });
+                        break;
+                }
             }
         }
 
