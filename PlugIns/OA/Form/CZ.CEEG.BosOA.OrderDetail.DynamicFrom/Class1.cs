@@ -13,11 +13,13 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
     public class Class1 : AbstractDynamicFormPlugIn
     {
         DataTable dt;
-        string sql = string.Format("/*dialect*/SELECT FBILLNO , FCUSTID , FSALERID , FMATERIALID , FQTY , FPLANDELIVERYDATE " +
-                "FROM t_SAL_ORDERENTRY sorddet JOIN T_SAL_ORDER sord ON sorddet.FID = sord.FID");
+        string sql = string.Format("/*dialect*/SELECT FBILLNO , FCUSTID , FSALERID , sorddet.FMATERIALID , FQTY , FPLANDELIVERYDATE ,m.fname matName " +
+            "FROM t_SAL_ORDERENTRY sorddet JOIN T_SAL_ORDER sord ON sorddet.FID = sord.FID " +
+            "left join T_BD_MATERIAL_L m on sorddet.FMATERIALID = m.FMATERIALID");
 
         public override void OnLoad(EventArgs e)
         {
+
             base.OnLoad(e);
 
             // 执行SQL
@@ -43,13 +45,11 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
                 string FSalerId = FSaler == null ? "" : FSaler["Id"].ToString();
 
                 // TODO:sql字符串拼接
-                sql = "/*dialect*/SELECT FBILLNO , FCUSTID , FSALERID , FMATERIALID , FQTY , FPLANDELIVERYDATE " +
-                    "FROM t_SAL_ORDERENTRY sod JOIN T_SAL_ORDER so ON sod.FID = so.FID where " +
+                DataBind(sql + " where " +
                     "" + (FOrderId == "" ? "" : " FBILLNO like '%" + FOrderId + "%' and ") +
                     "" + (FCustId == "" ? "" : " FCustId = " + FCustId + " and ") +
                     "" + (FSalerId == "" ? "" : " FSalerId = " + FSalerId + " and ") +
-                    "" + " 1 = 1 ";
-                DataBind(sql, true);
+                    "" + " 1 = 1 ", true);
             }
         }
 
@@ -64,6 +64,7 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
                 this.Model.SetValue("FCUSTID", items[i]["FCUSTID"], i);
                 this.Model.SetValue("FSALERID", items[i]["FSALERID"], i);
                 this.Model.SetValue("FPRODUCTMODEL", items[i]["FMATERIALID"], i);
+                this.Model.SetValue("FPRODUCTMODEL2", items[i]["matName"], i);
                 this.Model.SetValue("FORDERNUM", items[i]["FQTY"], i);
                 this.Model.SetValue("FPLANDELIVERYDATE", items[i]["FPLANDELIVERYDATE"], i);
             }

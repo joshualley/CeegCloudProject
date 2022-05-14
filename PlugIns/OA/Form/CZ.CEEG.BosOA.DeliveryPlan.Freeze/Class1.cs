@@ -20,7 +20,8 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.Freeze
             base.AfterBindData(e);
             // 设置行高
             // 不会换行，等于没用……
-            //this.View.GetControl<EntryGrid>("FEntity").SetRowHeight(80);
+            this.View.GetControl<EntryGrid>("FEntity").SetRowHeight(80);
+
             // 绑定完数据后先把所有的输入框都锁定，后面根据角色信息或用户信息解锁
             this.View.LockField("FOrderId", false);
             this.View.LockField("FCustId", false);
@@ -43,12 +44,15 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.Freeze
             long userId = this.Context.UserId;
 
             string countSalesmanSql = string.Format("/*dialect*/SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
-                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0}", userId);
+                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0} union all (select fuserid from DPCreator) ", userId);
 
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
             {
+                this.View.LockField("FCustId", true);
+                this.View.LockField("FSALERID", true);
                 this.View.LockField("FProductModel", true);
+                this.View.LockField("FProductModel2", true);
                 this.View.LockField("FPlanDeliveryDate", true);
                 this.View.LockField("FPlannedDeliveryDate", true);
                 this.View.LockField("FLateDelivery", true);

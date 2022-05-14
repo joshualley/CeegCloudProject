@@ -2,8 +2,10 @@
 using Kingdee.BOS.Core.Bill.PlugIn;
 using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
+using Kingdee.BOS.Core.DynamicForm.PlugIn.ControlModel;
 using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.Util;
+using System;
 using System.ComponentModel;
 
 namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
@@ -36,7 +38,8 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
             long userId = this.Context.UserId;
 
             string countSalesmanSql = string.Format("/*dialect*/SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
-                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0}", userId);
+                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0} " +
+                "union all (select fuserid from DPCreator)", userId);
 
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
@@ -69,6 +72,7 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
                         this.Model.SetValue("FCUSTID", resultData[i]["FCUSTID"], i + rowLen);
                         this.Model.SetValue("FSALERID", resultData[i]["FSALERID"], i + rowLen);
                         this.Model.SetValue("FPRODUCTMODEL", resultData[i]["FProductModel"], i + rowLen);
+                        this.Model.SetValue("FPRODUCTMODEL2", resultData[i]["FProductModel2"], i + rowLen);
                         this.Model.SetValue("FORDERNUM", resultData[i]["FORDERNUM"], i + rowLen);
                         this.Model.SetValue("FPLANDELIVERYDATE", resultData[i]["FPLANDELIVERYDATE"], i + rowLen);
                     }
