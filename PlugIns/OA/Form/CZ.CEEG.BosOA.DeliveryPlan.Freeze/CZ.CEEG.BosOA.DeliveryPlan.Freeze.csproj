@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton">
+      <HintPath>..\CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton\bin\Release\CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton.dll</HintPath>
+    </Reference>
     <Reference Include="Kingdee.BOS">
       <HintPath>E:\erp\bos\Kingdee.BOS.dll</HintPath>
     </Reference>

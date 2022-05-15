@@ -17,6 +17,13 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
         public override void AfterEntryBarItemClick(AfterBarItemClickEventArgs e)
         {
             base.AfterEntryBarItemClick(e);
+            if (e.BarItemKey.Equals("addEntry"))
+            {
+                if (CanModify())
+                {
+                    this.View.InvokeFormOperation("NewEntry");
+                }
+            }
             if (e.BarItemKey.Equals("tbBatchFill"))
             {
                 if (CanModify())
@@ -37,9 +44,9 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
         {
             long userId = this.Context.UserId;
 
-            string countSalesmanSql = string.Format("/*dialect*/SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
-                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0} " +
-                "union all (select fuserid from DPCreator)", userId);
+            string countSalesmanSql = string.Format("/*dialect*/select FUserId from (SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
+                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER " +
+                "union all (select fuserid from DPCreator)) users WHERE FUserId = {0} ", userId);
 
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
@@ -48,7 +55,7 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
             }
             else
             {
-                this.View.ShowMessage("销售才可对单据体进行修改。");
+                this.View.ShowMessage("权限不足。");
                 return false;
             }
         }

@@ -27,6 +27,7 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.Freeze
             this.View.LockField("FCustId", false);
             this.View.LockField("FSALERID", false);
             this.View.LockField("FProductModel", false);
+            this.View.LockField("FProductModel2", false);
             this.View.LockField("FOrderNum", false);
             this.View.LockField("FPlanDeliveryDate", false);
             this.View.LockField("FPlannedDeliveryDate", false);
@@ -43,8 +44,9 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.Freeze
 
             long userId = this.Context.UserId;
 
-            string countSalesmanSql = string.Format("/*dialect*/SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
-                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER WHERE FUserId = {0} union all (select fuserid from DPCreator) ", userId);
+            string countSalesmanSql = string.Format("/*dialect*/select FUserId from (SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
+                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER " +
+                "union all (select fuserid from DPCreator)) users WHERE FUserId = {0} ", userId);
 
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
