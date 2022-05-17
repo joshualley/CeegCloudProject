@@ -24,18 +24,25 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton
                     this.View.InvokeFormOperation("NewEntry");
                 }
             }
-            if (e.BarItemKey.Equals("tbBatchFill"))
+            else if (e.BarItemKey.Equals("tbBatchFill"))
             {
                 if (CanModify())
                 {
                     CreateDynamicFromEntry();
                 }
             }
-            if (e.BarItemKey.Equals("tbDeleteEntry"))
+            else if (e.BarItemKey.Equals("tbDeleteEntry"))
             {
                 if (CanModify())
                 {
                     this.View.InvokeFormOperation("DeleteEntry");
+                }
+            }
+            else if (e.BarItemKey.Equals("insertEntry"))
+            {
+                if (CanModify())
+                {
+                    this.View.InvokeFormOperation("InsertEntry");
                 }
             }
         }

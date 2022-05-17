@@ -51,8 +51,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan.Freeze
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
             {
+                this.View.LockField("FOrderId", true);
                 this.View.LockField("FCustId", true);
                 this.View.LockField("FSALERID", true);
+                this.View.LockField("FOrderNum", true);
                 this.View.LockField("FProductModel", true);
                 this.View.LockField("FProductModel2", true);
                 this.View.LockField("FPlanDeliveryDate", true);
