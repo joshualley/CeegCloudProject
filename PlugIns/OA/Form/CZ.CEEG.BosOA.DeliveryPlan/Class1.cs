@@ -45,6 +45,8 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             this.View.LockField("FPurchase3", false);
             this.View.LockField("FAuxiliaryMaterial1", false);
             this.View.LockField("FProductionFeedback", false);
+            this.View.LockField("FSTOCKOUTQTY", false);
+            
 
             long userId = this.Context.UserId;
 
@@ -55,14 +57,17 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
             if (salesman > 0)
             {
+                this.View.LockField("FOrderId", true);
                 this.View.LockField("FCustId", true);
                 this.View.LockField("FSALERID", true);
                 this.View.LockField("FProductModel", true);
                 this.View.LockField("FProductModel2", true);
+                this.View.LockField("FOrderNum", true);
                 this.View.LockField("FPlanDeliveryDate", true);
                 this.View.LockField("FPlannedDeliveryDate", true);
                 this.View.LockField("FLateDelivery", true);
                 this.View.LockField("FDeliverySchedule", true);
+                this.View.LockField("FSTOCKOUTQTY", true);
             }
 
             string contextPermissions = string.Format("/*dialect*/select FContext from T_Delivery_Context_Control where FUserId = {0};", userId);
@@ -82,6 +87,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
 
         public override void AfterEntryBarItemClick(AfterBarItemClickEventArgs e)
         {
+
+            this.View.ShowMessage(e.BarItemKey.ToString());
+
+
             base.AfterEntryBarItemClick(e);
             if (e.BarItemKey.Equals("addEntry") || e.BarItemKey.Equals("tbNewList") || e.BarItemKey.Equals("tbNewEntry"))
             {

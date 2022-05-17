@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CZ.CEEG.BosOA.OrderDetail.DynamicFrom</RootNamespace>
     <AssemblyName>CZ.CEEG.BosOA.OrderDetail.DynamicFrom</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -34,41 +34,44 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton">
+      <HintPath>..\CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton\bin\Release\CZ.CEEG.BosOA.DeliveryPlan.SalesmanButton.dll</HintPath>
+    </Reference>
     <Reference Include="Kingdee.BOS">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.App">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.App.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.App.Core">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.App.Core.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.Core.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.App.ServicePlugIn">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.App.ServicePlugIn.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.App.ServicePlugIn.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Business.Bill">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Business.Bill.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.Bill.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Business.DynamicForm">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Business.DynamicForm.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.DynamicForm.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Business.PlugIn">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Business.PlugIn.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Business.PlugIn.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Contracts">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Contracts.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Core">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Core.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Core.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.DataEntity">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.DataEntity.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.DataEntity.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.Model">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.Model.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.Model.dll</HintPath>
     </Reference>
     <Reference Include="Kingdee.BOS.ServiceHelper">
-      <HintPath>D:\Kingdee\K3Cloud\WebSite\bin\Kingdee.BOS.ServiceHelper.dll</HintPath>
+      <HintPath>E:\erp\bos\Kingdee.BOS.ServiceHelper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -85,6 +88,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "D:\Kingdee\K3Cloud\WebSite\bin\$(TargetFileName)" /y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
