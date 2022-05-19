@@ -15,11 +15,32 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
     {
         DataTable dt;
         // 客户排除中电
-        string sql = string.Format("/*dialect*/SELECT FBILLNO,FCUSTID,FSALERID,oe.FMATERIALID,FQTY,FPLANDELIVERYDATE,m.fname matName,o.FID,oe.FENTRYID,FSTOCKOUTQTY " +
-            "FROM t_SAL_ORDERENTRY oe JOIN T_SAL_ORDER o ON oe.FID = o.FID " +
-            "LEFT JOIN T_BD_MATERIAL_L m ON oe.FMATERIALID = m.FMATERIALID " +
-            "LEFT JOIN T_SAL_ORDERENTRY_R r ON r.FENTRYID = oe.FENTRYID " +
-            "WHERE FCustId != 102449 ");
+
+        // 中电ID：102449
+        string sql = string.Format("/*dialect*/SELECT " +
+            "     FBILLNO," +
+            "     c.FCUSTID," +
+            "     cf.FINVOICETITLE as FCustName," +
+            "     s.FID as FSalerId," +
+            "     sl.FName as FSALERNAME," +
+            "     oe.FMATERIALID," +
+            "     FQTY," +
+            "     FPLANDELIVERYDATE," +
+            "     m.fname matName," +
+            "     o.FID," +
+            "     oe.FENTRYID," +
+            "     FSTOCKOUTQTY " +
+            " FROM" +
+            "     t_SAL_ORDERENTRY oe " +
+            "     JOIN T_SAL_ORDER o ON oe.FID = o.FID " +
+            "     JOIN T_BD_MATERIAL_L m ON oe.FMATERIALID = m.FMATERIALID " +
+            "     JOIN T_SAL_ORDERENTRY_R r ON r.FENTRYID = oe.FENTRYID " +
+            "     JOIN T_BD_CUSTOMER c ON c.FCUSTID = o.FCUSTID " +
+            "     JOIN T_BD_CUSTOMER_F cf ON o.FCUSTID = cf.FCUSTID " +
+            "     JOIN V_BD_SALESMAN s ON s.FID = o.FSALERID " +
+            "     JOIN V_BD_SALESMAN_L sl ON sl.FID = s.FID " +
+            " WHERE " +
+            "     c.FmasterId != 102450 ");
 
 
         public override void OnLoad(EventArgs e)
@@ -43,10 +64,10 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
             if (e.Key.Equals("FQUERYBTN"))
             {
                 string FOrder = this.Model.GetValue("FOrderId_Head") == null ? null : this.Model.GetValue("FOrderId_Head").ToString();
-                DynamicObject FCust = (DynamicObject)this.Model.GetValue("FCustId_Head");
+                DynamicObject FCust = (DynamicObject)this.View.Model.GetValue("FCustId_Head");
                 DynamicObject FSaler = (DynamicObject)this.Model.GetValue("FSalerId_Head");
                 string FOrderId = FOrder == null ? "" : FOrder.ToString();
-                string FCustId = FCust == null ? "" : FCust["Id"].ToString();
+                string FCustId = FCust == null ? "" : FCust["msterId"].ToString();
                 string FSalerId = FSaler == null ? "" : FSaler["Id"].ToString();
                 string DeliveryCheckBox = this.View.Model.GetValue("FIsDeliveryCheckBox").ToString().ToUpper();
                 bool FIsDeliveryCheckBox = DeliveryCheckBox == "TRUE";
@@ -54,15 +75,18 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
                 // TODO:sql字符串拼接
                 DataBind(sql + " and " +
                     "" + (FOrderId == "" ? "" : " FBILLNO like '%" + FOrderId + "%' and ") +
-                    "" + (FCustId == "" ? "" : " FCustId = " + FCustId + " and ") +
+                    "" + (FCustId == "" ? "" : " c.FCustID = (select FCustId from T_BD_CUSTOMER where FMasterId = " + FCustId + " and fuseOrgId = 100680) and ") +
                     "" + (FSalerId == "" ? "" : " FSalerId = " + FSalerId + " and ") +
-                    "" + (FIsDeliveryCheckBox ? "r.FSTOCKOUTQTY < oe.FQTY AND" : "") +
+                    "" + (FIsDeliveryCheckBox ? "r.FSTOCKOUTQTY < oe.FQTY AND " : "") +
                     "" + " 1 = 1 ", true);
+
             }
         }
 
         public void DataBind(string sql, bool flag)
         {
+            //this.View.ShowMessage(sql);
+
             var items = DBUtils.ExecuteDynamicObject(Context, sql);
             this.Model.DeleteEntryData("FEntity");
             this.Model.BatchCreateNewEntryRow("FEntity", items.Count);
@@ -70,7 +94,9 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
             {
                 this.Model.SetValue("ForderId", items[i]["FBILLNO"], i);
                 this.Model.SetValue("FCUSTID", items[i]["FCUSTID"], i);
+                this.Model.SetValue("FCustName", items[i]["FCustName"], i);
                 this.Model.SetValue("FSALERID", items[i]["FSALERID"], i);
+                this.Model.SetValue("FSalerName", items[i]["FSALERNAME"], i);
                 this.Model.SetValue("FPRODUCTMODEL", items[i]["FMATERIALID"], i);
                 this.Model.SetValue("FPRODUCTMODEL2", items[i]["matName"], i);
                 this.Model.SetValue("FORDERNUM", items[i]["FQTY"], i);

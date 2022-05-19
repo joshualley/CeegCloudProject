@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // 有关程序集的一般信息由以下
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("CZ.CEEG.BosOA.DeliveryPlan.Freeze")]
+[assembly: AssemblyTitle("CZ.CEEG.BosOA.OrderDetail")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CZ.CEEG.BosOA.DeliveryPlan.Freeze")]
+[assembly: AssemblyProduct("CZ.CEEG.BosOA.OrderDetail")]
 [assembly: AssemblyCopyright("Copyright ©  2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("0aec7f29-51f2-46dc-a751-1a1e823b6871")]
+[assembly: Guid("e14f2bea-6133-4b1a-92d9-758448df6aa0")]
 
 // 程序集的版本信息由下列四个值组成: 
 //

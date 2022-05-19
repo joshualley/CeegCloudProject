@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.BosOA.DeliveryPlan", "CZ.CEEG.BosOA.DeliveryPlan.csproj", "{390E64D7-0624-4068-8E23-F44351289976}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CZ.CEEG.BosOA.OrderDetail", "CZ.CEEG.BosOA.OrderDetail.csproj", "{E14F2BEA-6133-4B1A-92D9-758448DF6AA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{390E64D7-0624-4068-8E23-F44351289976}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{390E64D7-0624-4068-8E23-F44351289976}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{390E64D7-0624-4068-8E23-F44351289976}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{390E64D7-0624-4068-8E23-F44351289976}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E14F2BEA-6133-4B1A-92D9-758448DF6AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E14F2BEA-6133-4B1A-92D9-758448DF6AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E14F2BEA-6133-4B1A-92D9-758448DF6AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E14F2BEA-6133-4B1A-92D9-758448DF6AA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {14E72F59-7EEF-4810-A269-AA2224582ECA}
+		SolutionGuid = {0422BDE9-185F-4057-8089-7DCAE638E400}
 	EndGlobalSection
 EndGlobal
