@@ -1,4 +1,8 @@
-﻿using Kingdee.BOS.App.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using Kingdee.BOS.App.Data;
 using Kingdee.BOS.Core.Bill.PlugIn;
 using Kingdee.BOS.Core.DynamicForm;
 using Kingdee.BOS.Core.DynamicForm.PlugIn.Args;
@@ -8,10 +12,6 @@ using Kingdee.BOS.Msg;
 using Kingdee.BOS.Orm.DataEntity;
 using Kingdee.BOS.ServiceHelper.Messages;
 using Kingdee.BOS.Util;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 
 namespace CZ.CEEG.BosOA.DeliveryPlan
 {
@@ -25,55 +25,28 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         public override void AfterBindData(EventArgs e)
         {
             base.AfterBindData(e);
+            long userId = this.Context.UserId;
             // 设置行高
             // 不会换行，等于没用……
             this.View.GetControl<EntryGrid>("FEntity").SetRowHeight(80);
-
-            // 绑定完数据后先把所有的输入框都锁定，后面根据角色信息或用户信息解锁
-            this.View.LockField("FOrderId", false);
-            this.View.LockField("FCustId", false);
-            this.View.LockField("FCustName", false);
-            this.View.LockField("FSALERID", false);
-            this.View.LockField("FSalerName", false);
-            this.View.LockField("FProductModel", false);
-            this.View.LockField("FProductModel2", false);
-            this.View.LockField("FOrderNum", false);
-            this.View.LockField("FPlanDeliveryDate", false);
-            this.View.LockField("FPlannedDeliveryDate", false);
-            this.View.LockField("FLateDelivery", false);
-            this.View.LockField("FDeliverySchedule", false);
-            this.View.LockField("FSCMManager", false);
-            this.View.LockField("FSCMPro1", false);
-            this.View.LockField("FSCMPro2", false);
-            this.View.LockField("FPurchase1", false);
-            this.View.LockField("FPurchase2", false);
-            this.View.LockField("FPurchase3", false);
-            this.View.LockField("FAuxiliaryMaterial1", false);
-            this.View.LockField("FProductionFeedback", false);
-            this.View.LockField("FSTOCKOUTQTY", false);
-
-
-            long userId = this.Context.UserId;
-
-            string countSalesmanSql = string.Format("/*dialect*/select FUserId from (SELECT FUserId FROM T_SEC_USER u JOIN V_BD_CONTACTOBJECT c " +
-                "ON u.FLINKOBJECT = c.fid JOIN V_BD_SALESMAN s ON s.fempnumber = c.FNUMBER " +
-                "union all (select fuserid from DPCreator)) users WHERE FUserId = {0} ", userId);
-
-            int salesman = DBUtils.ExecuteDataSet(this.Context, countSalesmanSql).Tables[0].Rows.Count;
-            if (salesman > 0)
+            // 兼容不同部门单据字段不同自动锁定
+            var bosFields = this.View.BillBusinessInfo.GetBosFields();
+            for (int i = 0; i < bosFields.Length; i++)
             {
-                this.View.LockField("FOrderId", true);
-                this.View.LockField("FCustName", true);
-                this.View.LockField("FSalerName", true);
-                this.View.LockField("FProductModel2", true);
-                this.View.LockField("FOrderNum", true);
-                this.View.LockField("FPlanDeliveryDate", true);
-                this.View.LockField("FPlannedDeliveryDate", true);
-                this.View.LockField("FLateDelivery", true);
-                this.View.LockField("FDeliverySchedule", true);
-                this.View.LockField("FSTOCKOUTQTY", true);
+                var bosField = bosFields[i];
+                // 排除单据头，只对单据体操作
+                if (bosField.Field.EntityKey.ToString().Equals("FENTITY"))
+                {
+                    string bosFieldKey = bosField.Field.Key.ToString();
+                    this.View.LockField(bosFieldKey, false);
+                }
             }
-
+            // 判定是否是销售权限
+            if (CanModify())
+            {
+                FieldUnLock();
+            }
+            // 列权限
             string contextPermissions = string.Format("/*dialect*/select FContext from T_Delivery_Context_Control where FUserId = {0};", userId);
             dt = DBUtils.ExecuteDataSet(Context, contextPermissions).Tables[0];
             if (dt.Rows.Count > 0)
@@ -89,30 +62,57 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             }
         }
 
-        public override void BarItemClick(BarItemClickEventArgs e)
+        public override void AfterDoOperation(AfterDoOperationEventArgs e)
         {
-            base.BarItemClick(e);
-            if (e.BarItemKey.Equals("tbTest"))
+            base.AfterDoOperation(e);
+            if (e.Operation.Operation.EqualsIgnoreCase("Save"))
             {
-                SendMsg();
+                var isSuccess = e.OperationResult != null && e.OperationResult.IsSuccess;
+                if (isSuccess && CanModify())
+                {
+                    SendMsg();
+                }
             }
         }
 
         public override void AfterEntryBarItemClick(AfterBarItemClickEventArgs e)
         {
             base.AfterEntryBarItemClick(e);
-            if (e.BarItemKey.Equals("addEntry") || e.BarItemKey.Equals("tbNewList") || e.BarItemKey.Equals("tbNewEntry"))
+            if (e.BarItemKey.Equals("tbNewList") || e.BarItemKey.Equals("tbNewEntry"))
             {
                 if (CanModify())
                 {
                     // 新建行
                     this.View.InvokeFormOperation("NewEntry");
                 }
+                else
+                {
+                    this.View.ShowMessage("权限不足。");
+                }
             }
             else if (e.BarItemKey.Equals("tbInsertEntry"))
             {
-                // 插入行
-                this.View.InvokeFormOperation("InsertEntry");
+                if (CanModify())
+                {
+                    // 插入行
+                    this.View.InvokeFormOperation("InsertEntry");
+                }
+                else
+                {
+                    this.View.ShowMessage("权限不足。");
+                }
+            }
+            else if (e.BarItemKey.Equals("tbDeleteEntry"))
+            {
+                if (CanModify())
+                {
+                    // 删除行
+                    this.View.InvokeFormOperation("DeleteEntry");
+                }
+                else
+                {
+                    this.View.ShowMessage("权限不足。");
+                }
             }
             // 单击订单明细按钮
             else if (e.BarItemKey.Equals("tbBatchFill"))
@@ -122,13 +122,9 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                     // 创建动态表单
                     CreateDynamicFromEntry();
                 }
-            }
-            else if (e.BarItemKey.Equals("tbDeleteEntry"))
-            {
-                if (CanModify())
+                else
                 {
-                    // 删除行
-                    this.View.InvokeFormOperation("DeleteEntry");
+                    this.View.ShowMessage("权限不足。");
                 }
             }
         }
@@ -149,11 +145,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                         string date;
                         // 计划交货日期
                         date = entityObject[i]["FPlannedDeliveryDate"].ToString();
-                        DateTime FPlannedDeliveryDate = parseDateTime(date);
+                        DateTime FPlannedDeliveryDate = ParseDateTime(date);
                         // 合同交货日期
                         date = entityObject[i]["FPlanDeliveryDate"].ToString();
-                        DateTime FPlanDeliveryDate = parseDateTime(date);
-                        // String FLateDelivery = (FPlanDeliveryDate.Day - FPlannedDeliveryDate.Day).ToString();
+                        DateTime FPlanDeliveryDate = ParseDateTime(date);
                         TimeSpan FLateDelivery = FPlanDeliveryDate.Subtract(FPlannedDeliveryDate);
                         this.View.Model.SetValue("FLateDelivery", FLateDelivery.Days, i);
                         this.View.UpdateView("FLateDelivery", i);
@@ -185,7 +180,6 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             }
             else
             {
-                this.View.ShowMessage("权限不足。");
                 return false;
             }
         }
@@ -200,7 +194,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             this.View.ShowForm(formPa, delegate (FormResult result)
             {
                 DynamicObjectCollection resultData = result.ReturnData as DynamicObjectCollection;
-                this.Model.BatchCreateNewEntryRow("FEntity", resultData.Count);
+                if (resultData != null)
+                {
+                    this.Model.BatchCreateNewEntryRow("FEntity", resultData.Count);
+                }
                 if (resultData != null)
                 {
                     int rowLen = this.Model.GetEntryRowCount("FEntity") - resultData.Count;
@@ -229,10 +226,24 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        private DateTime parseDateTime(String date)
+        private DateTime ParseDateTime(String date)
         {
             DateTime dt = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.CurrentCulture);
             return dt;
+        }
+
+        private void FieldUnLock()
+        {
+            this.View.LockField("FOrderId", true);
+            this.View.LockField("FCustName", true);
+            this.View.LockField("FSalerName", true);
+            this.View.LockField("FProductModel2", true);
+            this.View.LockField("FOrderNum", true);
+            this.View.LockField("FPlanDeliveryDate", true);
+            this.View.LockField("FPlannedDeliveryDate", true);
+            this.View.LockField("FLateDelivery", true);
+            this.View.LockField("FDeliverySchedule", true);
+            this.View.LockField("FSTOCKOUTQTY", true);
         }
 
         /// <summary>
@@ -240,17 +251,28 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         /// </summary>
         private void SendMsg()
         {
-            int rowNum = this.View.Model.GetEntryRowCount("FEntity");
-
+            // 发送消息给多人       
+            var items = DBUtils.ExecuteDynamicObject(Context, "/*dialect*/ " +
+                "select dc.FUSERID,sx.FOPENID,u.FNAME " +
+                " from T_Delivery_Context_Control dc " +
+                " join T_SEC_XTUSERMAP sx on dc.FUserId = sx.FUserId " +
+                " join T_SEC_USER u on u.FUSERID = dc.FUserId " +
+                " where dc.FuserId != null or dc.FuserId != '' ");
             List<Dictionary<string, string>> sendInfos = new List<Dictionary<string, string>>();
-
-            Dictionary<string, string> infos = new Dictionary<string, string>
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i]["FuserId"] != null)
                 {
-                        //{ "FOPENID", this.Model.GetValue("FOPENID", i)==null?"":this.Model.GetValue("FOPENID", i).ToString() }
-                        {"FOPENID","5d16db8be4b00068220a1f31" },
-                        {"FUserId","192614" }
-                };
-            sendInfos.Add(infos);
+                    Dictionary<string, string> info = new Dictionary<string, string>
+                        {
+                            { "FUSERID",items[i]["FUSERID"].ToString()},
+                            { "FNAME",items[i]["FNAME"].ToString()},
+                            {"FOPENID",items[i]["FOPENID"].ToString() },
+                        {"FBILLNO",this.View.Model.GetValue("FBillNo").ToString() }
+                        };
+                    sendInfos.Add(info);
+                }
+            }
 
 
             String now = DateTime.Now.ToString("yyyy-MM-dd");
@@ -259,13 +281,11 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             String PubAcctCode = "XT-4249be9f-5181-4a2a-a01f-7a9be93f1b3a";
             String PubAcctKey = "4839223c64dff23b04bf4e3376b7a082";
 
-            List<Dictionary<string, string>> sendLogs = new List<Dictionary<string, string>>();
-
             sendInfos.ForEach(info =>
             {
                 string text = "";
                 //判断是否超期,选择不同模板
-                text = string.Format(@"亲爱的中电家人[{0}]，您有一条新的交货计划待更新，请及时跟踪并反馈交货情况.谢谢", info["FUserId"]);
+                text = string.Format(@"亲爱的中电家人[{0}]，您有一条新的交货计划[{1}]待更新，请及时跟踪并反馈交货情况.谢谢", info["FNAME"], info["FBILLNO"]);
                 Kingdee.BOS.Msg.XunTongMessage message = new Kingdee.BOS.Msg.XunTongMessage
                 {
                     AppId = appId,
@@ -278,15 +298,6 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                 };
 
                 XTSendResult res = XunTongServiceHelper.SendMessage(this.Context, message);
-
-                if (res.IsSuccess)
-                {
-                    Console.WriteLine("1111");
-                }
-                else
-                {
-
-                }
             });
         }
         #endregion

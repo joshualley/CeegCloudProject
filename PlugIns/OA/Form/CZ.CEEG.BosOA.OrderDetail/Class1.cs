@@ -18,7 +18,7 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
 
         // 中电ID：102449
         string sql = string.Format("/*dialect*/SELECT " +
-            "     FBILLNO," +
+            "     FBILLNO as ForderId," +
             "     c.FCUSTID," +
             "     cf.FINVOICETITLE as FCustName," +
             "     s.FID as FSalerId," +
@@ -42,22 +42,6 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
             " WHERE " +
             "     c.FmasterId != 102450 ");
 
-
-        public override void OnLoad(EventArgs e)
-        {
-
-            base.OnLoad(e);
-
-            // 执行SQL
-            //dt = DBUtils.ExecuteDataSet(this.Context, sql).Tables[0];
-            //if (dt.Rows.Count > 0)
-            //{
-            //    DataBind(sql + "AND r.FSTOCKOUTQTY < oe.FQTY", false);
-            //}
-        }
-
-
-
         public override void AfterButtonClick(AfterButtonClickEventArgs e)
         {
             base.AfterButtonClick(e);
@@ -72,12 +56,14 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
                 string DeliveryCheckBox = this.View.Model.GetValue("FIsDeliveryCheckBox").ToString().ToUpper();
                 bool FIsDeliveryCheckBox = DeliveryCheckBox == "TRUE";
 
+                // 本机环境中FUserOrgId:1
+                // ZD186环境中FUse人OrgId:100680
                 // TODO:sql字符串拼接
                 DataBind(sql + " and " +
                     "" + (FOrderId == "" ? "" : " FBILLNO like '%" + FOrderId + "%' and ") +
                     "" + (FCustId == "" ? "" : " c.FCustID = (select FCustId from T_BD_CUSTOMER where FMasterId = " + FCustId + " and fuseOrgId = 100680) and ") +
                     "" + (FSalerId == "" ? "" : " FSalerId = " + FSalerId + " and ") +
-                    "" + (FIsDeliveryCheckBox ? "r.FSTOCKOUTQTY < oe.FQTY AND " : "") +
+                    "" + (FIsDeliveryCheckBox ? " r.FSTOCKOUTQTY < oe.FQTY AND " : "") +
                     "" + " 1 = 1 ", true);
 
             }
@@ -92,7 +78,7 @@ namespace CZ.CEEG.BosOA.OrderDetail.DynamicFrom
             this.Model.BatchCreateNewEntryRow("FEntity", items.Count);
             for (int i = 0; i < items.Count; i++)
             {
-                this.Model.SetValue("ForderId", items[i]["FBILLNO"], i);
+                this.Model.SetValue("FORDERID", items[i]["FOrderId"], i);
                 this.Model.SetValue("FCUSTID", items[i]["FCUSTID"], i);
                 this.Model.SetValue("FCustName", items[i]["FCustName"], i);
                 this.Model.SetValue("FSALERID", items[i]["FSALERID"], i);
