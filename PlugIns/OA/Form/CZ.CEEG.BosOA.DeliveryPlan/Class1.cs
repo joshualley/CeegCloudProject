@@ -126,6 +126,16 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                 {
                     this.View.ShowMessage("权限不足。");
                 }
+            }else if (e.BarItemKey.Equals("tbBatchFillPlan"))
+            {
+                if (CanModify())
+                {
+                    CreateDynamicFromEntryPlan();
+                }
+                else
+                {
+                    this.View.ShowMessage("权限不足。");
+                }
             }
         }
 
@@ -213,6 +223,60 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                         this.Model.SetValue("FPRODUCTMODEL2", resultData[i]["FProductModel2"], i + rowLen);
                         this.Model.SetValue("FORDERNUM", resultData[i]["FORDERNUM"], i + rowLen);
                         this.Model.SetValue("FPLANDELIVERYDATE", resultData[i]["FPLANDELIVERYDATE"], i + rowLen);
+                        this.Model.SetValue("FORDERFID", resultData[i]["FORDERFID"], i + rowLen);
+                        this.Model.SetValue("FORDERENTRYID", resultData[i]["FORDERENTRYID"], i + rowLen);
+                        this.Model.SetValue("FSTOCKOUTQTY", resultData[i]["FSTOCKOUTQTY"], i + rowLen);
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// 创建动态表单
+        /// </summary>
+        public void CreateDynamicFromEntryPlan()
+        {
+            DynamicFormShowParameter formPa = new DynamicFormShowParameter();
+            formPa.FormId = "ora_plan_order_detail";
+            this.View.ShowForm(formPa, delegate (FormResult result)
+            {
+                DynamicObjectCollection resultData = result.ReturnData as DynamicObjectCollection;
+                if (resultData != null)
+                {
+                    this.Model.BatchCreateNewEntryRow("FEntity", resultData.Count);
+                }
+                if (resultData != null)
+                {
+                    int rowLen = this.Model.GetEntryRowCount("FEntity") - resultData.Count;
+                    for (int i = 0; i < resultData.Count; i++)
+                    {
+                        DynamicObject entryRow = resultData[i];
+                        this.Model.SetValue("FOrderId", resultData[i]["FORDERID"], i + rowLen);
+                        this.Model.SetValue("FCustId", resultData[i]["FCustId"], i + rowLen);
+                        this.Model.SetValue("FCustName", resultData[i]["FCustName"], i + rowLen);
+                        this.Model.SetValue("FSALERID", resultData[i]["FSalerId"], i + rowLen);
+                        this.Model.SetValue("FSalerName", resultData[i]["FSalerName"], i + rowLen);
+                        this.Model.SetValue("FProductModel", resultData[i]["FProductModel"], i + rowLen);
+                        this.Model.SetValue("FProductModel2", resultData[i]["FProductModel2"], i + rowLen);
+                        this.Model.SetValue("FOrderNum", resultData[i]["ForderNum"], i + rowLen);
+                        this.Model.SetValue("FPlanDeliveryDate", resultData[i]["FPlanDeliveryDate"], i + rowLen);
+                        this.Model.SetValue("FPlannedDeliveryDate", resultData[i]["FPlannedDeliveryDate"], i + rowLen);
+                        this.Model.SetValue("FLateDelivery", resultData[i]["FLateDelivery"], i + rowLen);
+                        this.Model.SetValue("FDeliverySchedule", resultData[i]["FDeliverySchedule"], i + rowLen);
+                        this.Model.SetValue("FSCMManager", resultData[i]["FSCMManager"], i + rowLen);
+                        this.Model.SetValue("FSCMPro1", resultData[i]["FSCMPro1"], i + rowLen);
+                        this.Model.SetValue("FSCMPro2", resultData[i]["FSCMPro2"], i + rowLen);
+                        this.Model.SetValue("Fsup_iron", resultData[i]["F_ora_sup_iron"], i + rowLen);
+                        this.Model.SetValue("Fsup_shell", resultData[i]["F_ora_sup_shell"], i + rowLen);
+                        this.Model.SetValue("FPurchase1", resultData[i]["FPurchase1"], i + rowLen);
+                        this.Model.SetValue("FPurchase2", resultData[i]["FPurchase2"], i + rowLen);
+                        this.Model.SetValue("FPurchase3", resultData[i]["FPurchase3"], i + rowLen);
+                        this.Model.SetValue("F_ora_pur_iron", resultData[i]["F_ora_pur_iron"], i + rowLen);
+                        this.Model.SetValue("F_ora_pur_shell", resultData[i]["F_ora_pur_shell"], i + rowLen);
+                        this.Model.SetValue("FAuxiliaryMaterial1", resultData[i]["FAuxiliaryMaterial1"], i + rowLen);
+                        this.Model.SetValue("FAuxiliaryMaterial2", resultData[i]["FAuxiliaryMaterial2"], i + rowLen);
+                        this.Model.SetValue("FProductionFeedback", resultData[i]["FProductionFeedback"], i + rowLen);
+                        this.Model.SetValue("F_ora_am", resultData[i]["F_ora_am"], i + rowLen);
                         this.Model.SetValue("FORDERFID", resultData[i]["FORDERFID"], i + rowLen);
                         this.Model.SetValue("FORDERENTRYID", resultData[i]["FORDERENTRYID"], i + rowLen);
                         this.Model.SetValue("FSTOCKOUTQTY", resultData[i]["FSTOCKOUTQTY"], i + rowLen);
