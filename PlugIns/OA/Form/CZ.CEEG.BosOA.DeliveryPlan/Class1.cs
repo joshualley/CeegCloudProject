@@ -67,6 +67,16 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             base.AfterDoOperation(e);
             if (e.Operation.Operation.EqualsIgnoreCase("Save"))
             {
+                // TODO: 生成订单号
+                //Entity entity = this.View.BillBusinessInfo.GetEntity("FEntity");
+                //DynamicObjectCollection entityObject = this.View.Model.GetEntityDataObject(entity);
+                //for (int i = 0; i < entityObject.Count; i++)
+                //{
+                //    if (entityObject[i]["FOrderId"] == null)
+                //    {
+                //    }
+                //}
+
                 var isSuccess = e.OperationResult != null && e.OperationResult.IsSuccess;
                 if (isSuccess && CanModify())
                 {
@@ -126,7 +136,8 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                 {
                     this.View.ShowMessage("权限不足。");
                 }
-            }else if (e.BarItemKey.Equals("tbBatchFillPlan"))
+            }
+            else if (e.BarItemKey.Equals("tbBatchFillPlan"))
             {
                 if (CanModify())
                 {
@@ -142,12 +153,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
-            if (e.Key.Equals("FPlannedDeliveryDate") || e.Key.Equals("FPlanDeliveryDate"))
+            if (e.Field.OriginKey.Equals("FPlannedDeliveryDate") || e.Field.OriginKey.Equals("FPlanDeliveryDate"))
             {
                 Entity entity = this.View.BillBusinessInfo.GetEntity("FEntity");
                 DynamicObjectCollection entityObject = this.View.Model.GetEntityDataObject(entity);
-                DynamicObjectCollection dymat = new DynamicObjectCollection(entity.DynamicObjectType);
-                //foreach (DynamicObject current in entityObject)
                 for (int i = 0; i < entityObject.Count; i++)
                 {
                     if (entityObject[i]["FPlannedDeliveryDate"] != null && entityObject[i]["FPlanDeliveryDate"] != null)
@@ -199,8 +208,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         /// </summary>
         public void CreateDynamicFromEntry()
         {
-            DynamicFormShowParameter formPa = new DynamicFormShowParameter();
-            formPa.FormId = "ora_delivery_order_detail";
+            DynamicFormShowParameter formPa = new DynamicFormShowParameter
+            {
+                FormId = "ora_delivery_order_detail"
+            };
             this.View.ShowForm(formPa, delegate (FormResult result)
             {
                 DynamicObjectCollection resultData = result.ReturnData as DynamicObjectCollection;
@@ -236,8 +247,10 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         /// </summary>
         public void CreateDynamicFromEntryPlan()
         {
-            DynamicFormShowParameter formPa = new DynamicFormShowParameter();
-            formPa.FormId = "ora_plan_order_detail";
+            DynamicFormShowParameter formPa = new DynamicFormShowParameter
+            {
+                FormId = "ora_plan_order_detail"
+            };
             this.View.ShowForm(formPa, delegate (FormResult result)
             {
                 DynamicObjectCollection resultData = result.ReturnData as DynamicObjectCollection;
@@ -317,7 +330,7 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
         {
             // 发送消息给多人       
             var items = DBUtils.ExecuteDynamicObject(Context, "/*dialect*/ " +
-                "select dc.FUSERID,sx.FOPENID,u.FNAME " +
+                " select distinct dc.FUSERID,sx.FOPENID,u.FNAME " +
                 " from T_Delivery_Context_Control dc " +
                 " join T_SEC_XTUSERMAP sx on dc.FUserId = sx.FUserId " +
                 " join T_SEC_USER u on u.FUSERID = dc.FUserId " +
@@ -332,7 +345,9 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
                             { "FUSERID",items[i]["FUSERID"].ToString()},
                             { "FNAME",items[i]["FNAME"].ToString()},
                             {"FOPENID",items[i]["FOPENID"].ToString() },
-                        {"FBILLNO",this.View.Model.GetValue("FBillNo").ToString() }
+                        {"FBILLNO",this.View.Model.GetValue("FBillNo").ToString() },
+                        {"FSDATE",this.View.Model.GetValue("FSDate").ToString()},
+                        {"FEDATE",this.View.Model.GetValue("FEDate").ToString() }
                         };
                     sendInfos.Add(info);
                 }
@@ -349,7 +364,7 @@ namespace CZ.CEEG.BosOA.DeliveryPlan
             {
                 string text = "";
                 //判断是否超期,选择不同模板
-                text = string.Format(@"亲爱的中电家人[{0}]，您有一条新的交货计划[{1}]待更新，请及时跟踪并反馈交货情况.谢谢", info["FNAME"], info["FBILLNO"]);
+                text = string.Format(@"亲爱的中电家人，您有新的交货计划【{0}-{1}】待更新，请及时跟踪并反馈采购、生产相关情况。谢谢！", info["FSDATE"], info["FEDATE"]);
                 Kingdee.BOS.Msg.XunTongMessage message = new Kingdee.BOS.Msg.XunTongMessage
                 {
                     AppId = appId,
