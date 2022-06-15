@@ -29,6 +29,15 @@ namespace CZ.CEEG.OABos.LeaveApply.LeaveType.Imp
 
         public override bool ValidateLeave(ref string msg)
         {
+            string empSql = String.Format(@"exec proc_czty_GetLoginUser2Emp @FEmpID ='{0}'", mLeaver);
+            var empObj = DBUtils.ExecuteDynamicObject(mContext, empSql);
+            string deptName = empObj[0]["FDeptName"].ToString();
+
+            if (deptName.Contains("生产"))
+            {    
+                return true;
+            }
+
             string sql = String.Format(@"exec proc_czly_GetHolidayShiftSituation @EmpID='{0}'", mLeaver);
             var obj = DBUtils.ExecuteDynamicObject(mContext, sql);
             string leftHours = obj[0]["FLeftHours"].ToString();

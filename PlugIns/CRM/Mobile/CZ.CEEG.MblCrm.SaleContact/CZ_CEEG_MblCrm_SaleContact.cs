@@ -43,18 +43,24 @@ namespace CZ.CEEG.MblCrm.SaleContact
         {
             base.AfterDoOperation(e);
             string op = e.Operation.Operation.ToUpperInvariant();
-            switch (op)
+
+            bool success = e.OperationResult.IsSuccess;
+
+            if (success)
             {
-                case "SUBMIT":
-                    //如果是下推生成的单据，则建立起它们的关联关系
-                    CreateBillRelation();
-                    CheckRptChanged();
-                    break;
-                case "SAVE":
-                    //如果是下推生成的单据，则建立起它们的关联关系
-                    CreateBillRelation();
-                    break;
-            }
+                switch (op)
+                {
+                    case "SUBMIT":
+                        //如果是下推生成的单据，则建立起它们的关联关系
+                        CreateBillRelation();
+                        CheckRptChanged();
+                        break;
+                    case "SAVE":
+                        //如果是下推生成的单据，则建立起它们的关联关系
+                        CreateBillRelation();
+                        break;
+                }
+            }     
         }
 
         public override void DataChanged(DataChangedEventArgs e)
