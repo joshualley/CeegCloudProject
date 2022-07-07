@@ -500,22 +500,110 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     AddNewEntryRow();
                     break;
                 case "FPUSHBTN": //下推
-                    PushFormByFormId();
+                    string formId = this.View.BillView.GetFormId();
+                    if(formId.Equals("ora_FYLX")){
+                        //费用立项下推选择
+                        //获取发起部门
+                        string dept = (this.View.BillModel.GetValue("FDeptID") as DynamicObject)["Number"].ToString();
+                        string workstation = (this.View.BillModel.GetValue("FPost") as DynamicObject)["Number"].ToString();
+                        string costType = (this.View.BillModel.GetValue("FCostType1") as DynamicObject)["Number"].ToString();
+                        Dictionary<string, string> options = new Dictionary<string, string>
+                        {
+                            { "dept", dept },
+                            { "workstation", workstation },
+                            { "costType", costType }
+                        };
+                        this.Act_Push(options);
+                    }else{
+                        PushFormByFormId(null,null);
+                    }
                     break;
             }
+        }
+
+        private void Act_Push(Dictionary<string, string> options)
+        {
+            //打开选择界面
+            var para1 = new MobileShowParameter();
+            para1.FormId = "ora_fl_push_choose";
+            para1.OpenStyle.ShowType = ShowType.Modal;
+            para1.Height = 143;
+            para1.Width = 240;
+            para1.ParentPageId = this.View.PageId;
+            para1.Status = OperationStatus.EDIT;
+            string pushFormId = "";
+            this.View.ShowForm(para1, (formResult) =>
+            {
+                if (formResult.ReturnData == null)
+                {
+                    return;
+                }
+                pushFormId = formResult.ReturnData.ToString();
+                if (pushFormId == "1")
+                {
+                    //下推个人资金
+                    this.PushFormByFormId("k0c6b452fa8154c4f8e8e5f55f96bcfac",options);
+                }
+                else if (pushFormId == "2")
+                {
+                    //下推对公资金
+                    this.PushFormByFormId("k191b3057af6c4252bcea813ff644cd3a", options);
+                }
+            });
         }
 
         /// <summary>
         /// 根据单据唯一标识下推单据
         /// </summary>
-        private void PushFormByFormId()
+        private void PushFormByFormId(string targetFormIdParam, Dictionary<string, string> options)
         {
             string status = this.View.BillModel.GetValue("FDocumentStatus").ToString();
             if (status == "Z") return;
             string formId = this.View.BillView.GetFormId();
             string targetFormId = "k0c6b452fa8154c4f8e8e5f55f96bcfac"; // 个人资金
+
+            if (targetFormIdParam != null)
+            {
+                targetFormId = targetFormIdParam;
+            }
+
             var rules = ConvertServiceHelper.GetConvertRules(this.View.Context, formId, targetFormId);
+
+            //this.View.ShowMessage(options["costType"]);
+
             var rule = rules.FirstOrDefault(t => t.IsDefault);
+
+            List<string> fyxmList = new List<string>
+            {
+                "FYXM0052",
+                "FYXM005201",
+                "FYXM005202",
+                "FYXM005203",
+                "FYXM005206",
+                "FYXM0098",
+                "FYXM0093"
+            };
+
+            if (targetFormId.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac")) {
+                if (options["dept"].Equals("009") && fyxmList.Contains(options["costType"]))
+                {
+                    rule = rules.Find(r => r.Id.Equals("2cae0c23-4cf6-4576-a68e-9b4878ac76df"));
+                }
+                else {
+                    rule = rules.Find(r => r.Id.Equals("0bafc37e-2d0e-4046-a02b-f977e4a27834"));
+                }
+            } else if (targetFormId.Equals("k191b3057af6c4252bcea813ff644cd3a")) {
+
+                if (options["dept"].Equals("009") || options["workstation"].Equals("0040004"))
+                {
+                    rule = rules.Find(r => r.Id.Equals("ce020301-7b4f-4d9f-beab-f98af5a15e87"));
+                }
+                else
+                {
+                    rule = rules.Find(r => r.Id.Equals("e44fcb45-9a69-46b5-83a5-d977279a1b3b"));
+                }
+            }
+
             string fid = this.View.BillModel.GetPKValue().ToString();
 
             ListSelectedRow[] selectedRows;
@@ -573,8 +661,18 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             if(targetId != null)
             {
                 MobileShowParameter param = new MobileShowParameter();
-                param.Caption = "个人资金申请";
-                param.FormId = "ora_GRZJJZ";
+
+                if (targetFormId.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac"))
+                {
+                    param.Caption = "个人资金申请";
+                    param.FormId = "ora_GRZJJZ";
+                }
+                else if (targetFormId.Equals("k191b3057af6c4252bcea813ff644cd3a"))
+                {
+                    param.Caption = "对公资金申请";
+                    param.FormId = "ora_DGZJSQ";
+                }
+     
                 param.PKey = targetId;
                 param.ParentPageId = this.View.PageId;
                 param.Status = OperationStatus.EDIT;

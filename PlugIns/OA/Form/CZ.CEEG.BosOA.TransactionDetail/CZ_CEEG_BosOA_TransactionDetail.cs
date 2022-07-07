@@ -127,7 +127,11 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                 return "warning:未传入有效的查询对象ID";
             }
 
-           
+            //变压器----------------------------------------------------------------------------------------------------
+            /*string orgId = "%";*/
+            //zd-----------------------------------------------------------------------------------------------------------------------
+            string orgId = this.View.Model.GetValue("FOrgId") == null ? "" : (this.View.Model.GetValue("FOrgId") as DynamicObject)["Id"].ToString();
+            //---------------------------------------------------------------------------------------------------------------
 
             string _FValueSource = "";  //t_bd_FlexItemProperty：FValueSource
             string _ObjMstIDSch = "";   //查询对象表主键FMasterID的语句 
@@ -176,13 +180,13 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_BALANCE b on f.FID=b.FDetailID and aco.FBOOKID=b.FACCOUNTBOOKID and aco.FCBYear=b.FYEAR and aco.FCBPeriod=b.FPeriod and b.FCURRENCYID=0 ");
                     _sb.Append("inner join T_BD_ACCOUNT a on b.FACCOUNTID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " union all ");
+                    _sb.Append("where aco.FOrgID like('"+ orgId + "') " + _ObjAcctWhile + " union all ");
                     _sb.Append("select ve.FDC*ve.FAmount FGOBAmt,aco.FOrgID FOrgID,SUBSTRING(CONVERT(varchar(100), v.FDATE, 120  ),1,10) Date,ve.fexplanation,'R' mType from(" + _ObjMstIDSch + ")o1 ");
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
                     _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " order by mType,Date ");
+                    _sb.Append("where aco.FOrgID like('" + orgId + "') " + _ObjAcctWhile + " order by mType,Date ");
 
                     break;
                 default:    //供应商或者客户
@@ -197,13 +201,13 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_BALANCE b on f.FID=b.FDetailID and aco.FBOOKID=b.FACCOUNTBOOKID and aco.FCBYear=b.FYEAR and aco.FCBPeriod=b.FPeriod and b.FCURRENCYID=0 ");
                     _sb.Append("inner join T_BD_ACCOUNT a on b.FACCOUNTID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile + " union all ");
+                    _sb.Append("where aco.FOrgID like('" + orgId + "') " + _ObjAcctWhile + " union all ");
                     _sb.Append("select ve.FDC*ve.FAmount FGOBAmt,aco.FOrgID FOrgID from(" + _ObjMstIDSch + ")o1 ");
                     _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
                     _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");
                     _sb.Append("inner join T_GL_VOUCHERENTRY ve on v.FVoucherID=ve.FVoucherID and f.FID=ve.FDetailID ");
                     _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
-                    _sb.Append("where aco.FOrgID like('%') " + _ObjAcctWhile);
+                    _sb.Append("where aco.FOrgID like('" + orgId + "') " + _ObjAcctWhile);
 
                     break;
             }
@@ -296,7 +300,8 @@ namespace CZ.CEEG.BosOA.TransactionDetail
             {
                 case "BD_Customer":
                     _FValueSource = "BD_Customer";
-                    _ObjAcctWhile = " and a.FNumber in('1221.03') ";  //客户  取科目1221.03，借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('1221.03') ";  //变压器
+                    _ObjAcctWhile = " and a.FNumber in('1221.05','1221.01') ";  //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_BD_Customer where FCUSTID=#objID# ";
                     break;
                 case "BD_Department":
@@ -306,12 +311,14 @@ namespace CZ.CEEG.BosOA.TransactionDetail
                     break;
                 case "BD_Empinfo":
                     _FValueSource = "BD_Empinfo";
-                    _ObjAcctWhile = " and a.FNumber in('1221.01') ";   //员工 取科目1221.01，借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('1221.01') ";   //变压器
+                    _ObjAcctWhile = " and a.FNumber in('1221.03') ";   //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_Hr_Empinfo where FID=#objID# ";
                     break;
                 case "BD_Supplier":
                     _FValueSource = "BD_Supplier";
-                    _ObjAcctWhile = " and a.FNumber in('2202.01','2241.01') ";     //供应商 取科目2202.01及2241.01，按余额进行合并后借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('2202.01','2241.01') "; //变压器
+                    _ObjAcctWhile = " and a.FNumber in('2202.02','2241.02') ";     //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_BD_Supplier where FSupplierID=#objID# ";
                     break;
                 case "ORG_Organizations":

@@ -115,7 +115,12 @@ namespace CZ.CEEG.BosOa.GetIntercourse
         /// <returns></returns>
         private string CZ_FB_GetObjBal(CZ_FB_EnFBObject _fbo, string _FObjID, ref double _backAmt)
         {
-            return CZ_FB_GetObjBal(_fbo, _FObjID, "%", "", ref _backAmt);
+            //变压器----------------------------------------------------------------------------------------------------
+            /*string orgId = "%";*/
+            //zd-----------------------------------------------------------------------------------------------------------------------
+            string orgId = this.View.Model.GetValue("FOrgId") == null ? "" : (this.View.Model.GetValue("FOrgId") as DynamicObject)["Id"].ToString();
+            //---------------------------------------------------------------------------------------------------------------
+            return CZ_FB_GetObjBal(_fbo, _FObjID, orgId, "", ref _backAmt);
         }
 
         /// <summary>
@@ -221,17 +226,23 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
             _sb.Append("inner join T_GL_BALANCE b on f.FID=b.FDetailID and aco.FBOOKID=b.FACCOUNTBOOKID and aco.FCBYear=b.FYEAR and aco.FCBPeriod=b.FPeriod and b.FCURRENCYID=0 ");
             _sb.Append("inner join T_BD_ACCOUNT a on b.FACCOUNTID=a.FACCTID ");
-            
-            
-            if (!_fbo.ToString().Equals("BD_Empinfo"))
+
+
+
+            //变压器-----------------------------------------------------------------------------------------------------------------------
+            /*if (!_fbo.ToString().Equals("BD_Empinfo"))
             {
                 _sb.Append("where aco.FOrgID not in (156140,156141,293071,293073,1088184,156142,293065) " + _ObjAcctWhile+ " union all ");
             }
             else {
                 _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " union all ");
-            }
-            
-            
+            }*/
+            //----------------------------------------------------------------------------------------------------------------------------
+
+            //ZD---------------------------------------------------------------------------------------------------------
+            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile + " union all ");
+            //-----------------------------------------------------------------------------------------------------
+
             _sb.Append("select ve.FDC*ve.FAmount FGOBAmt from(" + _ObjMstIDSch + ")o1 ");
             _sb.Append("inner join t_bd_FlexItemDetailV f on o1.FObjMID=f." + _FFlexNumber + " inner join #aco aco on 1=1 ");
             _sb.Append("inner join T_GL_VOUCHER v on aco.FBookID=v.FAccountBookID and aco.FBegDate<=v.FBusDate and v.FInvalid=0 ");
@@ -239,15 +250,20 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             _sb.Append("inner join T_BD_ACCOUNT a on ve.FAccountID=a.FACCTID ");
 
 
-            if (!_fbo.ToString().Equals("BD_Empinfo"))
+            //变压器-------------------------------------------------------------------------------------------------------------------
+            /*if (!_fbo.ToString().Equals("BD_Empinfo"))
             {
                 _sb.Append("where aco.FOrgID not in (156140,156141,293071,293073,1088184,156142,293065) " + _ObjAcctWhile);
             }
             else {
                 _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile);
-            }
+            }*/
+            //--------------------------------------------------------------------------------------------------------------
 
-            
+            //ZD-----------------------------------------------------------------------------------------------------------
+            _sb.Append("where aco.FOrgID like('" + _FAcctOrgID + "') " + _ObjAcctWhile);
+            //-------------------------------------------------------------------------------------------------------------
+
             //_sb.Append("union all select 888 FGOBAmt ");  //测试用行
             _sb.Append(")t ");
             string _sqlGetFOBAmt = _sb.ToString();
@@ -290,7 +306,8 @@ namespace CZ.CEEG.BosOa.GetIntercourse
             {
                 case "BD_Customer":
                     _FValueSource = "BD_Customer";
-                    _ObjAcctWhile = " and a.FNumber in('1221.03') ";  //客户  取科目1221.03，借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('1221.03') ";  //变压器
+                    _ObjAcctWhile = " and a.FNumber in('1221.05') ";  //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_BD_Customer where FCUSTID=#objID# ";
                     break;
                 case "BD_Department":
@@ -300,12 +317,14 @@ namespace CZ.CEEG.BosOa.GetIntercourse
                     break;
                 case "BD_Empinfo":
                     _FValueSource = "BD_Empinfo";
-                    _ObjAcctWhile = " and a.FNumber in('1221.01') ";   //员工 取科目1221.01，借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('1221.01') ";   //变压器
+                    _ObjAcctWhile = " and a.FNumber in('1221.03') ";   //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_Hr_Empinfo where FID=#objID# ";
                     break;
                 case "BD_Supplier":
                     _FValueSource = "BD_Supplier";
-                    _ObjAcctWhile = " and a.FNumber in('2202.01','2241.01') ";     //供应商 取科目2202.01及2241.01，按余额进行合并后借+贷-
+                    //_ObjAcctWhile = " and a.FNumber in('2202.01','2241.01') "; //变压器
+                    _ObjAcctWhile = " and a.FNumber in('2202.02','2241.02') ";     //zd
                     _ObjMstIDSch = "select FMasterID FObjMID from t_BD_Supplier where FSupplierID=#objID# ";
                     break;
                 case "ORG_Organizations":
