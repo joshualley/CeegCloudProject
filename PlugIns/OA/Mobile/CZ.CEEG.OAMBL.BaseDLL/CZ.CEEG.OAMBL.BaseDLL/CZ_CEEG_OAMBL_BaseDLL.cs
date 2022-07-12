@@ -126,7 +126,8 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         /// </summary>
         private void SetDefaultApply()
         {
-            if(this.View.ClientType.ToString() == "Mobile" && this.View.BillModel.GetValue("FDocumentStatus").ToString() == "Z")
+
+            if (this.View.ClientType.ToString() == "Mobile" && this.View.BillModel.GetValue("FDocumentStatus").ToString() == "Z")
             {
                 string userId = this.Context.UserId.ToString();
                 //userId = "100229";
@@ -134,6 +135,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 //string orgId = this.View.BillModel.GetValue(GetApplySign()["FOrgId"]) == null ? "0" : (this.View.BillModel.GetValue(GetApplySign()["FOrgId"]) as DynamicObject)["Id"].ToString();
                 string sql = string.Format("exec proc_czty_GetLoginUser2Emp @FUserID='{0}'", userId);
                 var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+
                 if (obj.Count > 0)
                 {
                     var _Names = GetApplySign();
@@ -149,6 +151,7 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         /// </summary>
         private void SetApplyValueUpdate()
         {
+
             var _Names = GetApplySign();
             string FApplyID = this.View.BillModel.DataObject[_Names["FEmpID"]] == null ? "0" : (this.View.BillModel.DataObject[_Names["FEmpID"]] as DynamicObject)["Id"].ToString();
             string sql = String.Format(@"exec proc_czty_GetLoginUser2Emp @FEmpID='{0}'", FApplyID);
@@ -161,6 +164,9 @@ namespace CZ.CEEG.OAMBL.BaseDLL
             string _FMobile = "";
             string _FSuperiorPost = "";
             string _FGManager = "";
+
+            //this.View.ShowMessage(obj.Count+"");
+
             if (obj.Count > 0)
             {
                 //_FEmpID = obj[0]["FEmpID"].ToString();
@@ -169,6 +175,10 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 _FPostID = obj[0]["FPostID"].ToString();
                 _FMobile = obj[0]["FMobile"].ToString();
                 _FRankID = obj[0]["FRankID"].ToString();
+
+
+                //this.View.ShowMessage(_FPostID);
+
                 _FSuperiorPost = obj[0]["FSuperiorPost"].ToString();
                 _FGManager = obj[0]["FGManager"].ToString();
                 if (_Names.Count > 0)
@@ -475,6 +485,9 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         public override void DataChanged(DataChangedEventArgs e)
         {
             base.DataChanged(e);
+
+            //this.View.ShowMessage(e.Field.Key.ToString().ToUpperInvariant());
+
             switch (e.Field.Key.ToString().ToUpperInvariant())
             {
                 case "FAPPLYID":
@@ -507,11 +520,13 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                         string dept = (this.View.BillModel.GetValue("FDeptID") as DynamicObject)["Number"].ToString();
                         string workstation = (this.View.BillModel.GetValue("FPost") as DynamicObject)["Number"].ToString();
                         string costType = (this.View.BillModel.GetValue("FCostType1") as DynamicObject)["Number"].ToString();
+                        string billNo = this.View.BillModel.GetValue("FBillNo").ToString();
                         Dictionary<string, string> options = new Dictionary<string, string>
                         {
                             { "dept", dept },
                             { "workstation", workstation },
-                            { "costType", costType }
+                            { "costType", costType },
+                            {"billNo",billNo }
                         };
                         this.Act_Push(options);
                     }else{
@@ -541,12 +556,28 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                 pushFormId = formResult.ReturnData.ToString();
                 if (pushFormId == "1")
                 {
-                    //下推个人资金
+                    //下推个人资金        
+                    string sql = "select isnull(max(fid),0) as targetId from ora_t_PersonMoneyEntry where " +
+                    "fentryid in (SELECT  FEntryID FROM ora_t_PersonMoneyEntry_LK WHERE(FSBillId = " +
+                    "(select fid from ora_t_Cust100050 where fbillno = '"+ options["billNo"] + "')))";
+
+                    var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+
+                    options.Add("targetId", obj[0]["targetId"].ToString());
+
                     this.PushFormByFormId("k0c6b452fa8154c4f8e8e5f55f96bcfac",options);
                 }
                 else if (pushFormId == "2")
                 {
                     //下推对公资金
+                    string sql = "select isnull(max(fid),0) as targetId from ora_t_PublicMoneyEntry where " +
+                    "fentryid in (SELECT  FEntryID FROM ora_t_PublicMoneyEntry_LK WHERE(FSBillId = " +
+                    "(select fid from ora_t_Cust100050 where fbillno = '" + options["billNo"] + "')))";
+
+                    var obj = DBUtils.ExecuteDynamicObject(this.Context, sql);
+
+                    options.Add("targetId", obj[0]["targetId"].ToString());
+
                     this.PushFormByFormId("k191b3057af6c4252bcea813ff644cd3a", options);
                 }
             });
@@ -557,117 +588,132 @@ namespace CZ.CEEG.OAMBL.BaseDLL
         /// </summary>
         private void PushFormByFormId(string targetFormIdParam, Dictionary<string, string> options)
         {
-            string status = this.View.BillModel.GetValue("FDocumentStatus").ToString();
-            if (status == "Z") return;
-            string formId = this.View.BillView.GetFormId();
-            string targetFormId = "k0c6b452fa8154c4f8e8e5f55f96bcfac"; // 个人资金
+            string targetId = null;
 
-            if (targetFormIdParam != null)
-            {
-                targetFormId = targetFormIdParam;
-            }
+            if (options!=null) {
 
-            var rules = ConvertServiceHelper.GetConvertRules(this.View.Context, formId, targetFormId);
+                targetId = options["targetId"];
 
-            //this.View.ShowMessage(options["costType"]);
+                if (targetId.Equals("0")) {
+                    string status = this.View.BillModel.GetValue("FDocumentStatus").ToString();
+                    if (status == "Z") return;
+                    string formId = this.View.BillView.GetFormId();
+                    string targetFormId = "k0c6b452fa8154c4f8e8e5f55f96bcfac"; // 个人资金
 
-            var rule = rules.FirstOrDefault(t => t.IsDefault);
+                    if (targetFormIdParam != null)
+                    {
+                        targetFormId = targetFormIdParam;
+                    }
 
-            List<string> fyxmList = new List<string>
-            {
-                "FYXM0052",
-                "FYXM005201",
-                "FYXM005202",
-                "FYXM005203",
-                "FYXM005206",
-                "FYXM0098",
-                "FYXM0093"
-            };
+                    var rules = ConvertServiceHelper.GetConvertRules(this.View.Context, formId, targetFormId);
 
-            if (targetFormId.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac")) {
-                if (options["dept"].Equals("009") && fyxmList.Contains(options["costType"]))
-                {
-                    rule = rules.Find(r => r.Id.Equals("2cae0c23-4cf6-4576-a68e-9b4878ac76df"));
+                    //this.View.ShowMessage(options["costType"]);
+
+                    var rule = rules.FirstOrDefault(t => t.IsDefault);
+
+                    List<string> fyxmList = new List<string>
+                        {
+                            "FYXM0052",
+                            "FYXM005201",
+                            "FYXM005202",
+                            "FYXM005203",
+                            "FYXM005206",
+                            "FYXM0098",
+                            "FYXM0093"
+                        };
+
+                    if (targetFormId.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac"))
+                    {
+                        if (options["dept"].Equals("009") && fyxmList.Contains(options["costType"]))
+                        {
+                            rule = rules.Find(r => r.Id.Equals("2cae0c23-4cf6-4576-a68e-9b4878ac76df"));
+                        }
+                        else
+                        {
+                            rule = rules.Find(r => r.Id.Equals("0bafc37e-2d0e-4046-a02b-f977e4a27834"));
+                        }
+                    }
+                    else if (targetFormId.Equals("k191b3057af6c4252bcea813ff644cd3a"))
+                    {
+
+                        if (options["dept"].Equals("009") || options["workstation"].Equals("0040004"))
+                        {
+                            rule = rules.Find(r => r.Id.Equals("ce020301-7b4f-4d9f-beab-f98af5a15e87"));
+                        }
+                        else
+                        {
+                            rule = rules.Find(r => r.Id.Equals("e44fcb45-9a69-46b5-83a5-d977279a1b3b"));
+                        }
+                    }
+
+                    string fid = this.View.BillModel.GetPKValue().ToString();
+
+                    ListSelectedRow[] selectedRows;
+                    if (formId == "k0c30c431418e4cf4a60d241a18cb241c") // 出差申请
+                    {
+                        int count = this.View.BillModel.GetEntryRowCount("FEntity");
+                        selectedRows = new ListSelectedRow[count];
+                        for (int i = 0; i < count; i++)
+                        {
+                            string entryId = this.View.BillModel.GetEntryPKValue("FEntryID", i).ToString();
+                            selectedRows[i] = new ListSelectedRow(fid, entryId, i, formId);
+                        }
+                    }
+                    else
+                    {
+                        ListSelectedRow row = new ListSelectedRow(fid, string.Empty, 0, formId);
+                        selectedRows = new ListSelectedRow[] { row };
+                    }
+
+                    // 调用下推服务，生成下游单据数据包
+                    ConvertOperationResult operationResult = null;
+                    PushArgs pushArgs = new PushArgs(rule, selectedRows)
+                    {
+                        TargetBillTypeId = "",
+                        TargetOrgId = 0,
+                    };
+                    try
+                    {
+                        //执行下推操作，并获取下推结果
+                        operationResult = ConvertServiceHelper.Push(this.View.Context, pushArgs, OperateOption.Create());
+                    }
+                    catch (KDExceptionValidate ex)
+                    {
+                        this.View.ShowErrMessage(ex.Message, ex.ValidateString);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        this.View.ShowErrMessage(ex.Message);
+                        return;
+                    }
+
+                    // 获取生成的目标单据数据包
+                    DynamicObject[] objs = operationResult.TargetDataEntities.Select(p => p.DataEntity).ToArray();
+                    // 读取目标单据元数据
+                    var targetBillMeta = MetaDataServiceHelper.Load(this.View.Context, targetFormId) as FormMetadata;
+                    OperateOption option = OperateOption.Create();
+                    // 忽略全部需要交互性质的提示
+                    option.SetIgnoreWarning(true);
+                    // 暂存数据
+                    var saveResult = BusinessDataServiceHelper.Draft(this.View.Context, targetBillMeta.BusinessInfo, objs, option);
+                    targetId = saveResult.SuccessDataEnity.Select(item => item["Id"].ToString()).Distinct().FirstOrDefault();
                 }
-                else {
-                    rule = rules.Find(r => r.Id.Equals("0bafc37e-2d0e-4046-a02b-f977e4a27834"));
-                }
-            } else if (targetFormId.Equals("k191b3057af6c4252bcea813ff644cd3a")) {
-
-                if (options["dept"].Equals("009") || options["workstation"].Equals("0040004"))
-                {
-                    rule = rules.Find(r => r.Id.Equals("ce020301-7b4f-4d9f-beab-f98af5a15e87"));
-                }
-                else
-                {
-                    rule = rules.Find(r => r.Id.Equals("e44fcb45-9a69-46b5-83a5-d977279a1b3b"));
-                }
+   
             }
 
-            string fid = this.View.BillModel.GetPKValue().ToString();
-
-            ListSelectedRow[] selectedRows;
-            if (formId == "k0c30c431418e4cf4a60d241a18cb241c") // 出差申请
-            {
-                int count = this.View.BillModel.GetEntryRowCount("FEntity");
-                selectedRows = new ListSelectedRow[count];
-                for (int i = 0; i < count; i++)
-                {
-                    string entryId = this.View.BillModel.GetEntryPKValue("FEntryID", i).ToString();
-                    selectedRows[i] = new ListSelectedRow(fid, entryId, i, formId);
-                }
-            }
-            else
-            {
-                ListSelectedRow row = new ListSelectedRow(fid, string.Empty, 0, formId);
-                selectedRows = new ListSelectedRow[] { row };
-            }
-            
-            // 调用下推服务，生成下游单据数据包
-            ConvertOperationResult operationResult = null;
-            PushArgs pushArgs = new PushArgs(rule, selectedRows)
-            {
-                TargetBillTypeId = "",
-                TargetOrgId = 0,
-            };
-            try
-            {
-                //执行下推操作，并获取下推结果
-                operationResult = ConvertServiceHelper.Push(this.View.Context, pushArgs, OperateOption.Create());
-            }
-            catch (KDExceptionValidate ex)
-            {
-                this.View.ShowErrMessage(ex.Message, ex.ValidateString);
-                return;
-            }
-            catch(Exception ex)
-            {
-                this.View.ShowErrMessage(ex.Message);
-                return;
-            }
-
-            // 获取生成的目标单据数据包
-            DynamicObject[] objs = operationResult.TargetDataEntities.Select(p => p.DataEntity).ToArray();
-            // 读取目标单据元数据
-            var targetBillMeta = MetaDataServiceHelper.Load(this.View.Context, targetFormId) as FormMetadata;
-            OperateOption option = OperateOption.Create();
-            // 忽略全部需要交互性质的提示
-            option.SetIgnoreWarning(true);
-            // 暂存数据
-            var saveResult = BusinessDataServiceHelper.Draft(this.View.Context, targetBillMeta.BusinessInfo, objs, option);
-            string targetId = saveResult.SuccessDataEnity.Select(item => item["Id"].ToString()).Distinct().FirstOrDefault();
-
+ 
             // 打开目标单据
             if(targetId != null)
             {
                 MobileShowParameter param = new MobileShowParameter();
 
-                if (targetFormId.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac"))
+                if (targetFormIdParam.Equals("k0c6b452fa8154c4f8e8e5f55f96bcfac"))
                 {
                     param.Caption = "个人资金申请";
                     param.FormId = "ora_GRZJJZ";
                 }
-                else if (targetFormId.Equals("k191b3057af6c4252bcea813ff644cd3a"))
+                else if (targetFormIdParam.Equals("k191b3057af6c4252bcea813ff644cd3a"))
                 {
                     param.Caption = "对公资金申请";
                     param.FormId = "ora_DGZJSQ";
@@ -697,7 +743,13 @@ namespace CZ.CEEG.OAMBL.BaseDLL
                     CZ_DoFileUpLoad();
                     break;
                 case "SUBMIT":
-                    CZ_DoFileUpLoad();
+
+                    bool success = e.OperationResult.IsSuccess;
+
+                    if (success) {
+                        CZ_DoFileUpLoad();
+                    }
+
                     break;
             }
         }
