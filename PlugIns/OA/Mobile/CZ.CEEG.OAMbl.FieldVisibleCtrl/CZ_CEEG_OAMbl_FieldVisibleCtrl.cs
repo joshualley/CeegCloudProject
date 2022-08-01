@@ -38,20 +38,7 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
         {
             string _FDocumentStatus = this.View.BillModel.GetValue("FDocumentStatus").ToString();
 
-            if (_FDocumentStatus == "A")
-            {
-                try
-                {
-                    var pushBtn = this.View.GetControl("FPushBtn");
-                    pushBtn.Visible = false;
-                }
-                catch (Exception) { }
-                var submitBtn = this.View.GetControl("FSubmitBtn");
-                var saveBtn = this.View.GetControl("FSaveBtn");
-                saveBtn.Visible = false;
-                submitBtn.SetCustomPropertyValue("width", 310);
-            }
-            else if (_FDocumentStatus == "Z")
+            if (_FDocumentStatus == "Z")
             {
                 try
                 {
@@ -63,8 +50,21 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
                 var saveBtn = this.View.GetControl("FSaveBtn");
                 saveBtn.Visible = true;
                 submitBtn.Visible = true;
-                saveBtn.SetCustomPropertyValue("width", 145);
-                submitBtn.SetCustomPropertyValue("width", 145);
+                saveBtn.SetCustomPropertyValue("width", 155);
+                submitBtn.SetCustomPropertyValue("width", 155);
+            }
+            else if (_FDocumentStatus == "A")
+            {
+                try
+                {
+                    var pushBtn = this.View.GetControl("FPushBtn");
+                    pushBtn.Visible = false;
+                }
+                catch (Exception) { }
+                var submitBtn = this.View.GetControl("FSubmitBtn");
+                var saveBtn = this.View.GetControl("FSaveBtn");
+                saveBtn.Visible = false;
+                submitBtn.SetCustomPropertyValue("width", 310);
             }
             else if (_FDocumentStatus == "B")
             {
