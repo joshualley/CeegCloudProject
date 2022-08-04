@@ -117,8 +117,10 @@ namespace CZ.CEEG.OAMbl.FieldVisibleCtrl
                 {
                     var submitBtn = this.View.GetControl("FSubmitBtn");
                     var saveBtn = this.View.GetControl("FSaveBtn");
-                    submitBtn.Visible = false;
-                    saveBtn.SetCustomPropertyValue("width", 310);
+                    saveBtn.Visible = true;
+                    submitBtn.Visible = true;
+                    saveBtn.SetCustomPropertyValue("width", 155);
+                    submitBtn.SetCustomPropertyValue("width", 155);
                 }
             }
 
